@@ -1,0 +1,106 @@
+name: Sync labels → project board
+
+on:
+  issues:
+    types: [labeled, unlabeled, opened, closed, reopened]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: 3167950
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ystackai
+
+      - name: Move card to matching column
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+            const projectNumber = 3;
+            const org = 'ystackai';
+
+            // Map labels to project status
+            let status = 'Backlog';
+            if (issue.state === 'closed') status = 'Done';
+            else if (labels.includes('done')) status = 'Done';
+            else if (labels.includes('in-review')) status = 'In Review';
+            else if (labels.includes('in-progress')) status = 'In Progress';
+
+            // Get project
+            const project = await github.graphql(`
+              query($org: String!, $num: Int!) {
+                organization(login: $org) {
+                  projectV2(number: $num) {
+                    id
+                    fields(first: 20) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options { id name }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `, { org, num: projectNumber });
+
+            const proj = project.organization.projectV2;
+            const statusField = proj.fields.nodes.find(f => f.name === 'Status');
+            if (!statusField) return console.log('No Status field');
+
+            const option = statusField.options.find(o => o.name === status);
+            if (!option) return console.log(`No option for "${status}"`);
+
+            // Find item on board
+            const items = await github.graphql(`
+              query($projId: ID!) {
+                node(id: $projId) {
+                  ... on ProjectV2 {
+                    items(first: 100) {
+                      nodes {
+                        id
+                        content { ... on Issue { number } }
+                      }
+                    }
+                  }
+                }
+              }
+            `, { projId: proj.id });
+
+            let itemId;
+            const existing = items.node.items.nodes.find(
+              n => n.content && n.content.number === issue.number
+            );
+
+            if (existing) {
+              itemId = existing.id;
+            } else {
+              const added = await github.graphql(`
+                mutation($projId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: {projectId: $projId, contentId: $contentId}) {
+                    item { id }
+                  }
+                }
+              `, { projId: proj.id, contentId: issue.node_id });
+              itemId = added.addProjectV2ItemById.item.id;
+            }
+
+            await github.graphql(`
+              mutation($projId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projId, itemId: $itemId,
+                  fieldId: $fieldId,
+                  value: { singleSelectOptionId: $optionId }
+                }) { projectV2Item { id } }
+              }
+            `, { projId: proj.id, itemId, fieldId: statusField.id, optionId: option.id });
+            console.log(`#${issue.number} → ${status}`);
