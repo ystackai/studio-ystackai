@@ -8,6 +8,12 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: studio.json
+          sparse-checkout-cone-mode: false
+
       - name: Generate App token
         id: app-token
         uses: actions/create-github-app-token@v1
@@ -16,17 +22,27 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ystackai
 
-      - name: Move card to matching column
+      - name: Sync issue to project board
         uses: actions/github-script@v7
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
+            const fs = require('fs');
             const issue = context.payload.issue;
             const labels = issue.labels.map(l => l.name);
-            const projectNumber = 3;
-            const org = 'ystackai';
+            const org = context.repo.owner;
 
-            // Map labels to project status
+            // Read project number from studio.json
+            let studioConfig;
+            try {
+              studioConfig = JSON.parse(fs.readFileSync('studio.json', 'utf8'));
+            } catch (e) {
+              return console.log('No studio.json found, skipping');
+            }
+            const projectNumber = studioConfig.github_project_number;
+            if (!projectNumber) return console.log('No github_project_number in studio.json, skipping');
+
+            // Map labels to status
             let status = 'Backlog';
             if (issue.state === 'closed') status = 'Done';
             else if (labels.includes('done')) status = 'Done';
@@ -54,13 +70,15 @@ jobs:
             `, { org, num: projectNumber });
 
             const proj = project.organization.projectV2;
+            if (!proj) return console.log(`Project #${projectNumber} not found`);
+
             const statusField = proj.fields.nodes.find(f => f.name === 'Status');
             if (!statusField) return console.log('No Status field');
 
             const option = statusField.options.find(o => o.name === status);
             if (!option) return console.log(`No option for "${status}"`);
 
-            // Find item on board
+            // Find or add item
             const items = await github.graphql(`
               query($projId: ID!) {
                 node(id: $projId) {
