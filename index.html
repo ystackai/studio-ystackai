@@ -63,9 +63,9 @@
     .board-lane-dot { width: 8px; height: 8px; border-radius: 50%; }
     .board-ticket {
       display: block; padding: 0.6rem 0.75rem; margin-bottom: 0.5rem;
-      background: var(--studio-bg); border: 1px solid var(--studio-border);
-      border-radius: 8px; text-decoration: none; color: var(--studio-text);
-      font-size: 0.8rem; line-height: 1.3; transition: border-color 0.15s;
+      background: linear-gradient(135deg, #1a1a2e, #2a1a3e); border: 1px solid #2a2a4a;
+      border-radius: 8px; text-decoration: none; color: #e2e8f0;
+      font-size: 0.8rem; line-height: 1.3; transition: all 0.15s;
     }
     .board-ticket:hover { border-color: var(--studio-accent); transform: translateY(-1px); }
     .board-ticket .ticket-num { color: var(--studio-soft); font-size: 0.7rem; }
@@ -233,8 +233,9 @@
           + '<p>' + esc((building.summary || '').substring(0, 80)) + '</p></div></a>');
       }
       shipped.forEach(function(g) {
-        demos.push('<a class="demo-card" href="' + esc(g.play_url || '#') + '">'
-          + '<div class="demo-thumb"><img src="' + esc(g.play_url || '') + 'screenshot.png" alt="" onerror="this.style.display=\'none\'"></div>'
+        var playUrl = '/ystackai' + (g.play_url || '');
+        demos.push('<a class="demo-card" href="' + esc(playUrl) + '">'
+          + '<div class="demo-thumb"><img src="' + esc(playUrl) + 'screenshot.png" alt="" onerror="this.style.display=\'none\'"></div>'
           + '<div class="demo-info"><h3>' + esc(g.title) + '</h3>'
           + '<div class="mashup">' + esc(g.mashup || '') + '</div>'
           + '<p>' + esc((g.summary || '').substring(0, 80)) + '</p></div></a>');
@@ -242,7 +243,7 @@
       document.getElementById('demos-row').innerHTML = demos.join('') || '<p style="color:var(--studio-soft)">No demos shipped yet</p>';
 
       // Board title
-      if (building) document.getElementById('board-title').textContent = 'Board: ' + building.title;
+      if (building) document.getElementById('board-title').textContent = 'Board: Currently Building ' + building.title;
 
       // Board — 4 lanes: Backlog → In Progress → In Review → Done
       var laneConfig = [
