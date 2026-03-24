@@ -56,16 +56,21 @@
     .demo-info p { font-size: 0.8rem; color: var(--studio-muted); margin-top: 0.3rem; line-height: 1.4; }
 
     /* Board */
-    .board-lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
-    .board-lane h3 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--studio-soft); margin-bottom: 0.5rem; }
+    .board-lanes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+    .board-lane-header { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; }
+    .board-lane-header h3 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--studio-soft); }
+    .board-lane-header .lane-count { font-size: 0.65rem; color: var(--studio-soft); background: var(--studio-border); padding: 1px 6px; border-radius: 10px; }
+    .board-lane-dot { width: 8px; height: 8px; border-radius: 50%; }
     .board-ticket {
       display: block; padding: 0.6rem 0.75rem; margin-bottom: 0.5rem;
       background: var(--studio-bg); border: 1px solid var(--studio-border);
       border-radius: 8px; text-decoration: none; color: var(--studio-text);
       font-size: 0.8rem; line-height: 1.3; transition: border-color 0.15s;
     }
-    .board-ticket:hover { border-color: var(--studio-accent); }
+    .board-ticket:hover { border-color: var(--studio-accent); transform: translateY(-1px); }
     .board-ticket .ticket-num { color: var(--studio-soft); font-size: 0.7rem; }
+    .board-ticket .ticket-labels { display: flex; gap: 0.25rem; margin-top: 0.3rem; flex-wrap: wrap; }
+    .board-ticket .ticket-label { font-size: 0.6rem; padding: 1px 5px; border-radius: 4px; font-weight: 600; }
 
     /* Team */
     .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
@@ -239,32 +244,52 @@
       // Board title
       if (building) document.getElementById('board-title').textContent = 'Board: ' + building.title;
 
-      // Board — fetch from gateway API, 3 lanes, max 3 tickets each
+      // Board — 4 lanes: Backlog → In Progress → In Review → Done
+      var laneConfig = [
+        { key: 'backlog', label: 'Backlog', color: '#94a3b8' },
+        { key: 'in-progress', label: 'In Progress', color: '#22c55e' },
+        { key: 'in-review', label: 'In Review', color: '#eab308' },
+        { key: 'done', label: 'Done', color: '#8b5cf6' }
+      ];
       fetch('/api/board?repo=studio-ystackai')
         .then(function(r) { return r.json(); })
         .then(function(boardData) {
           var issues = boardData.all_open_issues || [];
-          var lanes = { 'in-progress': [], 'in-review': [], 'backlog': [] };
+          var lanes = { 'backlog': [], 'in-progress': [], 'in-review': [], 'done': [] };
           issues.forEach(function(i) {
             var labels = (i.labels || []).map(function(l) { return typeof l === 'string' ? l : l.name; });
-            if (labels.indexOf('in-progress') >= 0) lanes['in-progress'].push(i);
+            if (labels.indexOf('done') >= 0) lanes['done'].push(i);
             else if (labels.indexOf('in-review') >= 0) lanes['in-review'].push(i);
-            else if (labels.indexOf('backlog') >= 0) lanes['backlog'].push(i);
+            else if (labels.indexOf('in-progress') >= 0) lanes['in-progress'].push(i);
+            else lanes['backlog'].push(i);
           });
           var laneHTML = '';
-          [['in-progress', 'In Progress'], ['in-review', 'In Review'], ['backlog', 'Backlog']].forEach(function(pair) {
-            var tickets = lanes[pair[0]].slice(0, 3);
-            laneHTML += '<div class="board-lane"><h3>' + pair[1] + '</h3>';
+          laneConfig.forEach(function(cfg) {
+            var all = lanes[cfg.key];
+            var tickets = all.slice(0, 3);
+            laneHTML += '<div class="board-lane">'
+              + '<div class="board-lane-header">'
+              + '<div class="board-lane-dot" style="background:' + cfg.color + '"></div>'
+              + '<h3>' + cfg.label + '</h3>'
+              + '<span class="lane-count">' + all.length + '</span>'
+              + '</div>';
             if (tickets.length === 0) {
-              laneHTML += '<div style="color:var(--studio-soft);font-size:0.8rem">None</div>';
+              laneHTML += '<div style="color:var(--studio-soft);font-size:0.8rem;padding:0.5rem 0">—</div>';
             }
             tickets.forEach(function(t) {
+              var labels = (t.labels || []).map(function(l) { return typeof l === 'string' ? l : l.name; });
+              var typeLabels = labels.filter(function(l) { return ['feature','bug','polish','audio','visual','writing','playtest','test'].indexOf(l) >= 0; });
               laneHTML += '<a class="board-ticket" href="https://github.com/ystackai/studio-ystackai/issues/' + t.number + '" target="_blank">'
-                + '<span class="ticket-num">#' + t.number + '</span> ' + esc(t.title)
-                + '</a>';
+                + '<span class="ticket-num">#' + t.number + '</span> ' + esc(t.title);
+              if (typeLabels.length) {
+                laneHTML += '<div class="ticket-labels">' + typeLabels.map(function(l) {
+                  return '<span class="ticket-label" style="background:rgba(99,102,241,0.1);color:var(--studio-accent)">' + l + '</span>';
+                }).join('') + '</div>';
+              }
+              laneHTML += '</a>';
             });
-            if (lanes[pair[0]].length > 3) {
-              laneHTML += '<div style="font-size:0.75rem;color:var(--studio-soft)">+' + (lanes[pair[0]].length - 3) + ' more</div>';
+            if (all.length > 3) {
+              laneHTML += '<div style="font-size:0.75rem;color:var(--studio-soft);padding-top:0.25rem">+' + (all.length - 3) + ' more</div>';
             }
             laneHTML += '</div>';
           });
