@@ -327,10 +327,10 @@
       }
 
       // Chat feed (full width)
-      fetch('chat.json')
+      fetch('/api/messages')
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          var msgs = (data.messages || []).slice(-10);
+          var msgs = (data || []).slice(-10);
           var html = msgs.map(function(m) {
             var agent = AGENTS[m.author] || {};
             var time = '';
