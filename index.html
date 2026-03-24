@@ -181,7 +181,7 @@
 
   <!-- Board panel -->
   <div id="panel-board" class="tab-panel">
-    <div class="section-label" style="display:flex;justify-content:space-between;align-items:center">Project Board <a href="https://github.com/ystackai/studio-ystackai/issues" target="_blank" style="font-size:0.8rem;font-weight:600;color:var(--studio-accent);text-decoration:none">View on GitHub →</a></div>
+    <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span id="board-title">Project Board</span> <a href="https://github.com/ystackai/studio-ystackai/issues" target="_blank" style="font-size:0.8rem;font-weight:600;color:var(--studio-accent);text-decoration:none">View on GitHub →</a></div>
     <div id="ticket-board"></div>
   </div>
 
@@ -311,6 +311,7 @@
 
       // Board panel
       Components.ticketBoard('ticket-board');
+      if (building) document.getElementById('board-title').textContent = 'Now Building: ' + building.title;
 
       // Team panel
       document.getElementById('team-grid').innerHTML = d.team.map(Components.teamCard).join('');
