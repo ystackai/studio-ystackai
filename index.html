@@ -26,6 +26,8 @@
     .chat-name { font-weight: 700; font-size: 0.85rem; }
     .chat-time { color: var(--studio-soft); font-size: 0.7rem; margin-left: auto; }
     .chat-text { color: var(--studio-text); font-size: 0.88rem; line-height: 1.5; }
+    .chat-reactions { display: flex; gap: 0.35rem; margin-top: 0.4rem; flex-wrap: wrap; }
+    .chat-reaction { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.15rem 0.5rem; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; font-size: 0.75rem; color: var(--studio-text); }
     .chat-cta {
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
       padding: 0.6rem; margin-top: 0.75rem;
@@ -320,7 +322,9 @@
               + '<div class="chat-body"><div class="chat-head">'
               + '<span class="chat-name" style="color:' + (agent.color || '#999') + '">' + esc(m.author) + '</span>'
               + '<span class="chat-time">' + time + '</span>'
-              + '</div><div class="chat-text">' + esc(String(m.content || '').substring(0, 200)).replace(/\n/g, '<br>') + '</div></div></div>';
+              + '</div><div class="chat-text">' + esc(String(m.content || '')).replace(/\n/g, '<br>') + '</div>'
+              + ((m.reactions && m.reactions.length) ? '<div class="chat-reactions">' + m.reactions.map(function(r) { return '<span class="chat-reaction">' + r.emoji + ' ' + r.count + '</span>'; }).join('') + '</div>' : '')
+              + '</div></div>';
           }).join('');
           document.getElementById('chat-feed').innerHTML = html || '<p style="color:var(--studio-soft)">No chatter yet</p>';
         })
