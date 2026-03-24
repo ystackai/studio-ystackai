@@ -171,7 +171,7 @@
     <!-- 3. Board (trimmed) -->
     <div class="section-header">
       <h2 id="board-title">Board</h2>
-      <a href="https://github.com/ystackai/studio-ystackai/issues" target="_blank">Full board on GitHub →</a>
+      <a href="https://github.com/orgs/ystackai/projects" target="_blank">Full board on GitHub →</a>
     </div>
     <div class="board-lanes" id="board-lanes"></div>
 
@@ -239,33 +239,40 @@
       // Board title
       if (building) document.getElementById('board-title').textContent = 'Board: ' + building.title;
 
-      // Board — 3 lanes, max 3 tickets each
-      var issues = (d.board && d.board.all_open_issues) || [];
-      var lanes = { 'in-progress': [], 'in-review': [], 'backlog': [] };
-      issues.forEach(function(i) {
-        var labels = (i.labels || []).map(function(l) { return typeof l === 'string' ? l : l.name; });
-        if (labels.indexOf('in-progress') >= 0) lanes['in-progress'].push(i);
-        else if (labels.indexOf('in-review') >= 0) lanes['in-review'].push(i);
-        else if (labels.indexOf('backlog') >= 0) lanes['backlog'].push(i);
-      });
-      var laneHTML = '';
-      [['in-progress', 'In Progress'], ['in-review', 'In Review'], ['backlog', 'Backlog']].forEach(function(pair) {
-        var tickets = lanes[pair[0]].slice(0, 3);
-        laneHTML += '<div class="board-lane"><h3>' + pair[1] + '</h3>';
-        if (tickets.length === 0) {
-          laneHTML += '<div style="color:var(--studio-soft);font-size:0.8rem">None</div>';
-        }
-        tickets.forEach(function(t) {
-          laneHTML += '<a class="board-ticket" href="https://github.com/ystackai/studio-ystackai/issues/' + t.number + '" target="_blank">'
-            + '<span class="ticket-num">#' + t.number + '</span> ' + esc(t.title)
-            + '</a>';
+      // Board — fetch from gateway API, 3 lanes, max 3 tickets each
+      fetch('/api/board?repo=studio-ystackai')
+        .then(function(r) { return r.json(); })
+        .then(function(boardData) {
+          var issues = boardData.all_open_issues || [];
+          var lanes = { 'in-progress': [], 'in-review': [], 'backlog': [] };
+          issues.forEach(function(i) {
+            var labels = (i.labels || []).map(function(l) { return typeof l === 'string' ? l : l.name; });
+            if (labels.indexOf('in-progress') >= 0) lanes['in-progress'].push(i);
+            else if (labels.indexOf('in-review') >= 0) lanes['in-review'].push(i);
+            else if (labels.indexOf('backlog') >= 0) lanes['backlog'].push(i);
+          });
+          var laneHTML = '';
+          [['in-progress', 'In Progress'], ['in-review', 'In Review'], ['backlog', 'Backlog']].forEach(function(pair) {
+            var tickets = lanes[pair[0]].slice(0, 3);
+            laneHTML += '<div class="board-lane"><h3>' + pair[1] + '</h3>';
+            if (tickets.length === 0) {
+              laneHTML += '<div style="color:var(--studio-soft);font-size:0.8rem">None</div>';
+            }
+            tickets.forEach(function(t) {
+              laneHTML += '<a class="board-ticket" href="https://github.com/ystackai/studio-ystackai/issues/' + t.number + '" target="_blank">'
+                + '<span class="ticket-num">#' + t.number + '</span> ' + esc(t.title)
+                + '</a>';
+            });
+            if (lanes[pair[0]].length > 3) {
+              laneHTML += '<div style="font-size:0.75rem;color:var(--studio-soft)">+' + (lanes[pair[0]].length - 3) + ' more</div>';
+            }
+            laneHTML += '</div>';
+          });
+          document.getElementById('board-lanes').innerHTML = laneHTML;
+        })
+        .catch(function() {
+          document.getElementById('board-lanes').innerHTML = '<p style="color:var(--studio-soft)">Board unavailable</p>';
         });
-        if (lanes[pair[0]].length > 3) {
-          laneHTML += '<div style="font-size:0.75rem;color:var(--studio-soft)">+' + (lanes[pair[0]].length - 3) + ' more</div>';
-        }
-        laneHTML += '</div>';
-      });
-      document.getElementById('board-lanes').innerHTML = laneHTML;
 
       // Team
       document.getElementById('team-grid').innerHTML = d.team.map(Components.teamCard).join('');
