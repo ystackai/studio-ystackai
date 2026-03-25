@@ -533,9 +533,6 @@
     // Particles
     renderParticles();
 
-    // Commentary text
-    renderCommentary();
-
     // Glitch overlay
     if (glitchTimer > 0) {
       ctx.save();
@@ -552,6 +549,9 @@
     }
 
     ctx.restore(); // undo shake translate
+
+    // Commentary floats above the board in screen space so long phrases stay readable.
+    renderCommentary();
   }
 
   function drawCell(context, col, row, color, alpha) {
@@ -709,7 +709,44 @@
 
   // ── Commentary text ────────────────────────────────────────────────────
 
+  function clamp(n, min, max) {
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function wrapCommentaryLines(context, text, maxWidth) {
+    var words = String(text || '').split(/\s+/).filter(Boolean);
+    if (words.length === 0) return [''];
+    var lines = [];
+    var current = words[0];
+
+    for (var i = 1; i < words.length; i++) {
+      var candidate = current + ' ' + words[i];
+      if (context.measureText(candidate).width <= maxWidth) {
+        current = candidate;
+      } else {
+        lines.push(current);
+        current = words[i];
+      }
+    }
+    lines.push(current);
+    return lines;
+  }
+
+  function roundedRect(context, x, y, w, h, r) {
+    var radius = Math.min(r, w / 2, h / 2);
+    context.beginPath();
+    context.moveTo(x + radius, y);
+    context.arcTo(x + w, y, x + w, y + h, radius);
+    context.arcTo(x + w, y + h, x, y + h, radius);
+    context.arcTo(x, y + h, x, y, radius);
+    context.arcTo(x, y, x + w, y, radius);
+    context.closePath();
+  }
+
   function renderCommentary() {
+    var margin = 12;
+    var maxWidth = CANVAS_W - margin * 4;
+
     for (var ci = 0; ci < state.commentary.length; ci++) {
       var c = state.commentary[ci];
       var alpha = Math.min(c.ttl / 30, 1);
@@ -719,18 +756,51 @@
       else if (kind === 'panic') fill = '#fb7185';
       else if (kind === 'good') fill = '#fde047';
       ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = fill;
       ctx.font = kind === 'regret' ? '800 12px "Trebuchet MS", sans-serif' : 'bold 11px Inter, sans-serif';
+      var lines = wrapCommentaryLines(ctx, c.text, maxWidth);
+      var lineHeight = kind === 'regret' ? 14 : 13;
+      var widest = 0;
+      for (var li = 0; li < lines.length; li++) {
+        widest = Math.max(widest, ctx.measureText(lines[li]).width);
+      }
+      var bubbleWidth = widest + 18;
+      var bubbleHeight = lines.length * lineHeight + 12;
+      var bubbleX = clamp(c.x - bubbleWidth / 2, margin, CANVAS_W - margin - bubbleWidth);
+      var bubbleY = clamp(c.y - bubbleHeight - 10, margin, CANVAS_H - margin - bubbleHeight);
+      var textX = bubbleX + bubbleWidth / 2;
+      var textY = bubbleY + 9;
+
+      ctx.globalAlpha = alpha;
+      ctx.shadowColor = 'transparent';
+      roundedRect(ctx, bubbleX, bubbleY, bubbleWidth, bubbleHeight, 8);
+      ctx.fillStyle = kind === 'panic' ? 'rgba(60,12,20,0.88)' :
+                      kind === 'regret' ? 'rgba(34,16,52,0.86)' :
+                      kind === 'good' ? 'rgba(54,42,8,0.84)' :
+                      'rgba(22,18,30,0.82)';
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = kind === 'panic' ? 'rgba(251,113,133,0.55)' :
+                        kind === 'regret' ? 'rgba(216,180,254,0.6)' :
+                        kind === 'good' ? 'rgba(253,224,71,0.45)' :
+                        'rgba(255,255,255,0.16)';
+      ctx.stroke();
+
+      ctx.fillStyle = fill;
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
       ctx.shadowColor = kind === 'regret' ? 'rgba(192,132,252,0.9)' : 'rgba(0,0,0,0.8)';
       ctx.shadowBlur = kind === 'regret' ? 10 : 4;
-      var jitter = kind === 'regret' ? (Math.random() - 0.5) * 2.5 : 0;
-      ctx.fillText(c.text, c.x + jitter, c.y);
-      if (kind === 'regret') {
-        ctx.globalAlpha = alpha * 0.35;
-        ctx.fillStyle = '#fff7ed';
-        ctx.fillText(c.text, c.x - jitter * 2, c.y + 1);
+      for (var lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+        var jitter = kind === 'regret' ? (Math.random() - 0.5) * 2.5 : 0;
+        var lineY = textY + lineIndex * lineHeight;
+        ctx.fillText(lines[lineIndex], textX + jitter, lineY);
+        if (kind === 'regret') {
+          ctx.globalAlpha = alpha * 0.35;
+          ctx.fillStyle = '#fff7ed';
+          ctx.fillText(lines[lineIndex], textX - jitter * 2, lineY + 1);
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = fill;
+        }
       }
       ctx.restore();
     }
