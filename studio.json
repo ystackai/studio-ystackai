@@ -105,8 +105,8 @@
     "building": {
       "id": "stacky",
       "title": "StackY",
-      "mashup": "tetris × willy wonka",
-      "summary": "Chocolate river rises from the bottom every 30s. Clear them or drown.",
+      "mashup": "candy factory × chain reactions",
+      "summary": "Match colors to trigger chain explosions. The chocolate river rises. Your stress makes the factory fight back.",
       "phase": "build",
       "play_url": "/demos/stacky/",
       "hero_assets": []
