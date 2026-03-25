@@ -324,7 +324,7 @@
     if (glitchTimer > 0) glitchTimer--;
     updateScoreUI();
     draw();
-    drawHoldPanel();
+    drawOompaLoompa();
     drawNextPanel();
     StackyGame.syncGameState(state);
 
@@ -396,7 +396,11 @@
         var cellVal = state.grid[row][col];
         if (cellVal !== 0) {
           var cellColor = PIECE_COLORS[cellVal] || '#888';
-          drawCell(ctx, col, row, cellColor, 1);
+          if (cellVal === StackyGame.CHOCOLATE_CELL) {
+            drawChocolateCell(ctx, col, row);
+          } else {
+            drawCell(ctx, col, row, cellColor, 1);
+          }
           // Draw stress scars
           var stress = (state.stressGrid && state.stressGrid[row]) ? (state.stressGrid[row][col] || 0) : 0;
           if (stress > 0) {
@@ -551,6 +555,85 @@
     context.restore();
   }
 
+  // ── Chocolate cell ──────────────────────────────────────────────────────
+
+  function drawChocolateCell(context, col, row) {
+    var x = col * CELL;
+    var y = row * CELL;
+    var inset = 1.5;
+    var r = 4;
+    var w = CELL - inset * 2;
+    var h = CELL - inset * 2;
+    var cx = x + inset;
+    var cy = y + inset;
+
+    context.save();
+    // Brown base
+    context.beginPath();
+    context.moveTo(cx + r, cy);
+    context.arcTo(cx + w, cy, cx + w, cy + h, r);
+    context.arcTo(cx + w, cy + h, cx, cy + h, r);
+    context.arcTo(cx, cy + h, cx, cy, r);
+    context.arcTo(cx, cy, cx + w, cy, r);
+    context.closePath();
+    context.fillStyle = '#5c3317';
+    context.fill();
+
+    // Diagonal chocolate stripe pattern
+    context.clip();
+    context.strokeStyle = 'rgba(92,51,23,0.8)';
+    context.lineWidth = 2;
+    for (var d = -CELL; d < CELL * 2; d += 6) {
+      context.beginPath();
+      context.moveTo(cx + d, cy);
+      context.lineTo(cx + d + CELL, cy + CELL);
+      context.stroke();
+    }
+
+    // Glossy chocolate shine
+    var grad = context.createLinearGradient(cx, cy, cx, cy + h);
+    grad.addColorStop(0, 'rgba(255,200,150,0.25)');
+    grad.addColorStop(0.3, 'rgba(255,200,150,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.2)');
+    context.fillStyle = grad;
+    context.fillRect(cx, cy, w, h);
+
+    context.restore();
+  }
+
+  // ── Oompa Loompa stress indicator ──────────────────────────────────────
+
+  var oompaImages = [];
+  var oompaLevels = ['calm', 'nervous', 'worried', 'panic', 'scream'];
+  var oompaLoaded = 0;
+  for (var oi = 0; oi < oompaLevels.length; oi++) {
+    var img = new Image();
+    img.src = 'assets/oompa-' + oompaLevels[oi] + '.png';
+    img.onload = function() { oompaLoaded++; };
+    oompaImages.push(img);
+  }
+
+  function drawOompaLoompa() {
+    if (oompaLoaded === 0) return;
+    var stress = state.stress || 0;
+    var idx = stress < 20 ? 0 : stress < 40 ? 1 : stress < 60 ? 2 : stress < 80 ? 3 : 4;
+    var img = oompaImages[Math.min(idx, oompaImages.length - 1)];
+    if (!img || !img.complete) return;
+    var panel = document.getElementById('oompa-panel');
+    if (!panel) return;
+    var oompaCanvas = document.getElementById('oompa-canvas');
+    if (!oompaCanvas) return;
+    var octx = oompaCanvas.getContext('2d');
+    octx.clearRect(0, 0, oompaCanvas.width, oompaCanvas.height);
+    // Draw centered
+    var scale = Math.min(oompaCanvas.width / img.width, oompaCanvas.height / img.height) * 0.9;
+    var dw = img.width * scale;
+    var dh = img.height * scale;
+    var dx = (oompaCanvas.width - dw) / 2;
+    var dy = (oompaCanvas.height - dh) / 2;
+    octx.drawImage(img, dx, dy, dw, dh);
+  }
+
   // ── Commentary text ────────────────────────────────────────────────────
 
   function renderCommentary() {
@@ -609,7 +692,7 @@
   function handleStateChange() {
     updateScoreUI();
     draw();
-    drawHoldPanel();
+    drawOompaLoompa();
     drawNextPanel();
     StackyGame.syncGameState(state);
     if (state.phase === 'gameOver') onGameOver();

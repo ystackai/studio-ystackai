@@ -128,9 +128,12 @@ var StackyGame = (function () {
       echoTrail: [],
       // Commentary
       commentary: [],
-      // Chain state (for cascade animation)
-      chainInProgress: false,
+      // Async chain state machine
+      chainPhase: 'none',       // 'none' | 'highlight' | 'settle'
       currentChainLevel: 0,
+      _chainTimer: 0,
+      _matchedCells: [],
+      _pendingGroups: null,
       // Events for renderer/audio
       _events: [],
     };
@@ -211,8 +214,11 @@ var StackyGame = (function () {
     state.lastStressDecay = 0;
     state.echoTrail = [];
     state.commentary = [];
-    state.chainInProgress = false;
+    state.chainPhase = 'none';
     state.currentChainLevel = 0;
+    state._chainTimer = 0;
+    state._matchedCells = [];
+    state._pendingGroups = null;
     state._events = [];
     spawnPiece(state);
     syncGameState(state);
@@ -429,79 +435,127 @@ var StackyGame = (function () {
     return moved;
   }
 
-  function runChainReaction(state) {
-    var chainLevel = 0;
-    var totalScore = 0;
+  var HIGHLIGHT_FRAMES = 30; // ~0.5s at 60fps
 
-    while (true) {
-      var groups = findGroups(state.grid);
-      if (groups.length === 0) break;
+  /**
+   * Start checking for chain reactions (called after piece locks).
+   * Sets up async chain state machine instead of synchronous loop.
+   */
+  function startChainCheck(state) {
+    var groups = findGroups(state.grid);
+    if (groups.length === 0) {
+      state.chainPhase = 'none';
+      state.currentChainLevel = 0;
+      spawnPiece(state);
+      return;
+    }
+    // Mark matched cells for highlight
+    state._matchedCells = [];
+    state._pendingGroups = groups;
+    for (var mg = 0; mg < groups.length; mg++) {
+      for (var mc = 0; mc < groups[mg].cells.length; mc++) {
+        state._matchedCells.push({
+          x: groups[mg].cells[mc].x,
+          y: groups[mg].cells[mc].y,
+          color: groups[mg].color
+        });
+      }
+    }
+    state.chainPhase = 'highlight';
+    state._chainTimer = HIGHLIGHT_FRAMES;
+    state.currentChainLevel++;
+    state._events.push({type: 'matchFound', data: {count: state._matchedCells.length}});
+  }
 
-      // Mark matched cells for highlight rendering
-      state._matchedCells = [];
-      for (var mg = 0; mg < groups.length; mg++) {
-        for (var mc = 0; mc < groups[mg].cells.length; mc++) {
-          state._matchedCells.push({
-            x: groups[mg].cells[mc].x,
-            y: groups[mg].cells[mc].y,
-            color: groups[mg].color
-          });
+  /**
+   * Tick the chain state machine (called every frame from tick()).
+   */
+  function tickChain(state) {
+    if (state.chainPhase === 'none') return;
+
+    if (state.chainPhase === 'highlight') {
+      state._chainTimer--;
+      if (state._chainTimer <= 0) {
+        // Detonate
+        var groups = state._pendingGroups || [];
+        var cellsCleared = detonateGroups(state, groups);
+        state._matchedCells = [];
+        state._pendingGroups = null;
+
+        // Score
+        var chainMult = Math.pow(2, Math.min(state.currentChainLevel - 1, 6));
+        var points = CHAIN_SCORE_BASE * cellsCleared * chainMult * state.level;
+        state.score += points;
+
+        // Stress relief
+        if (state.currentChainLevel === 1) {
+          state.stress = Math.max(0, state.stress - STRESS_CHAIN_RELIEF);
+        } else if (state.currentChainLevel < 4) {
+          state.stress = Math.max(0, state.stress - STRESS_CASCADE_RELIEF);
+        } else {
+          state.stress = Math.max(0, state.stress - STRESS_MEGA_CASCADE_RELIEF);
+        }
+
+        state._events.push({type: 'chain', data: {level: state.currentChainLevel, score: points}});
+        state._events.push({type: 'lineClear', data: {count: state.currentChainLevel}});
+
+        if (state.currentChainLevel >= 2) {
+          var goodQuip = COMMENTARY_GOOD[Math.floor(Math.random() * COMMENTARY_GOOD.length)];
+          state.commentary.push({text: goodQuip + ' ×' + state.currentChainLevel, x: 150, y: 200, ttl: 90});
+          state._events.push({type: 'chainCombo', data: {level: state.currentChainLevel}});
+        }
+        if (state.currentChainLevel >= 3) {
+          state.goldenTickets++;
+          state._events.push({type: 'goldenTicket'});
+          state._events.push({type: 'scream'});
+        } else {
+          state._events.push({type: 'whisper', data: {intensity: Math.min(state.currentChainLevel, 3)}});
+        }
+
+        // Apply gravity
+        applyGravity(state.grid);
+
+        // Check for more groups (cascade)
+        state.chainPhase = 'settle';
+        state._chainTimer = 10; // brief pause before next check
+      }
+      return;
+    }
+
+    if (state.chainPhase === 'settle') {
+      state._chainTimer--;
+      if (state._chainTimer <= 0) {
+        // Check for cascading groups
+        var newGroups = findGroups(state.grid);
+        if (newGroups.length > 0) {
+          // More matches! Continue chain
+          state._matchedCells = [];
+          state._pendingGroups = newGroups;
+          for (var mg = 0; mg < newGroups.length; mg++) {
+            for (var mc = 0; mc < newGroups[mg].cells.length; mc++) {
+              state._matchedCells.push({
+                x: newGroups[mg].cells[mc].x,
+                y: newGroups[mg].cells[mc].y,
+                color: newGroups[mg].color
+              });
+            }
+          }
+          state.chainPhase = 'highlight';
+          state._chainTimer = HIGHLIGHT_FRAMES;
+          state.currentChainLevel++;
+        } else {
+          // Chain complete
+          state.chainsTotal += state.currentChainLevel;
+          var newLevel = Math.floor(state.chainsTotal / 20) + 1;
+          if (newLevel > state.level) state.level = newLevel;
+          if (state.score > state.hi) { state.hi = state.score; saveHi(state.hi); }
+          state.chainPhase = 'none';
+          state.currentChainLevel = 0;
+          spawnPiece(state);
         }
       }
-
-      chainLevel++;
-      var cellsCleared = detonateGroups(state, groups);
-      state._matchedCells = []; // clear after detonation
-
-      // Score: base × cells × chain multiplier × level
-      var chainMult = Math.pow(2, Math.min(chainLevel - 1, 6));
-      var points = CHAIN_SCORE_BASE * cellsCleared * chainMult * state.level;
-      totalScore += points;
-      state.score += points;
-
-      // Stress relief from chains
-      if (chainLevel === 1) {
-        state.stress = Math.max(0, state.stress - STRESS_CHAIN_RELIEF);
-      } else if (chainLevel < 4) {
-        state.stress = Math.max(0, state.stress - STRESS_CASCADE_RELIEF);
-      } else {
-        state.stress = Math.max(0, state.stress - STRESS_MEGA_CASCADE_RELIEF);
-      }
-
-      // Chain events
-      state._events.push({type: 'chain', data: {level: chainLevel, score: points}});
-
-      if (chainLevel >= 2) {
-        var goodQuip = COMMENTARY_GOOD[Math.floor(Math.random() * COMMENTARY_GOOD.length)];
-        state.commentary.push({text: goodQuip + ' ×' + chainLevel, x: 150, y: 200, ttl: 90});
-        state._events.push({type: 'chainCombo', data: {level: chainLevel}});
-      }
-
-      // Golden ticket on 3+ cascades
-      if (chainLevel >= 3) {
-        state.goldenTickets++;
-        state._events.push({type: 'goldenTicket'});
-      }
-
-      // Apply gravity after detonation
-      applyGravity(state.grid);
-
-      // Emit cascade event
-      state._events.push({type: 'cascade', data: {level: chainLevel}});
+      return;
     }
-
-    state.currentChainLevel = chainLevel;
-    state.chainsTotal += chainLevel;
-
-    // Level progression: every 20 chains total
-    var newLevel = Math.floor(state.chainsTotal / 20) + 1;
-    if (newLevel > state.level) {
-      state.level = newLevel;
-    }
-
-    if (state.score > state.hi) { state.hi = state.score; saveHi(state.hi); }
-
-    return chainLevel;
   }
 
   // ── Lock Piece ─────────────────────────────────────────────────────────
@@ -606,22 +660,9 @@ var StackyGame = (function () {
     state.activePiece = null;
     if (typeof StackyAudio !== 'undefined') StackyAudio.playLock();
 
-    // Run chain reaction (the core mechanic!)
-    var chainLevel = runChainReaction(state);
-
-    if (chainLevel > 0) {
-      state.comboCounter++;
-      state._events.push({type: 'lineClear', data: {count: chainLevel}});
-      if (chainLevel >= 3) {
-        state._events.push({type: 'scream'});
-      } else if (chainLevel >= 1) {
-        state._events.push({type: 'whisper', data: {intensity: Math.min(state.level / 3, 3)}});
-      }
-    } else {
-      state.comboCounter = 0;
-    }
-
-    spawnPiece(state);
+    // Start async chain check (will spawn next piece when done)
+    state.currentChainLevel = 0;
+    startChainCheck(state);
   }
 
   // ── Chocolate River ─────────────────────────────────────────────────
@@ -673,7 +714,15 @@ var StackyGame = (function () {
   }
 
   function tick(state, timestamp) {
-    if (state.phase !== 'playing' || !state.activePiece) return;
+    if (state.phase !== 'playing') return;
+
+    // If chain reaction in progress, tick that instead of normal gameplay
+    if (state.chainPhase !== 'none') {
+      tickChain(state);
+      return;
+    }
+
+    if (!state.activePiece) return;
 
     // Decay echoes
     for (var ei = state.echoTrail.length - 1; ei >= 0; ei--) {
@@ -717,21 +766,28 @@ var StackyGame = (function () {
       if (!riseChocolateRow(state)) return;
     }
 
-    // Gravity
+    // Gravity drop
     if (timestamp - state.lastDropTime >= state.dropInterval) {
       state.lastDropTime = timestamp;
       var candidate = {type: state.activePiece.type, rotation: state.activePiece.rotation,
                        x: state.activePiece.x, y: state.activePiece.y + 1};
       if (!checkCollision(state.grid, candidate)) {
         state.activePiece.y = candidate.y;
+        state.lockDelayActive = false;
       } else {
-        if (state.lockDelayActive) {
-          state.lockDelayTimer++;
-          if (state.lockDelayTimer >= state.lockDelayMax) lockPiece(state);
-        } else {
+        // Piece can't drop — start lock delay
+        if (!state.lockDelayActive) {
           state.lockDelayActive = true;
           state.lockDelayTimer = 0;
         }
+      }
+    }
+
+    // Lock delay ticks every frame (not every drop interval)
+    if (state.lockDelayActive) {
+      state.lockDelayTimer++;
+      if (state.lockDelayTimer >= state.lockDelayMax) {
+        lockPiece(state);
       }
     }
   }
