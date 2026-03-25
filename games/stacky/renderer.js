@@ -380,11 +380,14 @@
 
     // Locked blocks + stress scars
     for (var row = 0; row < P.ROWS; row++) {
+      if (!state.grid[row]) continue;
       for (var col = 0; col < P.COLS; col++) {
-        if (state.grid[row][col] !== 0) {
-          drawCell(ctx, col, row, PIECE_COLORS[state.grid[row][col]], 1);
+        var cellVal = state.grid[row][col];
+        if (cellVal !== 0) {
+          var cellColor = PIECE_COLORS[cellVal] || '#888';
+          drawCell(ctx, col, row, cellColor, 1);
           // Draw stress scars
-          var stress = state.stressGrid[row] ? state.stressGrid[row][col] : 0;
+          var stress = (state.stressGrid && state.stressGrid[row]) ? (state.stressGrid[row][col] || 0) : 0;
           if (stress > 0) {
             drawScar(ctx, col, row, stress);
           }
