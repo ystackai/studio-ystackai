@@ -19,7 +19,7 @@ var StackyGame = (function () {
   var CHOCOLATE_CELL = 8;
   var CHOCOLATE_INTERVAL_BASE = 30000;  // ms between rises (modified by stress)
   var CHOCOLATE_GAPS = 2;
-  var GROUP_MIN = 4;                    // minimum connected cells to detonate
+  var GROUP_MIN = 5;                    // minimum connected cells to detonate (>4 so a single piece doesn't self-destruct)
   var CHAIN_SCORE_BASE = 200;           // base score per group detonation
   var LS_KEY = 'stacky_hi';
 
