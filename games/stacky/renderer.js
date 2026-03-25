@@ -131,10 +131,23 @@
   }
 
   function getShakeOffset() {
-    if (shakeIntensity < 0.1) { shakeIntensity = 0; return {x: 0, y: 0}; }
-    var ox = (Math.random() - 0.5) * shakeIntensity * 2;
-    var oy = (Math.random() - 0.5) * shakeIntensity * 2;
-    shakeIntensity *= shakeDecay;
+    var ox = 0, oy = 0;
+    // Event-driven shake
+    if (shakeIntensity >= 0.1) {
+      ox += (Math.random() - 0.5) * shakeIntensity * 2;
+      oy += (Math.random() - 0.5) * shakeIntensity * 2;
+      shakeIntensity *= shakeDecay;
+    } else {
+      shakeIntensity = 0;
+    }
+    // Continuous stress wobble
+    var stress = state.stress || 0;
+    if (stress > 20) {
+      var wobbleAmp = (stress - 20) / 80 * 2; // 0-2px at max stress
+      var t = Date.now() / 200;
+      ox += Math.sin(t * 1.7) * wobbleAmp;
+      oy += Math.cos(t * 2.3) * wobbleAmp * 0.5;
+    }
     return {x: ox, y: oy};
   }
 
@@ -164,11 +177,19 @@
 
   hiEl.textContent = String(state.hi);
 
+  // Stress meter UI
+  var stressEl = document.getElementById('stress-display');
+
   function updateScoreUI() {
     scoreEl.textContent = String(state.score);
     hiEl.textContent = String(state.hi);
     levelEl.textContent = String(state.level);
-    linesEl.textContent = String(state.linesCleared);
+    linesEl.textContent = String(state.chainsTotal || 0);
+    if (stressEl) {
+      var stress = state.stress || 0;
+      stressEl.textContent = String(Math.round(stress));
+      stressEl.style.color = stress > 70 ? '#ef4444' : stress > 40 ? '#f59e0b' : '#22c55e';
+    }
   }
 
   function startGame() {
