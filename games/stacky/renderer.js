@@ -144,15 +144,15 @@
     }
     // Continuous stress wobble
     var stress = state.stress || 0;
-    if (stress > 20) {
-      var wobbleAmp = (stress - 20) / 80 * 2; // 0-2px at max stress
+    if (stress > 10) {
+      var wobbleAmp = (stress - 10) / 90 * 4.5; // stronger visible instability
       var t = Date.now() / 200;
       ox += Math.sin(t * 1.7) * wobbleAmp;
-      oy += Math.cos(t * 2.3) * wobbleAmp * 0.5;
+      oy += Math.cos(t * 2.3) * wobbleAmp * 0.7;
     }
     var lean = getTowerLean();
-    ox += lean * (1 + stress / 120);
-    oy += Math.sin(Date.now() / 150) * Math.abs(lean) * 0.3;
+    ox += lean * (1.2 + stress / 90);
+    oy += Math.sin(Date.now() / 150) * Math.abs(lean) * 0.55;
     return {x: ox, y: oy};
   }
 
@@ -196,7 +196,7 @@
     }
 
     if (totalWeight === 0) return 0;
-    return Math.max(-2.25, Math.min(2.25, weightedCenter / totalWeight));
+    return Math.max(-4.5, Math.min(4.5, (weightedCenter / totalWeight) * 2.6));
   }
 
   // ── Game state + loop ──────────────────────────────────────────────────
@@ -361,6 +361,19 @@
         case 'drift':
           triggerShake(2 + Math.abs(evt.data.dir || 0) * 0.8);
           break;
+        case 'badPlacement':
+          var severity = evt.data && evt.data.severity ? evt.data.severity : 1;
+          triggerShake(2.8 + severity * 1.15);
+          if (severity >= 3) triggerGlitch(4 + severity * 2);
+          spawnParticles(
+            evt.data && typeof evt.data.x === 'number' ? evt.data.x : CANVAS_W / 2,
+            evt.data && typeof evt.data.y === 'number' ? evt.data.y : CANVAS_H / 2,
+            12 + severity * 6,
+            severity >= 6,
+            severity >= 5 ? '#fb7185' : '#f59e0b',
+            CELL * (1.1 + severity * 0.15)
+          );
+          break;
       }
     }
 
@@ -420,7 +433,7 @@
   }
   function _drawInner() {
     var shake = getShakeOffset();
-    var towerLean = getTowerLean() * (0.01 + (state.stress || 0) / 9000);
+    var towerLean = getTowerLean() * (0.018 + (state.stress || 0) / 4500);
 
     ctx.save();
     ctx.translate(shake.x, shake.y);
@@ -482,6 +495,8 @@
         }
       }
     }
+
+    drawChocolateRiverSurface(ctx);
 
     // Ghost piece
     if (state.activePiece && state.phase === 'playing') {
@@ -605,11 +620,11 @@
     var x = col * CELL;
     var y = row * CELL;
     context.save();
-    context.globalAlpha = Math.min(stress * 0.15, 0.6);
-    context.strokeStyle = '#000';
-    context.lineWidth = 0.5;
+    context.globalAlpha = Math.min(0.18 + stress * 0.1, 0.88);
+    context.strokeStyle = stress >= 5 ? '#1b0505' : '#140b08';
+    context.lineWidth = 0.7 + stress * 0.08;
     // Diagonal crack lines — more cracks at higher stress
-    for (var s = 0; s < Math.min(stress, 3); s++) {
+    for (var s = 0; s < Math.min(stress + 1, 5); s++) {
       var x1 = x + 3 + s * 8;
       var y1 = y + 2;
       var x2 = x + CELL - 5 - s * 3;
@@ -619,11 +634,21 @@
       context.lineTo(x1 + 4, y1 + CELL * 0.4);
       context.lineTo(x2, y2);
       context.stroke();
+      if (stress >= 3) {
+        context.beginPath();
+        context.moveTo(x1 + 4, y1 + CELL * 0.4);
+        context.lineTo(x1 - 2, y1 + CELL * 0.68);
+        context.stroke();
+      }
     }
     // Discoloration overlay at high stress
     if (stress >= 3) {
-      context.fillStyle = 'rgba(80,40,20,0.3)';
+      context.fillStyle = stress >= 5 ? 'rgba(115,36,18,0.4)' : 'rgba(80,40,20,0.3)';
       context.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+    }
+    if (stress >= 6) {
+      context.fillStyle = 'rgba(255,106,61,0.12)';
+      context.fillRect(x + 2, y + 2, CELL - 4, CELL - 4);
     }
     context.restore();
   }
@@ -656,10 +681,12 @@
     context.clip();
     context.strokeStyle = 'rgba(92,51,23,0.8)';
     context.lineWidth = 2;
+    var flowTime = Date.now() / 180;
     for (var d = -CELL; d < CELL * 2; d += 6) {
+      var sway = Math.sin(flowTime + row * 0.7 + d * 0.08) * 3;
       context.beginPath();
-      context.moveTo(cx + d, cy);
-      context.lineTo(cx + d + CELL, cy + CELL);
+      context.moveTo(cx + d + sway, cy);
+      context.lineTo(cx + d + CELL + sway * 0.2, cy + CELL);
       context.stroke();
     }
 
@@ -671,7 +698,84 @@
     context.fillStyle = grad;
     context.fillRect(cx, cy, w, h);
 
+    // Liquid lip when the river surface is exposed.
+    var above = row > 0 && state.grid[row - 1] ? state.grid[row - 1][col] : 0;
+    if (above !== StackyGame.CHOCOLATE_CELL) {
+      context.beginPath();
+      context.moveTo(cx, cy + 6);
+      context.bezierCurveTo(cx + w * 0.2, cy + 1, cx + w * 0.8, cy + 9, cx + w, cy + 4);
+      context.lineTo(cx + w, cy);
+      context.lineTo(cx, cy);
+      context.closePath();
+      context.fillStyle = 'rgba(166,96,55,0.45)';
+      context.fill();
+    }
+
     context.restore();
+  }
+
+  function drawChocolateRiverSurface(context) {
+    var time = Date.now() / 180;
+
+    for (var row = 0; row < P.ROWS; row++) {
+      var col = 0;
+      while (col < P.COLS) {
+        var exposed = state.grid[row][col] === StackyGame.CHOCOLATE_CELL &&
+          (row === 0 || state.grid[row - 1][col] !== StackyGame.CHOCOLATE_CELL);
+        if (!exposed) {
+          col++;
+          continue;
+        }
+
+        var start = col;
+        while (
+          col + 1 < P.COLS &&
+          state.grid[row][col + 1] === StackyGame.CHOCOLATE_CELL &&
+          (row === 0 || state.grid[row - 1][col + 1] !== StackyGame.CHOCOLATE_CELL)
+        ) {
+          col++;
+        }
+
+        var end = col;
+        var left = start * CELL;
+        var right = (end + 1) * CELL;
+        var baseY = row * CELL + CELL * 0.18;
+
+        context.save();
+        var surfaceGrad = context.createLinearGradient(left, baseY - 5, left, baseY + CELL * 0.95);
+        surfaceGrad.addColorStop(0, 'rgba(183,111,63,0.9)');
+        surfaceGrad.addColorStop(0.45, 'rgba(119,67,35,0.72)');
+        surfaceGrad.addColorStop(1, 'rgba(69,36,18,0)');
+        context.fillStyle = surfaceGrad;
+        context.beginPath();
+        context.moveTo(left, baseY + CELL * 0.92);
+        for (var sx = left; sx <= right; sx += CELL / 4) {
+          var wave = Math.sin(time + sx * 0.08) * 2.6 + Math.cos(time * 1.7 + sx * 0.03) * 1.3;
+          context.lineTo(sx, baseY + wave);
+        }
+        context.lineTo(right, baseY + CELL * 0.92);
+        context.closePath();
+        context.fill();
+
+        context.beginPath();
+        context.strokeStyle = 'rgba(255,221,188,0.5)';
+        context.lineWidth = 1.3;
+        for (var topX = left; topX <= right; topX += CELL / 4) {
+          var topWave = Math.sin(time + topX * 0.08) * 2.6 + Math.cos(time * 1.7 + topX * 0.03) * 1.3;
+          if (topX === left) context.moveTo(topX, baseY + topWave);
+          else context.lineTo(topX, baseY + topWave);
+        }
+        context.stroke();
+
+        for (var sparkle = left + 8; sparkle < right - 4; sparkle += 18) {
+          context.fillStyle = 'rgba(251,191,36,0.3)';
+          context.fillRect(sparkle, baseY + 3 + Math.sin(time + sparkle * 0.2) * 2, 3, 2);
+        }
+
+        context.restore();
+        col++;
+      }
+    }
   }
 
   // ── Oompa Loompa stress indicator ──────────────────────────────────────
@@ -755,6 +859,7 @@
       if (kind === 'regret') fill = '#f5d0fe';
       else if (kind === 'panic') fill = '#fb7185';
       else if (kind === 'good') fill = '#fde047';
+      else if (kind === 'river') fill = '#fcd34d';
       ctx.save();
       ctx.font = kind === 'regret' ? '800 12px "Trebuchet MS", sans-serif' : 'bold 11px Inter, sans-serif';
       var lines = wrapCommentaryLines(ctx, c.text, maxWidth);
@@ -774,12 +879,14 @@
       ctx.shadowColor = 'transparent';
       roundedRect(ctx, bubbleX, bubbleY, bubbleWidth, bubbleHeight, 8);
       ctx.fillStyle = kind === 'panic' ? 'rgba(60,12,20,0.88)' :
+                      kind === 'river' ? 'rgba(60,31,13,0.88)' :
                       kind === 'regret' ? 'rgba(34,16,52,0.86)' :
                       kind === 'good' ? 'rgba(54,42,8,0.84)' :
                       'rgba(22,18,30,0.82)';
       ctx.fill();
       ctx.lineWidth = 1;
       ctx.strokeStyle = kind === 'panic' ? 'rgba(251,113,133,0.55)' :
+                        kind === 'river' ? 'rgba(251,191,36,0.45)' :
                         kind === 'regret' ? 'rgba(216,180,254,0.6)' :
                         kind === 'good' ? 'rgba(253,224,71,0.45)' :
                         'rgba(255,255,255,0.16)';

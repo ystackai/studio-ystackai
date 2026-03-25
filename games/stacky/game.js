@@ -25,8 +25,8 @@ var StackyGame = (function () {
 
   // Stress thresholds
   var STRESS_MAX = 100;
-  var STRESS_ISOLATED_BLOCK = 5;
-  var STRESS_GAP_CREATED = 10;
+  var STRESS_ISOLATED_BLOCK = 7;
+  var STRESS_GAP_CREATED = 14;
   var STRESS_TALL_TOWER_PER_SEC = 2;
   var STRESS_CHAIN_RELIEF = 15;
   var STRESS_CASCADE_RELIEF = 30;
@@ -35,14 +35,14 @@ var StackyGame = (function () {
 
   // Commentary pools
   var COMMENTARY_BAD = [
-    "The Oompa Loompas are watching.",
-    "Wonka would never.",
-    "That's going straight to the chocolate river.",
-    "Veruca Salt made better moves.",
-    "Even Augustus Gloop wouldn't do that.",
-    "The factory is not impressed.",
-    "That gap will haunt you.",
-    "The candy blocks weep.",
+    "That wasn't a move. That was a warning sign.",
+    "The Oompa Loompas just wrote you up.",
+    "Wonka would revoke your floor access for that.",
+    "You built a problem and called it strategy.",
+    "That gap has your name on it.",
+    "The candy blocks are embarrassed for you.",
+    "Even the river flinched.",
+    "You stacked that like a confession.",
   ];
   var COMMENTARY_GOOD = [
     "The factory approves!",
@@ -53,15 +53,17 @@ var StackyGame = (function () {
     "Delicious chain!",
   ];
   var COMMENTARY_STRESS = [
-    "The chocolate river is hungry...",
-    "The factory grows uneasy.",
-    "Something stirs below...",
-    "The pipes groan.",
+    "The factory is keeping receipts now.",
+    "The pipes are laughing at your plan.",
+    "The chocolate river smells blood.",
+    "Every Oompa Loompa in the building saw that.",
+    "You are one bad decision away from a musical number.",
   ];
   var COMMENTARY_PANIC = [
-    "THE OOMPA LOOMPAS ARE SCREAMING",
-    "THE FACTORY IS COLLAPSING",
-    "WONKA HAS LEFT THE BUILDING",
+    "THE OOMPA LOOMPAS HAVE LOST PROFESSIONAL RESPECT FOR YOU",
+    "THE FACTORY HAS DECIDED YOU ARE THE INCIDENT",
+    "WONKA JUST TURNED OFF THE CAMERAS",
+    "THIS TOWER LOOKS LIKE A COVER-UP",
   ];
   var COMMENTARY_GAMEOVER = [
     "The factory is disappointed.",
@@ -83,7 +85,7 @@ var StackyGame = (function () {
     "the tower remembers this.",
     "you built this panic on purpose.",
   ];
-  var SCAR_MAX = 5;
+  var SCAR_MAX = 7;
 
   function loadHi() {
     try { return parseInt(localStorage.getItem(LS_KEY) || '0', 10) || 0; }
@@ -127,6 +129,7 @@ var StackyGame = (function () {
       kind: kind || 'warning',
     };
     state.commentary.push(entry);
+    if (state.commentary.length > 8) state.commentary.shift();
     state._events.push({type: 'commentary', data: {
       text: entry.text,
       x: entry.x,
@@ -716,6 +719,14 @@ var StackyGame = (function () {
     var cells = P.getCells(state.activePiece);
     var colorIndex = P.TYPES.indexOf(state.activePiece.type) + 1;
     var fallDistance = Math.max(0, state.activePiece.y - (state.activePiece.spawnY || 0));
+    var centerX = 0;
+    var centerY = 0;
+    for (var centerIndex = 0; centerIndex < cells.length; centerIndex++) {
+      centerX += cells[centerIndex].x;
+      centerY += cells[centerIndex].y;
+    }
+    centerX = (centerX / cells.length) * 30 + 15;
+    centerY = (centerY / cells.length) * 30 + 15;
 
     // Echo trail
     state.echoTrail.push({
@@ -790,31 +801,46 @@ var StackyGame = (function () {
           state.grid[gc.y + 1] && state.grid[gc.y + 1][gc.x] === 0) {
         gapCreated = true;
         state.stress = Math.min(STRESS_MAX, state.stress + STRESS_GAP_CREATED);
-        var commentChance = 0.15 + state.stress / 250;
-        if (Math.random() < commentChance) {
-          var pool = state.stress > 80 ? COMMENTARY_PANIC :
-                     state.stress > 60 ? COMMENTARY_STRESS : COMMENTARY_BAD;
-          var quip = randomFrom(pool);
-          addCommentary(state, quip, gc.x * 30 + 15, gc.y * 30, 120, state.stress > 80 ? 'panic' : 'warning');
-        }
         break;
       }
     }
 
     var scarAmount = 0;
     if (nearEcho) scarAmount += 2;
-    if (isolatedCount > 0) scarAmount += 1;
-    if (gapCreated) scarAmount += 2;
-    if (fallDistance >= 12) scarAmount += 1;
+    if (isolatedCount > 0) scarAmount += Math.min(2, isolatedCount);
+    if (gapCreated) scarAmount += 3;
+    if (fallDistance >= 10) scarAmount += 1;
+    if (state.stress > 60) scarAmount += 1;
     if (scarAmount > 0) {
       scarPlacementCluster(state, cells, scarAmount);
       syncStressGrid(state);
     }
 
+    var placementSeverity = scarAmount + Math.min(3, isolatedCount) + (gapCreated ? 2 : 0);
+    var commentChance = Math.min(0.98, 0.32 + placementSeverity * 0.12 + state.stress / 180);
+    if (placementSeverity >= 2 && Math.random() < commentChance) {
+      var pool = placementSeverity >= 7 || state.stress > 82 ? COMMENTARY_PANIC :
+                 placementSeverity >= 4 || state.stress > 58 ? COMMENTARY_STRESS : COMMENTARY_BAD;
+      var quip = randomFrom(pool);
+      var kind = placementSeverity >= 7 || state.stress > 82 ? 'panic' :
+                 placementSeverity >= 4 ? 'warning' : 'warning';
+      addCommentary(state, quip, centerX, centerY - 12, 130, kind);
+    }
+
     // Shake on hard drops
-    var impactIntensity = fallDistance * 0.18 + (nearEcho ? 1.5 : 0) + (gapCreated ? 0.75 : 0);
+    var impactIntensity = fallDistance * 0.22 + (nearEcho ? 2.2 : 0) + (gapCreated ? 1.3 : 0) + isolatedCount * 0.45;
     if (impactIntensity > 1.2) {
       state._events.push({type: 'shake', data: {intensity: impactIntensity}});
+    }
+    if (placementSeverity >= 2) {
+      state._events.push({type: 'badPlacement', data: {
+        severity: placementSeverity,
+        x: centerX,
+        y: centerY,
+        gapCreated: gapCreated,
+        isolatedCount: isolatedCount,
+        nearEcho: nearEcho,
+      }});
     }
 
     state.activePiece = null;
@@ -851,6 +877,9 @@ var StackyGame = (function () {
     state.stressGrid.push(new Array(P.COLS).fill(0));
     state.chocolateRowsRisen++;
     state.stress = Math.min(STRESS_MAX, state.stress + 6);
+    if (state.chocolateRowsRisen >= 2 || state.stress > 45) {
+      addCommentary(state, randomFrom(COMMENTARY_RIVER), 150, 560, 95, 'river');
+    }
     if (state.activePiece) {
       state.activePiece.y -= 1;
       if (state.activePiece.y < 0 || checkCollision(state.grid, state.activePiece)) {
