@@ -1,23 +1,22 @@
 /**
  * StackY Renderer — connects StackyGame engine to canvas display.
  *
- * Depends on: pieces.js (StackyPieces), game.js (StackyGame), input.js (StackyInput)
- * Loaded after all three in index.html.
+ * Features: particles, screen shake, gravity echoes, stress scars,
+ *           Oompa Loompa commentary, screen glitch on big clears.
+ *
+ * Depends on: pieces.js (StackyPieces), game.js (StackyGame),
+ *             input.js (StackyInput), audio.js (StackyAudio)
  */
 'use strict';
 
 (function () {
 
-  // ── Constants ──────────────────────────────────────────────────────────
-
   var P = StackyPieces;
   var CANVAS_W = 300;
   var CANVAS_H = 600;
-  var CELL = CANVAS_W / P.COLS;  // 30px per cell
+  var CELL = CANVAS_W / P.COLS;
 
-  /** Color palette — use Wonka candy colors from pieces.js, plus chocolate. */
   var PIECE_COLORS = StackyPieces.CANDY_COLORS.slice();
-  // Index 8 = chocolate cell
   PIECE_COLORS[StackyGame.CHOCOLATE_CELL] = StackyPieces.CHOCOLATE_COLOR;
 
   var GHOST_ALPHA = 0.2;
@@ -33,13 +32,11 @@
   canvas.style.height = CANVAS_H + 'px';
   ctx.scale(dpr, dpr);
 
-  // Side panel canvases
   var holdCanvas = document.getElementById('hold-canvas');
   var holdCtx = holdCanvas.getContext('2d');
   var nextCanvas = document.getElementById('next-canvas');
   var nextCtx = nextCanvas.getContext('2d');
 
-  // Scale side panels for HiDPI
   function setupSmallCanvas(c, cx) {
     var w = c.width; var h = c.height;
     c.width = w * dpr; c.height = h * dpr;
@@ -53,7 +50,6 @@
   // ── Responsive scaling ─────────────────────────────────────────────────
 
   var wrapper = document.getElementById('canvas-wrapper');
-
   function applyResponsiveScale() {
     var available = window.innerWidth * 0.55;
     var scale = available < CANVAS_W ? available / CANVAS_W : 1;
@@ -75,15 +71,98 @@
   var btnStart = document.getElementById('btn-start');
   var btnRestart = document.getElementById('btn-restart');
 
-  // ── Game state ─────────────────────────────────────────────────────────
+  // ── Particle system ────────────────────────────────────────────────────
+
+  var particles = [];
+  var GOLDEN_COLORS = ['#fbbf24', '#f59e0b', '#fde047', '#fff7ed', '#d97706'];
+  var CANDY_PARTICLE_COLORS = ['#c084fc', '#fbbf24', '#34d399', '#f87171', '#f472b6', '#a78bfa', '#22d3ee'];
+
+  function spawnParticles(row, count, isGolden) {
+    var colors = isGolden ? GOLDEN_COLORS : CANDY_PARTICLE_COLORS;
+    for (var i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * CANVAS_W,
+        y: row * CELL + CELL / 2,
+        vx: (Math.random() - 0.5) * 8,
+        vy: (Math.random() - 0.8) * 6,
+        size: 2 + Math.random() * 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        life: 1,
+        decay: 0.008 + Math.random() * 0.01,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.2,
+      });
+    }
+  }
+
+  function updateParticles() {
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.15; // gravity
+      p.vx *= 0.98;  // friction
+      p.life -= p.decay;
+      p.rotation += p.rotSpeed;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+  }
+
+  function renderParticles() {
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      ctx.save();
+      ctx.globalAlpha = p.life;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.restore();
+    }
+  }
+
+  // ── Screen shake ───────────────────────────────────────────────────────
+
+  var shakeIntensity = 0;
+  var shakeDecay = 0.9;
+
+  function triggerShake(intensity) {
+    shakeIntensity = Math.max(shakeIntensity, intensity);
+  }
+
+  function getShakeOffset() {
+    if (shakeIntensity < 0.1) { shakeIntensity = 0; return {x: 0, y: 0}; }
+    var ox = (Math.random() - 0.5) * shakeIntensity * 2;
+    var oy = (Math.random() - 0.5) * shakeIntensity * 2;
+    shakeIntensity *= shakeDecay;
+    return {x: ox, y: oy};
+  }
+
+  // ── Glitch effect ──────────────────────────────────────────────────────
+
+  var glitchTimer = 0;
+
+  function triggerGlitch() {
+    glitchTimer = 12; // frames
+    if (canvas.parentElement) {
+      canvas.parentElement.classList.add('glitch-flash');
+      setTimeout(function() {
+        canvas.parentElement.classList.remove('glitch-flash');
+      }, 200);
+    }
+  }
+
+  // ── Game state + loop ──────────────────────────────────────────────────
 
   var state = StackyGame.createState();
   var rafId = null;
   var inputCleanup = null;
+  var prevLines = 0;
+  var prevChocolateRows = 0;
+  var musicStarted = false;
+  var lastBassDropTime = 0;
 
   hiEl.textContent = String(state.hi);
-
-  // ── Score UI ───────────────────────────────────────────────────────────
 
   function updateScoreUI() {
     scoreEl.textContent = String(state.score);
@@ -91,12 +170,6 @@
     levelEl.textContent = String(state.level);
     linesEl.textContent = String(state.linesCleared);
   }
-
-  // ── State transitions ─────────────────────────────────────────────────
-
-  // ── Audio tracking state ──────────────────────────────────────────────
-  var prevLines = 0;
-  var prevChocolateRows = 0;
 
   function startGame() {
     StackyAudio.init();
@@ -106,13 +179,19 @@
     StackyGame.start(state);
     prevLines = 0;
     prevChocolateRows = 0;
+    particles = [];
+    shakeIntensity = 0;
+    glitchTimer = 0;
+    musicStarted = false;
+    lastBassDropTime = 0;
     updateScoreUI();
     startLoop();
+    // Start adaptive music
+    StackyAudio.startMusic();
+    musicStarted = true;
   }
 
-  function restartGame() {
-    startGame();
-  }
+  function restartGame() { startGame(); }
 
   // ── RAF loop ───────────────────────────────────────────────────────────
 
@@ -125,30 +204,73 @@
   }
 
   function stopLoop() {
-    if (rafId !== null) {
-      cancelAnimationFrame(rafId);
-      rafId = null;
-    }
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
     lastTs = null;
   }
 
   function loop(ts) {
     if (lastTs === null) lastTs = ts;
 
-    // Run gravity tick
     StackyGame.tick(state, ts);
 
-    // Audio triggers: detect line clears, chocolate rises, piece locks
-    if (state.linesCleared > prevLines) {
-      StackyAudio.playLineClear();
-      prevLines = state.linesCleared;
+    // Process game events
+    var events = state._events || [];
+    state._events = [];
+    for (var ei = 0; ei < events.length; ei++) {
+      var evt = events[ei];
+      switch (evt.type) {
+        case 'lineClear':
+          StackyAudio.playLineClear();
+          var isGolden = evt.data.count >= 4;
+          // Spawn particles for each cleared row
+          for (var lr = 0; lr < P.ROWS; lr++) {
+            spawnParticles(lr, isGolden ? 40 : 15, isGolden);
+          }
+          prevLines = state.linesCleared;
+          break;
+        case 'whisper':
+          StackyAudio.playWhisper(evt.data ? evt.data.intensity : 1);
+          break;
+        case 'scream':
+          StackyAudio.playScream();
+          triggerGlitch();
+          triggerShake(8);
+          break;
+        case 'shake':
+          triggerShake(evt.data.intensity);
+          break;
+        case 'chocolateRise':
+          StackyAudio.playChocolateRumble();
+          prevChocolateRows = state.chocolateRowsRisen;
+          break;
+        case 'heightUpdate':
+          if (musicStarted) StackyAudio.updateTempo(evt.data.height);
+          break;
+        case 'nearCollapse':
+          var now = ts || Date.now();
+          if (now - lastBassDropTime > 5000) {
+            StackyAudio.playBassDrop();
+            lastBassDropTime = now;
+          }
+          break;
+        case 'gameOver':
+          StackyAudio.playGameOver();
+          onGameOver();
+          draw();
+          StackyGame.syncGameState(state);
+          return;
+        case 'commentary':
+          // Already added to state.commentary by game.js
+          break;
+      }
     }
-    if (state.chocolateRowsRisen > prevChocolateRows) {
+
+    // Legacy audio triggers (chocolate that doesn't go through events)
+    if (state.chocolateRowsRisen > prevChocolateRows && events.every(function(e){return e.type !== 'chocolateRise';})) {
       StackyAudio.playChocolateRumble();
       prevChocolateRows = state.chocolateRowsRisen;
     }
 
-    // Check phase transitions
     if (state.phase === 'gameOver') {
       StackyAudio.playGameOver();
       onGameOver();
@@ -161,12 +283,13 @@
       pausedEl.classList.remove('hidden');
       draw();
       StackyGame.syncGameState(state);
-      // Keep looping to detect resume
       rafId = requestAnimationFrame(loop);
       return;
     }
 
     pausedEl.classList.add('hidden');
+    updateParticles();
+    if (glitchTimer > 0) glitchTimer--;
     updateScoreUI();
     draw();
     drawHoldPanel();
@@ -182,36 +305,53 @@
     goHiEl.textContent = String(state.hi);
     gameoverEl.classList.remove('hidden');
     stopLoop();
+    StackyAudio.stopMusic();
   }
 
   // ── Rendering ──────────────────────────────────────────────────────────
 
   function draw() {
+    var shake = getShakeOffset();
+
+    ctx.save();
+    ctx.translate(shake.x, shake.y);
+
     // Background
     ctx.fillStyle = '#0d0d14';
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+    ctx.fillRect(-5, -5, CANVAS_W + 10, CANVAS_H + 10);
 
     // Grid lines
     ctx.strokeStyle = 'rgba(255,255,255,0.04)';
     ctx.lineWidth = 0.5;
     for (var x = 1; x < P.COLS; x++) {
-      ctx.beginPath();
-      ctx.moveTo(x * CELL, 0);
-      ctx.lineTo(x * CELL, CANVAS_H);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, CANVAS_H); ctx.stroke();
     }
     for (var y = 1; y < P.ROWS; y++) {
-      ctx.beginPath();
-      ctx.moveTo(0, y * CELL);
-      ctx.lineTo(CANVAS_W, y * CELL);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(CANVAS_W, y * CELL); ctx.stroke();
     }
 
-    // Locked blocks
+    // Gravity echoes (ghost afterimages)
+    for (var ge = 0; ge < state.echoTrail.length; ge++) {
+      var echo = state.echoTrail[ge];
+      var echoAlpha = 0.15 * (echo.ttl / echo.maxTtl);
+      for (var ec = 0; ec < echo.cells.length; ec++) {
+        var eCell = echo.cells[ec];
+        if (eCell.y >= 0 && eCell.y < P.ROWS) {
+          drawCell(ctx, eCell.x, eCell.y, PIECE_COLORS[echo.colorIndex], echoAlpha);
+        }
+      }
+    }
+
+    // Locked blocks + stress scars
     for (var row = 0; row < P.ROWS; row++) {
       for (var col = 0; col < P.COLS; col++) {
         if (state.grid[row][col] !== 0) {
           drawCell(ctx, col, row, PIECE_COLORS[state.grid[row][col]], 1);
+          // Draw stress scars
+          var stress = state.stressGrid[row] ? state.stressGrid[row][col] : 0;
+          if (stress > 0) {
+            drawScar(ctx, col, row, stress);
+          }
         }
       }
     }
@@ -227,11 +367,9 @@
       };
       var ghostCells = StackyPieces.getCells(ghostPiece);
       var colorIdx = StackyPieces.TYPES.indexOf(state.activePiece.type) + 1;
-      for (var i = 0; i < ghostCells.length; i++) {
-        var gc = ghostCells[i];
-        if (gc.y >= 0) {
-          drawCell(ctx, gc.x, gc.y, PIECE_COLORS[colorIdx], GHOST_ALPHA);
-        }
+      for (var gi = 0; gi < ghostCells.length; gi++) {
+        var gc = ghostCells[gi];
+        if (gc.y >= 0) drawCell(ctx, gc.x, gc.y, PIECE_COLORS[colorIdx], GHOST_ALPHA);
       }
     }
 
@@ -241,54 +379,110 @@
       var ci = StackyPieces.TYPES.indexOf(state.activePiece.type) + 1;
       for (var j = 0; j < cells.length; j++) {
         var c = cells[j];
-        if (c.y >= 0) {
-          drawCell(ctx, c.x, c.y, PIECE_COLORS[ci], 1);
-        }
+        if (c.y >= 0) drawCell(ctx, c.x, c.y, PIECE_COLORS[ci], 1);
       }
     }
+
+    // Particles
+    renderParticles();
+
+    // Commentary text
+    renderCommentary();
+
+    // Glitch overlay
+    if (glitchTimer > 0) {
+      ctx.save();
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = '#fff';
+      // Random horizontal slices
+      for (var sl = 0; sl < 5; sl++) {
+        var sy = Math.random() * CANVAS_H;
+        var sh = 2 + Math.random() * 8;
+        var sx = (Math.random() - 0.5) * 20;
+        ctx.fillRect(sx, sy, CANVAS_W, sh);
+      }
+      ctx.restore();
+    }
+
+    ctx.restore(); // undo shake translate
   }
 
   function drawCell(context, col, row, color, alpha) {
     var x = col * CELL;
     var y = row * CELL;
     var inset = 1;
-
     context.save();
     context.globalAlpha = alpha;
-
-    // Main fill
     context.fillStyle = color;
     context.fillRect(x + inset, y + inset, CELL - inset * 2, CELL - inset * 2);
-
-    // Top highlight
+    // Highlight
     context.fillStyle = 'rgba(255,255,255,0.2)';
     context.fillRect(x + inset, y + inset, CELL - inset * 2, 2);
-
-    // Left highlight
     context.fillStyle = 'rgba(255,255,255,0.1)';
     context.fillRect(x + inset, y + inset, 2, CELL - inset * 2);
-
-    // Bottom shadow
+    // Shadow
     context.fillStyle = 'rgba(0,0,0,0.3)';
     context.fillRect(x + inset, y + CELL - inset - 2, CELL - inset * 2, 2);
-
     context.restore();
   }
 
-  // ── Side panel rendering ───────────────────────────────────────────────
+  // ── Stress scars ───────────────────────────────────────────────────────
+
+  function drawScar(context, col, row, stress) {
+    var x = col * CELL;
+    var y = row * CELL;
+    context.save();
+    context.globalAlpha = Math.min(stress * 0.15, 0.6);
+    context.strokeStyle = '#000';
+    context.lineWidth = 0.5;
+    // Diagonal crack lines — more cracks at higher stress
+    for (var s = 0; s < Math.min(stress, 3); s++) {
+      var x1 = x + 3 + s * 8;
+      var y1 = y + 2;
+      var x2 = x + CELL - 5 - s * 3;
+      var y2 = y + CELL - 3;
+      context.beginPath();
+      context.moveTo(x1, y1);
+      context.lineTo(x1 + 4, y1 + CELL * 0.4);
+      context.lineTo(x2, y2);
+      context.stroke();
+    }
+    // Discoloration overlay at high stress
+    if (stress >= 3) {
+      context.fillStyle = 'rgba(80,40,20,0.3)';
+      context.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+    }
+    context.restore();
+  }
+
+  // ── Commentary text ────────────────────────────────────────────────────
+
+  function renderCommentary() {
+    for (var ci = 0; ci < state.commentary.length; ci++) {
+      var c = state.commentary[ci];
+      var alpha = Math.min(c.ttl / 30, 1);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(0,0,0,0.8)';
+      ctx.shadowBlur = 4;
+      ctx.fillText(c.text, c.x, c.y);
+      ctx.restore();
+    }
+  }
+
+  // ── Side panels ────────────────────────────────────────────────────────
 
   function drawPiecePreview(context, size, type) {
     context.clearRect(0, 0, size.w, size.h);
     context.fillStyle = '#1a1a2e';
     context.fillRect(0, 0, size.w, size.h);
-
     if (!type) return;
-
     var piece = { type: type, rotation: 0, x: 0, y: 0 };
     var cells = StackyPieces.getCells(piece);
     var colorIdx = StackyPieces.TYPES.indexOf(type) + 1;
-
-    // Find bounding box
     var minX = 99, maxX = -1, minY = 99, maxY = -1;
     for (var i = 0; i < cells.length; i++) {
       if (cells[i].x < minX) minX = cells[i].x;
@@ -296,32 +490,23 @@
       if (cells[i].y < minY) minY = cells[i].y;
       if (cells[i].y > maxY) maxY = cells[i].y;
     }
-
     var pw = maxX - minX + 1;
     var ph = maxY - minY + 1;
     var cellSize = Math.min((size.w - 20) / pw, (size.h - 20) / ph, 20);
     var offsetX = (size.w - pw * cellSize) / 2;
     var offsetY = (size.h - ph * cellSize) / 2;
-
     for (var j = 0; j < cells.length; j++) {
       var cx = offsetX + (cells[j].x - minX) * cellSize;
       var cy = offsetY + (cells[j].y - minY) * cellSize;
-
       context.fillStyle = PIECE_COLORS[colorIdx];
       context.fillRect(cx + 1, cy + 1, cellSize - 2, cellSize - 2);
-
       context.fillStyle = 'rgba(255,255,255,0.2)';
       context.fillRect(cx + 1, cy + 1, cellSize - 2, 2);
     }
   }
 
-  function drawHoldPanel() {
-    drawPiecePreview(holdCtx, holdSize, state.heldPiece);
-  }
-
-  function drawNextPanel() {
-    drawPiecePreview(nextCtx, nextSize, state.nextPiece);
-  }
+  function drawHoldPanel() { drawPiecePreview(holdCtx, holdSize, state.heldPiece); }
+  function drawNextPanel() { drawPiecePreview(nextCtx, nextSize, state.nextPiece); }
 
   // ── Input setup ────────────────────────────────────────────────────────
 
@@ -331,15 +516,9 @@
     drawHoldPanel();
     drawNextPanel();
     StackyGame.syncGameState(state);
-
-    // Handle overlay transitions triggered by input
-    if (state.phase === 'gameOver') {
-      onGameOver();
-    } else if (state.phase === 'paused') {
-      pausedEl.classList.remove('hidden');
-    } else if (state.phase === 'playing') {
-      pausedEl.classList.add('hidden');
-    }
+    if (state.phase === 'gameOver') onGameOver();
+    else if (state.phase === 'paused') pausedEl.classList.remove('hidden');
+    else if (state.phase === 'playing') pausedEl.classList.add('hidden');
   }
 
   inputCleanup = StackyInput.attach(state, {
@@ -348,7 +527,6 @@
     onStateChange: handleStateChange,
   });
 
-  // Button handlers
   btnStart.addEventListener('click', function () { startGame(); });
   btnRestart.addEventListener('click', function () { restartGame(); });
 
@@ -357,10 +535,11 @@
   window.addEventListener('resize', applyResponsiveScale);
   applyResponsiveScale();
 
-  // ── Cleanup for HMR ───────────────────────────────────────────────────
+  // ── Cleanup ────────────────────────────────────────────────────────────
 
   function cleanup() {
     stopLoop();
+    StackyAudio.stopMusic();
     if (inputCleanup) { inputCleanup(); inputCleanup = null; }
     window.removeEventListener('resize', applyResponsiveScale);
     state.phase = 'idle';

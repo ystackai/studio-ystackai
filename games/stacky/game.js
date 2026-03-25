@@ -1,8 +1,9 @@
 /**
- * StackY Game Engine — Tetris-variant with Wonka Golden Ticket mechanics.
+ * StackY Game Engine — Falling-block candy factory puzzle.
  *
- * Standard Tetris rules: 7 pieces (I, O, T, S, Z, L, J), SRS rotation,
- * gravity, line clearing, scoring, progressive speed, game over detection.
+ * 7 candy block shapes with SRS rotation, gravity, line clearing,
+ * chocolate river hazard, gravity echoes, stress scars, and
+ * Oompa Loompa commentary.
  *
  * Depends on: pieces.js (StackyPieces)
  */
@@ -45,6 +46,26 @@ var StackyGame = (function () {
   /**
    * Create a fresh game state object.
    */
+  // Oompa Loompa commentary pool
+  var COMMENTARY = [
+    "The Oompa Loompas are watching.",
+    "Wonka would never.",
+    "That's going straight to the chocolate river.",
+    "Veruca Salt made better moves.",
+    "Even Augustus Gloop wouldn't do that.",
+    "The factory is not impressed.",
+    "That gap will haunt you.",
+    "The candy blocks weep.",
+    "Wonka just shook his head.",
+    "The squirrels would reject this.",
+  ];
+  var GAMEOVER_COMMENTARY = [
+    "The factory is disappointed.",
+    "Wonka has seen enough.",
+    "The Oompa Loompas will sing about this failure.",
+    "The chocolate river claims another soul.",
+  ];
+
   function createState() {
     return {
       grid: createEmptyGrid(),
@@ -70,6 +91,14 @@ var StackyGame = (function () {
       lastChocolateTime: 0,
       chocolateRowsRisen: 0,
       lastBoundaryCheck: 0,
+      // Gravity echo — ghost afterimages of recent placements
+      echoTrail: [],       // [{cells, colorIndex, ttl, maxTtl}]
+      // Stress grid — scars from near-misses
+      stressGrid: createEmptyGrid(),
+      // Commentary events for renderer
+      commentary: [],      // [{text, x, y, ttl}]
+      // Events for renderer/audio hooks
+      _events: [],         // [{type, data}] — consumed each frame
     };
   }
 
@@ -123,6 +152,10 @@ var StackyGame = (function () {
       state.alive = false;
       state.phase = 'gameOver';
       state.activePiece = null;
+      // Game over commentary
+      var goQuip = GAMEOVER_COMMENTARY[Math.floor(Math.random() * GAMEOVER_COMMENTARY.length)];
+      state.commentary.push({text: goQuip, x: 150, y: 250, ttl: 180});
+      state._events.push({type: 'gameOver', data: {commentary: goQuip}});
       if (state.score > state.hi) {
         state.hi = state.score;
         saveHi(state.hi);
@@ -152,6 +185,10 @@ var StackyGame = (function () {
     state.lastChocolateTime = 0;
     state.chocolateRowsRisen = 0;
     state.lastBoundaryCheck = 0;
+    state.echoTrail = [];
+    state.stressGrid = createEmptyGrid();
+    state.commentary = [];
+    state._events = [];
     spawnPiece(state);
     syncGameState(state);
   }
@@ -300,14 +337,52 @@ var StackyGame = (function () {
     if (!state.activePiece) return;
     var cells = P.getCells(state.activePiece);
     var colorIndex = P.TYPES.indexOf(state.activePiece.type) + 1;
+
+    // Record echo trail before locking
+    state.echoTrail.push({
+      cells: cells.map(function(c) { return {x: c.x, y: c.y}; }),
+      colorIndex: colorIndex,
+      ttl: 300,     // frames (~5 seconds at 60fps)
+      maxTtl: 300,
+    });
+    // Limit trail size
+    if (state.echoTrail.length > 20) state.echoTrail.shift();
+
+    // Calculate drop distance for shake event
+    var ghostY = getGhostY(state);
+    var dropDist = ghostY - state.activePiece.y;
+
     for (var i = 0; i < cells.length; i++) {
       var c = cells[i];
       if (c.y >= 0 && c.y < P.ROWS && c.x >= 0 && c.x < P.COLS) {
         state.grid[c.y][c.x] = colorIndex;
       }
     }
+
+    // Check if placement created gaps (bad move → commentary)
+    var createdGap = false;
+    for (var gi = 0; gi < cells.length; gi++) {
+      var gc = cells[gi];
+      if (gc.y + 1 < P.ROWS && state.grid[gc.y + 1] && state.grid[gc.y + 1][gc.x] === 0) {
+        // Block placed with empty space below — gap created
+        createdGap = true;
+        break;
+      }
+    }
+    if (createdGap && Math.random() < 0.2) {
+      var quip = COMMENTARY[Math.floor(Math.random() * COMMENTARY.length)];
+      var cx = cells[0].x * 30 + 15;
+      var cy = cells[0].y * 30;
+      state.commentary.push({text: quip, x: cx, y: cy, ttl: 120});
+      state._events.push({type: 'commentary', data: {text: quip}});
+    }
+
+    // Emit lock event with drop distance for shake
+    if (dropDist > 3) {
+      state._events.push({type: 'shake', data: {intensity: dropDist * 0.5}});
+    }
+
     state.activePiece = null;
-    // Play lock click sound
     if (typeof StackyAudio !== 'undefined') {
       StackyAudio.playLock();
     }
@@ -315,9 +390,33 @@ var StackyGame = (function () {
     if (cleared > 0) {
       updateScore(state, cleared);
       state.comboCounter++;
+      // Emit line clear events
+      state._events.push({type: 'lineClear', data: {count: cleared}});
+      if (cleared >= 4) {
+        state._events.push({type: 'scream'});
+      } else {
+        state._events.push({type: 'whisper', data: {intensity: Math.min(state.level / 5, 3)}});
+      }
     } else {
       state.comboCounter = 0;
     }
+
+    // Update stress grid — cells in rows that were almost full get stressed
+    for (var sy = 0; sy < P.ROWS; sy++) {
+      var filled = 0;
+      for (var sx = 0; sx < P.COLS; sx++) {
+        if (state.grid[sy][sx] !== 0) filled++;
+      }
+      // Row 80%+ full but not cleared = near-miss stress
+      if (filled >= P.COLS * 0.8 && filled < P.COLS) {
+        for (var ssx = 0; ssx < P.COLS; ssx++) {
+          if (state.grid[sy][ssx] !== 0) {
+            state.stressGrid[sy][ssx] = Math.min((state.stressGrid[sy][ssx] || 0) + 1, 5);
+          }
+        }
+      }
+    }
+
     spawnPiece(state);
   }
 
@@ -360,15 +459,16 @@ var StackyGame = (function () {
     state.grid.push(createChocolateRow());
     state.chocolateRowsRisen++;
 
-    // Adjust active piece position — it stays visually in place,
-    // but the grid shifted up so piece's y decreases by 1
+    // Adjust active piece position
     if (state.activePiece) {
       state.activePiece.y -= 1;
-      // If the piece now collides after the shift, lock it
       if (state.activePiece.y < 0 || checkCollision(state.grid, state.activePiece)) {
         lockPiece(state);
       }
     }
+    // Emit shake for chocolate rise
+    state._events.push({type: 'shake', data: {intensity: 3}});
+    state._events.push({type: 'chocolateRise'});
     return true;
   }
 
@@ -451,9 +551,40 @@ var StackyGame = (function () {
     return true;
   }
 
+  /** Get the maximum tower height (highest occupied row from bottom). */
+  function getMaxHeight(state) {
+    for (var y = 0; y < P.ROWS; y++) {
+      for (var x = 0; x < P.COLS; x++) {
+        if (state.grid[y][x] !== 0) return P.ROWS - y;
+      }
+    }
+    return 0;
+  }
+
   /** Gravity tick — called each frame with timestamp. */
   function tick(state, timestamp) {
     if (state.phase !== 'playing' || !state.activePiece) return;
+
+    // Decay echo trail
+    for (var ei = state.echoTrail.length - 1; ei >= 0; ei--) {
+      state.echoTrail[ei].ttl--;
+      if (state.echoTrail[ei].ttl <= 0) state.echoTrail.splice(ei, 1);
+    }
+
+    // Decay commentary
+    for (var ci = state.commentary.length - 1; ci >= 0; ci--) {
+      state.commentary[ci].ttl--;
+      state.commentary[ci].y -= 0.5; // float upward
+      if (state.commentary[ci].ttl <= 0) state.commentary.splice(ci, 1);
+    }
+
+    // Emit tower height for music tempo
+    var height = getMaxHeight(state);
+    state._events.push({type: 'heightUpdate', data: {height: height}});
+    // Near-collapse bass drop
+    if (height >= P.ROWS - 3) {
+      state._events.push({type: 'nearCollapse'});
+    }
 
     // Chocolate river: rise a row every CHOCOLATE_INTERVAL ms
     if (state.lastChocolateTime === 0) {
@@ -592,6 +723,7 @@ var StackyGame = (function () {
     getGhostY: getGhostY,
     checkCollision: checkCollision,
     riseChocolateRow: riseChocolateRow,
+    getMaxHeight: getMaxHeight,
     CHOCOLATE_CELL: CHOCOLATE_CELL,
     CHOCOLATE_INTERVAL: CHOCOLATE_INTERVAL,
   };
