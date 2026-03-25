@@ -267,6 +267,17 @@
         case 'heightUpdate':
           if (musicStarted) StackyAudio.updateTempo(evt.data.height);
           break;
+        case 'stressUpdate':
+          if (musicStarted) StackyAudio.updateStress(evt.data.stress);
+          break;
+        case 'chain':
+          break;
+        case 'chainCombo':
+          StackyAudio.playChainCombo(evt.data.level);
+          break;
+        case 'goldenTicket':
+          StackyAudio.playRelief();
+          break;
         case 'nearCollapse':
           var now = ts || Date.now();
           if (now - lastBassDropTime > 5000) {
