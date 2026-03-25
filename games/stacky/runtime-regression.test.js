@@ -68,6 +68,8 @@ function testStressGridAndImpactShake() {
     state.stressGrid.some((row) => row.some((value) => value > 0)),
     'stressGrid should record placement scars after a heavy landing'
   );
+  assert.ok(state.fracturedBlocks > 0, 'fracture metrics should count scarred blocks');
+  assert.ok(state.fracturePercent > 0, 'fracture meter should rise after a damaging landing');
 }
 
 function testHoldCollisionTriggersGameOver() {
@@ -139,12 +141,36 @@ function testStressGridFollowsChocolateShift() {
   assert.equal(state.stressGrid[4][2], 3, 'stress scars should move with the blocks they belong to');
 }
 
+function testMediumStressLetsFracturesPayBack() {
+  const { StackyGame } = loadRuntime();
+  const state = StackyGame.createState();
+  StackyGame.start(state);
+
+  state.stress = 45;
+  state.grid[19][4] = 1;
+  state.grid[18][4] = 2;
+  state.stressGrid[18][4] = 4;
+  state.activePiece = { type: 'I', rotation: 0, x: 0, y: 0, spawnY: 0 };
+  takeEvents(state);
+
+  StackyGame.hardDrop(state);
+  runTicks(StackyGame, state, 31);
+  const events = takeEvents(state);
+  const clearEvent = events.find((event) => event.type === 'lineClear');
+
+  assert.ok(clearEvent, 'detonation should still emit a lineClear event');
+  assert.equal(clearEvent.data.cellsCleared, 6, 'fractured neighbor should shatter into the same clear');
+  assert.deepEqual(Array.from(clearEvent.data.affectedRows), [18, 19], 'collateral fracture pops should expand the affected rows');
+  assert.equal(state.grid[18][4], 0, 'fractured collateral block should be destroyed');
+}
+
 const tests = [
   testStressGridAndImpactShake,
   testHoldCollisionTriggersGameOver,
   testChocolateRiverCatchesActivePiece,
   testLineClearCarriesRealEventData,
   testStressGridFollowsChocolateShift,
+  testMediumStressLetsFracturesPayBack,
 ];
 
 let passed = 0;

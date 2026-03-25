@@ -86,6 +86,9 @@ var StackyGame = (function () {
     "you built this panic on purpose.",
   ];
   var SCAR_MAX = 7;
+  var FRACTURE_SWEET_SPOT_MIN = 30;
+  var FRACTURE_SWEET_SPOT_MAX = 68;
+  var BRITTLE_SCAR_THRESHOLD = 3;
 
   function loadHi() {
     try { return parseInt(localStorage.getItem(LS_KEY) || '0', 10) || 0; }
@@ -154,6 +157,7 @@ var StackyGame = (function () {
         }
       }
     }
+    updateFractureMetrics(state);
   }
 
   function scarCell(state, x, y, amount) {
@@ -175,6 +179,61 @@ var StackyGame = (function () {
       scarCell(state, cell.x, cell.y + 1, Math.max(1, amount - 1));
       scarCell(state, cell.x, cell.y - 1, Math.max(1, amount - 2));
     }
+  }
+
+  function isSolidBlock(value) {
+    return value !== 0 && value !== CHOCOLATE_CELL;
+  }
+
+  function updateFractureMetrics(state) {
+    var totalSolidBlocks = 0;
+    var fracturedBlocks = 0;
+    for (var y = 0; y < P.ROWS; y++) {
+      for (var x = 0; x < P.COLS; x++) {
+        if (!isSolidBlock(state.grid[y][x])) continue;
+        totalSolidBlocks++;
+        if (state.stressGrid[y][x] > 0) fracturedBlocks++;
+      }
+    }
+    state.totalSolidBlocks = totalSolidBlocks;
+    state.fracturedBlocks = fracturedBlocks;
+    state.fracturePercent = totalSolidBlocks > 0
+      ? Math.round((fracturedBlocks / totalSolidBlocks) * 100)
+      : 0;
+  }
+
+  function inFractureSweetSpot(state) {
+    return state.stress >= FRACTURE_SWEET_SPOT_MIN && state.stress <= FRACTURE_SWEET_SPOT_MAX;
+  }
+
+  function collectBrittleCollateral(state, sourceCells, clearMap) {
+    if (!inFractureSweetSpot(state)) return [];
+    var brittleCells = [];
+    var seen = Object.create(null);
+    var offsets = [
+      {x: 1, y: 0}, {x: -1, y: 0},
+      {x: 0, y: 1}, {x: 0, y: -1},
+    ];
+    for (var i = 0; i < sourceCells.length; i++) {
+      var source = sourceCells[i];
+      for (var o = 0; o < offsets.length; o++) {
+        var nx = source.x + offsets[o].x;
+        var ny = source.y + offsets[o].y;
+        if (nx < 0 || nx >= P.COLS || ny < 0 || ny >= P.ROWS) continue;
+        var key = nx + ',' + ny;
+        if (clearMap[key] || seen[key]) continue;
+        if (!isSolidBlock(state.grid[ny][nx])) continue;
+        if ((state.stressGrid[ny][nx] || 0) < BRITTLE_SCAR_THRESHOLD) continue;
+        seen[key] = true;
+        brittleCells.push({
+          x: nx,
+          y: ny,
+          color: state.grid[ny][nx],
+          fractured: true,
+        });
+      }
+    }
+    return brittleCells;
   }
 
   // ── State ──────────────────────────────────────────────────────────────
@@ -206,6 +265,9 @@ var StackyGame = (function () {
       // Stress system (0-100)
       stress: 0,
       stressGrid: createStressGrid(),
+      fracturedBlocks: 0,
+      totalSolidBlocks: 0,
+      fracturePercent: 0,
       lastStressDecay: 0,
       // Gravity echo
       echoTrail: [],
@@ -299,6 +361,9 @@ var StackyGame = (function () {
     state.chocolateRowsRisen = 0;
     state.stress = 0;
     state.stressGrid = createStressGrid();
+    state.fracturedBlocks = 0;
+    state.totalSolidBlocks = 0;
+    state.fracturePercent = 0;
     state.lastStressDecay = 0;
     state.echoTrail = [];
     state.commentary = [];
@@ -308,6 +373,7 @@ var StackyGame = (function () {
     state._matchedCells = [];
     state._pendingGroups = null;
     state._events = [];
+    updateFractureMetrics(state);
     spawnPiece(state);
     syncGameState(state);
   }
@@ -477,30 +543,18 @@ var StackyGame = (function () {
     var clearedCells = [];
     var affectedRows = {};
     var maxGroupSize = 0;
+    var clearMap = Object.create(null);
+    var sourceCells = [];
     for (var g = 0; g < groups.length; g++) {
       var group = groups[g];
-      totalCells += group.cells.length;
       maxGroupSize = Math.max(maxGroupSize, group.cells.length);
       for (var c = 0; c < group.cells.length; c++) {
         var cell = group.cells[c];
-        affectedRows[cell.y] = true;
-        clearedCells.push({x: cell.x, y: cell.y, color: group.color});
-        // Splash damage: adjacent chocolate cells get destroyed too
-        var neighbors = [
-          {x: cell.x+1, y: cell.y}, {x: cell.x-1, y: cell.y},
-          {x: cell.x, y: cell.y+1}, {x: cell.x, y: cell.y-1},
-        ];
-        for (var n = 0; n < neighbors.length; n++) {
-          var nb = neighbors[n];
-          if (nb.x >= 0 && nb.x < P.COLS && nb.y >= 0 && nb.y < P.ROWS) {
-            if (state.grid[nb.y][nb.x] === CHOCOLATE_CELL) {
-              state.grid[nb.y][nb.x] = 0;
-              state.stressGrid[nb.y][nb.x] = 0;
-            }
-          }
+        var key = cell.x + ',' + cell.y;
+        if (!clearMap[key]) {
+          clearMap[key] = {x: cell.x, y: cell.y, color: group.color};
+          sourceCells.push({x: cell.x, y: cell.y});
         }
-        state.grid[cell.y][cell.x] = 0;
-        state.stressGrid[cell.y][cell.x] = 0;
       }
       // Emit explosion event per group
       var cx = 0, cy = 0;
@@ -513,6 +567,37 @@ var StackyGame = (function () {
         x: cx, y: cy, color: group.color, size: group.cells.length
       }});
     }
+
+    var brittleCells = collectBrittleCollateral(state, sourceCells, clearMap);
+    for (var bc = 0; bc < brittleCells.length; bc++) {
+      var brittle = brittleCells[bc];
+      clearMap[brittle.x + ',' + brittle.y] = brittle;
+    }
+
+    var clearKeys = Object.keys(clearMap);
+    totalCells = clearKeys.length;
+    for (var i = 0; i < clearKeys.length; i++) {
+      var clearCell = clearMap[clearKeys[i]];
+      affectedRows[clearCell.y] = true;
+      clearedCells.push(clearCell);
+      // Splash damage: adjacent chocolate cells get destroyed too
+      var neighbors = [
+        {x: clearCell.x+1, y: clearCell.y}, {x: clearCell.x-1, y: clearCell.y},
+        {x: clearCell.x, y: clearCell.y+1}, {x: clearCell.x, y: clearCell.y-1},
+      ];
+      for (var n = 0; n < neighbors.length; n++) {
+        var nb = neighbors[n];
+        if (nb.x >= 0 && nb.x < P.COLS && nb.y >= 0 && nb.y < P.ROWS) {
+          if (state.grid[nb.y][nb.x] === CHOCOLATE_CELL) {
+            state.grid[nb.y][nb.x] = 0;
+            state.stressGrid[nb.y][nb.x] = 0;
+          }
+        }
+      }
+      state.grid[clearCell.y][clearCell.x] = 0;
+      state.stressGrid[clearCell.y][clearCell.x] = 0;
+    }
+
     syncStressGrid(state);
     return {
       totalCells: totalCells,
@@ -522,6 +607,7 @@ var StackyGame = (function () {
       }).sort(function (a, b) { return a - b; }),
       maxGroupSize: maxGroupSize,
       groupCount: groups.length,
+      brittleCount: brittleCells.length,
     };
   }
 
@@ -663,6 +749,16 @@ var StackyGame = (function () {
             intensity: Math.min(state.currentChainLevel, 3),
             phrase: regretPhrase,
           }});
+        }
+        if (detonation.brittleCount > 0) {
+          addCommentary(
+            state,
+            'The cracked sugar snapped in your favor.',
+            phraseX,
+            Math.max(50, phraseY - 26),
+            90,
+            'good'
+          );
         }
 
         // Apply gravity
@@ -813,8 +909,8 @@ var StackyGame = (function () {
     if (state.stress > 60) scarAmount += 1;
     if (scarAmount > 0) {
       scarPlacementCluster(state, cells, scarAmount);
-      syncStressGrid(state);
     }
+    syncStressGrid(state);
 
     var placementSeverity = scarAmount + Math.min(3, isolatedCount) + (gapCreated ? 2 : 0);
     var commentChance = Math.min(0.98, 0.32 + placementSeverity * 0.12 + state.stress / 180);
@@ -1015,6 +1111,10 @@ var StackyGame = (function () {
       chainsTotal: state.chainsTotal, alive: state.alive, gameOver: !state.alive,
       phase: state.phase, goldenTickets: state.goldenTickets,
       stress: state.stress,
+      fracturedBlocks: state.fracturedBlocks,
+      totalSolidBlocks: state.totalSolidBlocks,
+      fracturePercent: state.fracturePercent,
+      fractureSweetSpot: inFractureSweetSpot(state),
       activePiece: state.activePiece ? {
         type: state.activePiece.type, rotation: state.activePiece.rotation,
         x: state.activePiece.x, y: state.activePiece.y,

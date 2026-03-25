@@ -93,13 +93,18 @@
     /* ── Score bar ─────────────────────────────────────────────────────── */
     .score-bar {
       display: flex;
-      gap: 2.5rem;
+      gap: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     .score-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.15rem;
+    }
+    .score-item.meter-item {
+      min-width: 5.5rem;
     }
     .score-label {
       font-size: 0.7rem;
@@ -117,6 +122,23 @@
       text-align: center;
     }
     .score-value.high { color: #c084fc; }
+    .score-meter {
+      width: 76px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.18);
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12);
+      margin-top: 0.15rem;
+    }
+    .score-meter-fill {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #c084fc, #f59e0b);
+      transition: width 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
 
     /* ── Game area ────────────────────────────────────────────────────── */
     .game-area {
@@ -332,6 +354,13 @@
     <div class="score-item">
       <span class="score-label">Stress</span>
       <span class="score-value" id="stress-display" style="color:#22c55e;">0</span>
+    </div>
+    <div class="score-item meter-item">
+      <span class="score-label">Fracture</span>
+      <span class="score-value" id="fracture-display" style="color:#c084fc;">0%</span>
+      <span class="score-meter" aria-hidden="true">
+        <span class="score-meter-fill" id="fracture-fill"></span>
+      </span>
     </div>
   </div>
 

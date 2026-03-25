@@ -213,6 +213,8 @@
 
   // Stress meter UI
   var stressEl = document.getElementById('stress-display');
+  var fractureEl = document.getElementById('fracture-display');
+  var fractureFill = document.getElementById('fracture-fill');
 
   function updateScoreUI() {
     scoreEl.textContent = String(state.score);
@@ -223,6 +225,23 @@
       var stress = state.stress || 0;
       stressEl.textContent = String(Math.round(stress));
       stressEl.style.color = stress > 70 ? '#ef4444' : stress > 40 ? '#f59e0b' : '#22c55e';
+    }
+    if (fractureEl) {
+      var fracture = Math.max(0, Math.min(100, state.fracturePercent || 0));
+      var sweetSpot = state.stress >= 30 && state.stress <= 68;
+      fractureEl.textContent = String(fracture) + '%';
+      fractureEl.style.color = fracture > 70 ? '#ef4444' : fracture > 35 ? '#f59e0b' : '#c084fc';
+      if (fractureFill) {
+        fractureFill.style.width = fracture + '%';
+        fractureFill.style.background = sweetSpot
+          ? 'linear-gradient(90deg, #fbbf24, #fb7185)'
+          : fracture > 70
+            ? 'linear-gradient(90deg, #fb7185, #ef4444)'
+            : 'linear-gradient(90deg, #c084fc, #f59e0b)';
+        fractureFill.style.boxShadow = sweetSpot
+          ? '0 0 12px rgba(251, 191, 36, 0.45)'
+          : 'none';
+      }
     }
   }
 
