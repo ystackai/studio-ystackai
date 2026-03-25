@@ -69,6 +69,21 @@ var StackyGame = (function () {
     "The Oompa Loompas will sing about this failure.",
     "The chocolate river claims another soul.",
   ];
+  var COMMENTARY_RIVER = [
+    "The river tasted weakness.",
+    "Chocolate climbs. You don't.",
+    "The river caught you reaching.",
+    "You fed the factory exactly what it wanted.",
+  ];
+  var REGRET_PHRASES = [
+    "you procrastinated.",
+    "you lied to yourself.",
+    "the stack is too high.",
+    "you knew that was a bad fit.",
+    "the tower remembers this.",
+    "you built this panic on purpose.",
+  ];
+  var SCAR_MAX = 5;
 
   function loadHi() {
     try { return parseInt(localStorage.getItem(LS_KEY) || '0', 10) || 0; }
@@ -93,6 +108,70 @@ var StackyGame = (function () {
       grid.push(new Array(P.COLS).fill(0));
     }
     return grid;
+  }
+
+  function createStressGrid() {
+    return createEmptyGrid();
+  }
+
+  function randomFrom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function addCommentary(state, text, x, y, ttl, kind) {
+    var entry = {
+      text: text,
+      x: x,
+      y: y,
+      ttl: ttl || 120,
+      kind: kind || 'warning',
+    };
+    state.commentary.push(entry);
+    state._events.push({type: 'commentary', data: {
+      text: entry.text,
+      x: entry.x,
+      y: entry.y,
+      ttl: entry.ttl,
+      kind: entry.kind,
+    }});
+    return entry;
+  }
+
+  function syncStressGrid(state) {
+    if (!state.stressGrid || state.stressGrid.length !== P.ROWS) {
+      state.stressGrid = createStressGrid();
+    }
+    for (var y = 0; y < P.ROWS; y++) {
+      if (!state.stressGrid[y]) state.stressGrid[y] = new Array(P.COLS).fill(0);
+      for (var x = 0; x < P.COLS; x++) {
+        if (state.grid[y][x] === 0 || state.grid[y][x] === CHOCOLATE_CELL) {
+          state.stressGrid[y][x] = 0;
+        } else if (state.stressGrid[y][x] > SCAR_MAX) {
+          state.stressGrid[y][x] = SCAR_MAX;
+        }
+      }
+    }
+  }
+
+  function scarCell(state, x, y, amount) {
+    if (!state.stressGrid) state.stressGrid = createStressGrid();
+    if (x < 0 || x >= P.COLS || y < 0 || y >= P.ROWS) return;
+    if (state.grid[y][x] === 0 || state.grid[y][x] === CHOCOLATE_CELL) {
+      state.stressGrid[y][x] = 0;
+      return;
+    }
+    state.stressGrid[y][x] = Math.min(SCAR_MAX, (state.stressGrid[y][x] || 0) + amount);
+  }
+
+  function scarPlacementCluster(state, cells, amount) {
+    for (var i = 0; i < cells.length; i++) {
+      var cell = cells[i];
+      scarCell(state, cell.x, cell.y, amount);
+      scarCell(state, cell.x + 1, cell.y, Math.max(1, amount - 1));
+      scarCell(state, cell.x - 1, cell.y, Math.max(1, amount - 1));
+      scarCell(state, cell.x, cell.y + 1, Math.max(1, amount - 1));
+      scarCell(state, cell.x, cell.y - 1, Math.max(1, amount - 2));
+    }
   }
 
   // ── State ──────────────────────────────────────────────────────────────
@@ -123,6 +202,7 @@ var StackyGame = (function () {
       chocolateRowsRisen: 0,
       // Stress system (0-100)
       stress: 0,
+      stressGrid: createStressGrid(),
       lastStressDecay: 0,
       // Gravity echo
       echoTrail: [],
@@ -174,20 +254,24 @@ var StackyGame = (function () {
       rotation: rotation,
       x: Math.floor((P.COLS - 4) / 2),
       y: 0,
+      spawnY: 0,
     };
     state.holdUsedThisTurn = false;
     state.lockDelayActive = false;
     state.lockDelayTimer = 0;
 
     if (checkCollision(state.grid, state.activePiece)) {
-      state.alive = false;
-      state.phase = 'gameOver';
-      state.activePiece = null;
-      var goQuip = COMMENTARY_GAMEOVER[Math.floor(Math.random() * COMMENTARY_GAMEOVER.length)];
-      state.commentary.push({text: goQuip, x: 150, y: 250, ttl: 180});
-      state._events.push({type: 'gameOver', data: {commentary: goQuip}});
-      if (state.score > state.hi) { state.hi = state.score; saveHi(state.hi); }
+      triggerGameOver(state, randomFrom(COMMENTARY_GAMEOVER));
     }
+  }
+
+  function triggerGameOver(state, commentaryText) {
+    state.alive = false;
+    state.phase = 'gameOver';
+    state.activePiece = null;
+    if (commentaryText) addCommentary(state, commentaryText, 150, 250, 180, 'panic');
+    state._events.push({type: 'gameOver', data: {commentary: commentaryText || null}});
+    if (state.score > state.hi) { state.hi = state.score; saveHi(state.hi); }
   }
 
   function start(state) {
@@ -211,6 +295,7 @@ var StackyGame = (function () {
     state.lastChocolateTime = 0;
     state.chocolateRowsRisen = 0;
     state.stress = 0;
+    state.stressGrid = createStressGrid();
     state.lastStressDecay = 0;
     state.echoTrail = [];
     state.commentary = [];
@@ -336,8 +421,12 @@ var StackyGame = (function () {
     var ct = state.activePiece.type;
     if (state.heldPiece) {
       state.activePiece = {type: state.heldPiece, rotation: 0,
-        x: Math.floor((P.COLS - 4) / 2), y: 0};
+        x: Math.floor((P.COLS - 4) / 2), y: 0, spawnY: 0};
       state.heldPiece = ct;
+      if (checkCollision(state.grid, state.activePiece)) {
+        triggerGameOver(state, randomFrom(COMMENTARY_GAMEOVER));
+        return false;
+      }
     } else {
       state.heldPiece = ct;
       spawnPiece(state);
@@ -382,11 +471,17 @@ var StackyGame = (function () {
 
   function detonateGroups(state, groups) {
     var totalCells = 0;
+    var clearedCells = [];
+    var affectedRows = {};
+    var maxGroupSize = 0;
     for (var g = 0; g < groups.length; g++) {
       var group = groups[g];
       totalCells += group.cells.length;
+      maxGroupSize = Math.max(maxGroupSize, group.cells.length);
       for (var c = 0; c < group.cells.length; c++) {
         var cell = group.cells[c];
+        affectedRows[cell.y] = true;
+        clearedCells.push({x: cell.x, y: cell.y, color: group.color});
         // Splash damage: adjacent chocolate cells get destroyed too
         var neighbors = [
           {x: cell.x+1, y: cell.y}, {x: cell.x-1, y: cell.y},
@@ -397,10 +492,12 @@ var StackyGame = (function () {
           if (nb.x >= 0 && nb.x < P.COLS && nb.y >= 0 && nb.y < P.ROWS) {
             if (state.grid[nb.y][nb.x] === CHOCOLATE_CELL) {
               state.grid[nb.y][nb.x] = 0;
+              state.stressGrid[nb.y][nb.x] = 0;
             }
           }
         }
         state.grid[cell.y][cell.x] = 0;
+        state.stressGrid[cell.y][cell.x] = 0;
       }
       // Emit explosion event per group
       var cx = 0, cy = 0;
@@ -413,10 +510,19 @@ var StackyGame = (function () {
         x: cx, y: cy, color: group.color, size: group.cells.length
       }});
     }
-    return totalCells;
+    syncStressGrid(state);
+    return {
+      totalCells: totalCells,
+      clearedCells: clearedCells,
+      affectedRows: Object.keys(affectedRows).map(function (row) {
+        return parseInt(row, 10);
+      }).sort(function (a, b) { return a - b; }),
+      maxGroupSize: maxGroupSize,
+      groupCount: groups.length,
+    };
   }
 
-  function applyGravity(grid) {
+  function applyGravity(grid, stressGrid) {
     var moved = false;
     for (var x = 0; x < P.COLS; x++) {
       // Compact column: move all non-zero cells to bottom
@@ -426,10 +532,18 @@ var StackyGame = (function () {
           if (y !== write) {
             grid[write][x] = grid[y][x];
             grid[y][x] = 0;
+            if (stressGrid) {
+              stressGrid[write][x] = stressGrid[y][x];
+              stressGrid[y][x] = 0;
+            }
             moved = true;
           }
           write--;
         }
+      }
+      while (write >= 0) {
+        if (stressGrid) stressGrid[write][x] = 0;
+        write--;
       }
     }
     return moved;
@@ -478,7 +592,8 @@ var StackyGame = (function () {
       if (state._chainTimer <= 0) {
         // Detonate
         var groups = state._pendingGroups || [];
-        var cellsCleared = detonateGroups(state, groups);
+        var detonation = detonateGroups(state, groups);
+        var cellsCleared = detonation.totalCells;
         state._matchedCells = [];
         state._pendingGroups = null;
 
@@ -496,24 +611,60 @@ var StackyGame = (function () {
           state.stress = Math.max(0, state.stress - STRESS_MEGA_CASCADE_RELIEF);
         }
 
-        state._events.push({type: 'chain', data: {level: state.currentChainLevel, score: points}});
-        state._events.push({type: 'lineClear', data: {count: state.currentChainLevel}});
+        var regretPhrase = randomFrom(REGRET_PHRASES);
+        var phraseX = 150;
+        var phraseY = 110;
+        if (detonation.clearedCells.length > 0) {
+          var sumX = 0;
+          var sumY = 0;
+          for (var cc = 0; cc < detonation.clearedCells.length; cc++) {
+            sumX += detonation.clearedCells[cc].x;
+            sumY += detonation.clearedCells[cc].y;
+          }
+          phraseX = (sumX / detonation.clearedCells.length) * 30 + 15;
+          phraseY = Math.max(70, (sumY / detonation.clearedCells.length) * 30 + 12);
+        }
+        addCommentary(state, regretPhrase, phraseX, phraseY, 110 + state.currentChainLevel * 15, 'regret');
+
+        state._events.push({type: 'chain', data: {
+          level: state.currentChainLevel,
+          score: points,
+          cellsCleared: cellsCleared,
+          groups: detonation.groupCount,
+        }});
+        state._events.push({type: 'lineClear', data: {
+          count: detonation.affectedRows.length,
+          chainLevel: state.currentChainLevel,
+          cellsCleared: cellsCleared,
+          affectedRows: detonation.affectedRows,
+          cells: detonation.clearedCells,
+          golden: state.currentChainLevel >= 3,
+          phrase: regretPhrase,
+          intensity: Math.min(6, state.currentChainLevel + Math.ceil(detonation.maxGroupSize / 3)),
+        }});
 
         if (state.currentChainLevel >= 2) {
-          var goodQuip = COMMENTARY_GOOD[Math.floor(Math.random() * COMMENTARY_GOOD.length)];
-          state.commentary.push({text: goodQuip + ' ×' + state.currentChainLevel, x: 150, y: 200, ttl: 90});
+          var goodQuip = randomFrom(COMMENTARY_GOOD);
+          addCommentary(state, goodQuip + ' ×' + state.currentChainLevel, 150, 200, 90, 'good');
           state._events.push({type: 'chainCombo', data: {level: state.currentChainLevel}});
         }
         if (state.currentChainLevel >= 3) {
           state.goldenTickets++;
           state._events.push({type: 'goldenTicket'});
-          state._events.push({type: 'scream'});
+          state._events.push({type: 'scream', data: {
+            phrase: regretPhrase,
+            intensity: Math.min(6, state.currentChainLevel + 2),
+          }});
         } else {
-          state._events.push({type: 'whisper', data: {intensity: Math.min(state.currentChainLevel, 3)}});
+          state._events.push({type: 'whisper', data: {
+            intensity: Math.min(state.currentChainLevel, 3),
+            phrase: regretPhrase,
+          }});
         }
 
         // Apply gravity
-        applyGravity(state.grid);
+        applyGravity(state.grid, state.stressGrid);
+        syncStressGrid(state);
 
         // Check for more groups (cascade)
         state.chainPhase = 'settle';
@@ -564,6 +715,7 @@ var StackyGame = (function () {
     if (!state.activePiece) return;
     var cells = P.getCells(state.activePiece);
     var colorIndex = P.TYPES.indexOf(state.activePiece.type) + 1;
+    var fallDistance = Math.max(0, state.activePiece.y - (state.activePiece.spawnY || 0));
 
     // Echo trail
     state.echoTrail.push({
@@ -572,10 +724,6 @@ var StackyGame = (function () {
       ttl: 300, maxTtl: 300,
     });
     if (state.echoTrail.length > 20) state.echoTrail.shift();
-
-    // Drop distance for shake
-    var ghostY = getGhostY(state);
-    var dropDist = ghostY - state.activePiece.y;
 
     // Echo instability: if placing near recent echoes, slight drift
     var nearEcho = false;
@@ -635,26 +783,38 @@ var StackyGame = (function () {
     }
 
     // Check for gaps created (safely)
+    var gapCreated = false;
     for (var gi = 0; gi < cells.length; gi++) {
       var gc = cells[gi];
       if (gc.y >= 0 && gc.y + 1 < P.ROWS && gc.x >= 0 && gc.x < P.COLS &&
           state.grid[gc.y + 1] && state.grid[gc.y + 1][gc.x] === 0) {
+        gapCreated = true;
         state.stress = Math.min(STRESS_MAX, state.stress + STRESS_GAP_CREATED);
         var commentChance = 0.15 + state.stress / 250;
         if (Math.random() < commentChance) {
           var pool = state.stress > 80 ? COMMENTARY_PANIC :
                      state.stress > 60 ? COMMENTARY_STRESS : COMMENTARY_BAD;
-          var quip = pool[Math.floor(Math.random() * pool.length)];
-          state.commentary.push({text: quip, x: gc.x * 30 + 15, y: gc.y * 30, ttl: 120});
-          state._events.push({type: 'commentary'});
+          var quip = randomFrom(pool);
+          addCommentary(state, quip, gc.x * 30 + 15, gc.y * 30, 120, state.stress > 80 ? 'panic' : 'warning');
         }
         break;
       }
     }
 
+    var scarAmount = 0;
+    if (nearEcho) scarAmount += 2;
+    if (isolatedCount > 0) scarAmount += 1;
+    if (gapCreated) scarAmount += 2;
+    if (fallDistance >= 12) scarAmount += 1;
+    if (scarAmount > 0) {
+      scarPlacementCluster(state, cells, scarAmount);
+      syncStressGrid(state);
+    }
+
     // Shake on hard drops
-    if (dropDist > 3) {
-      state._events.push({type: 'shake', data: {intensity: dropDist * 0.5}});
+    var impactIntensity = fallDistance * 0.18 + (nearEcho ? 1.5 : 0) + (gapCreated ? 0.75 : 0);
+    if (impactIntensity > 1.2) {
+      state._events.push({type: 'shake', data: {intensity: impactIntensity}});
     }
 
     state.activePiece = null;
@@ -681,23 +841,25 @@ var StackyGame = (function () {
   function riseChocolateRow(state) {
     for (var x = 0; x < P.COLS; x++) {
       if (state.grid[0][x] !== 0) {
-        state.alive = false;
-        state.phase = 'gameOver';
-        if (state.score > state.hi) { state.hi = state.score; saveHi(state.hi); }
-        state._events.push({type: 'gameOver', data: {}});
+        triggerGameOver(state, randomFrom(COMMENTARY_RIVER));
         return false;
       }
     }
     state.grid.shift();
     state.grid.push(createChocolateRow());
+    state.stressGrid.shift();
+    state.stressGrid.push(new Array(P.COLS).fill(0));
     state.chocolateRowsRisen++;
+    state.stress = Math.min(STRESS_MAX, state.stress + 6);
     if (state.activePiece) {
       state.activePiece.y -= 1;
       if (state.activePiece.y < 0 || checkCollision(state.grid, state.activePiece)) {
-        lockPiece(state);
+        triggerGameOver(state, randomFrom(COMMENTARY_RIVER));
+        return false;
       }
     }
-    state._events.push({type: 'shake', data: {intensity: 3}});
+    syncStressGrid(state);
+    state._events.push({type: 'shake', data: {intensity: 3.5}});
     state._events.push({type: 'chocolateRise'});
     return true;
   }
@@ -831,10 +993,33 @@ var StackyGame = (function () {
       heldPiece: state.heldPiece, nextPiece: state.nextPiece,
       comboCounter: state.comboCounter,
       grid: state.grid.map(function (row) { return row.slice(); }),
+      stressGrid: state.stressGrid.map(function (row) { return row.slice(); }),
       dropInterval: state.dropInterval,
       player: state.activePiece ? {x: state.activePiece.x, y: state.activePiece.y} : null,
       chocolateRowsRisen: state.chocolateRowsRisen,
       chocolateCell: CHOCOLATE_CELL,
+      commentary: state.commentary.map(function (entry) {
+        return {
+          text: entry.text,
+          x: entry.x,
+          y: entry.y,
+          ttl: entry.ttl,
+          kind: entry.kind || 'warning',
+        };
+      }),
+      echoTrail: state.echoTrail.map(function (echo) {
+        return {
+          colorIndex: echo.colorIndex,
+          ttl: echo.ttl,
+          maxTtl: echo.maxTtl,
+          cells: echo.cells.map(function (cell) {
+            return {x: cell.x, y: cell.y};
+          }),
+        };
+      }),
+      _matchedCells: state._matchedCells.map(function (cell) {
+        return {x: cell.x, y: cell.y, color: cell.color};
+      }),
     };
   }
 

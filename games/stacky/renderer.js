@@ -77,14 +77,16 @@
   var GOLDEN_COLORS = ['#fbbf24', '#f59e0b', '#fde047', '#fff7ed', '#d97706'];
   var CANDY_PARTICLE_COLORS = ['#c084fc', '#fbbf24', '#34d399', '#f87171', '#f472b6', '#a78bfa', '#22d3ee'];
 
-  function spawnParticles(row, count, isGolden) {
+  function spawnParticles(x, y, count, isGolden, tint, spread) {
     var colors = isGolden ? GOLDEN_COLORS : CANDY_PARTICLE_COLORS;
+    if (tint) colors = [tint].concat(colors);
+    spread = spread || CELL * 0.9;
     for (var i = 0; i < count; i++) {
       particles.push({
-        x: Math.random() * CANVAS_W,
-        y: row * CELL + CELL / 2,
-        vx: (Math.random() - 0.5) * 8,
-        vy: (Math.random() - 0.8) * 6,
+        x: x + (Math.random() - 0.5) * spread,
+        y: y + (Math.random() - 0.5) * spread * 0.5,
+        vx: (Math.random() - 0.5) * (isGolden ? 10 : 7),
+        vy: (Math.random() - 0.8) * (isGolden ? 8 : 6),
         size: 2 + Math.random() * 4,
         color: colors[Math.floor(Math.random() * colors.length)],
         life: 1,
@@ -148,6 +150,9 @@
       ox += Math.sin(t * 1.7) * wobbleAmp;
       oy += Math.cos(t * 2.3) * wobbleAmp * 0.5;
     }
+    var lean = getTowerLean();
+    ox += lean * (1 + stress / 120);
+    oy += Math.sin(Date.now() / 150) * Math.abs(lean) * 0.3;
     return {x: ox, y: oy};
   }
 
@@ -155,14 +160,43 @@
 
   var glitchTimer = 0;
 
-  function triggerGlitch() {
-    glitchTimer = 12; // frames
+  function triggerGlitch(frames) {
+    glitchTimer = Math.max(glitchTimer, frames || 12);
     if (canvas.parentElement) {
       canvas.parentElement.classList.add('glitch-flash');
       setTimeout(function() {
         canvas.parentElement.classList.remove('glitch-flash');
-      }, 200);
+      }, 200 + ((frames || 12) * 6));
     }
+  }
+
+  function getTowerLean() {
+    var totalWeight = 0;
+    var weightedCenter = 0;
+    var mid = (P.COLS - 1) / 2;
+
+    for (var row = 0; row < P.ROWS; row++) {
+      if (!state.grid[row]) continue;
+      for (var col = 0; col < P.COLS; col++) {
+        if (state.grid[row][col] === 0) continue;
+        var weight = 1 + ((P.ROWS - row) / P.ROWS);
+        if (state.grid[row][col] === StackyGame.CHOCOLATE_CELL) weight *= 0.7;
+        totalWeight += weight;
+        weightedCenter += (col - mid) * weight;
+      }
+    }
+
+    for (var ei = 0; ei < state.echoTrail.length; ei++) {
+      var echo = state.echoTrail[ei];
+      var echoWeight = (echo.ttl / echo.maxTtl) * 0.2;
+      for (var ec = 0; ec < echo.cells.length; ec++) {
+        weightedCenter += (echo.cells[ec].x - mid) * echoWeight;
+        totalWeight += echoWeight * 0.5;
+      }
+    }
+
+    if (totalWeight === 0) return 0;
+    return Math.max(-2.25, Math.min(2.25, weightedCenter / totalWeight));
   }
 
   // ── Game state + loop ──────────────────────────────────────────────────
@@ -242,23 +276,50 @@
       switch (evt.type) {
         case 'lineClear':
           StackyAudio.playLineClear();
-          var isGolden = evt.data.count >= 4;
-          // Spawn particles for each cleared row
-          for (var lr = 0; lr < P.ROWS; lr++) {
-            spawnParticles(lr, isGolden ? 40 : 15, isGolden);
+          var isGolden = !!(evt.data && evt.data.golden);
+          var clearedCells = evt.data && evt.data.cells ? evt.data.cells : [];
+          var affectedRows = evt.data && evt.data.affectedRows ? evt.data.affectedRows : [];
+          if (clearedCells.length > 0) {
+            for (var lc = 0; lc < clearedCells.length; lc++) {
+              var burstCell = clearedCells[lc];
+              var tint = PIECE_COLORS[burstCell.color] || null;
+              spawnParticles(
+                burstCell.x * CELL + CELL / 2,
+                burstCell.y * CELL + CELL / 2,
+                isGolden ? 12 : 6,
+                isGolden,
+                tint,
+                CELL * 0.9
+              );
+            }
+          } else {
+            for (var lr = 0; lr < affectedRows.length; lr++) {
+              spawnParticles(CANVAS_W / 2, affectedRows[lr] * CELL + CELL / 2, isGolden ? 30 : 14, isGolden, null, CANVAS_W * 0.7);
+            }
           }
-          prevLines = state.linesCleared;
+          triggerShake(1.6 + ((evt.data && evt.data.intensity) || 1) * 0.75);
+          triggerGlitch(6 + (((evt.data && evt.data.intensity) || 1) * 2));
           break;
         case 'whisper':
           StackyAudio.playWhisper(evt.data ? evt.data.intensity : 1);
           break;
         case 'scream':
           StackyAudio.playScream();
-          triggerGlitch();
-          triggerShake(8);
+          triggerGlitch(16);
+          triggerShake(8 + ((evt.data && evt.data.intensity) || 0));
           break;
         case 'shake':
           triggerShake(evt.data.intensity);
+          break;
+        case 'explosion':
+          spawnParticles(
+            evt.data.x,
+            evt.data.y,
+            Math.min(80, evt.data.size * 8),
+            evt.data.size >= 10,
+            PIECE_COLORS[evt.data.color] || null,
+            CELL * (1 + evt.data.size * 0.08)
+          );
           break;
         case 'chocolateRise':
           StackyAudio.playChocolateRumble();
@@ -277,6 +338,9 @@
           break;
         case 'goldenTicket':
           StackyAudio.playRelief();
+          for (var gt = 0; gt < 24; gt++) {
+            spawnParticles(Math.random() * CANVAS_W, -8, 1, true, null, 18);
+          }
           break;
         case 'nearCollapse':
           var now = ts || Date.now();
@@ -293,6 +357,9 @@
           return;
         case 'commentary':
           // Already added to state.commentary by game.js
+          break;
+        case 'drift':
+          triggerShake(2 + Math.abs(evt.data.dir || 0) * 0.8);
           break;
       }
     }
@@ -353,9 +420,15 @@
   }
   function _drawInner() {
     var shake = getShakeOffset();
+    var towerLean = getTowerLean() * (0.01 + (state.stress || 0) / 9000);
 
     ctx.save();
     ctx.translate(shake.x, shake.y);
+    if (Math.abs(towerLean) > 0.001) {
+      ctx.translate(CANVAS_W / 2, CANVAS_H * 0.8);
+      ctx.rotate(towerLean);
+      ctx.translate(-CANVAS_W / 2, -CANVAS_H * 0.8);
+    }
 
     // Factory background — dark, atmospheric
     if (bgLoaded) {
@@ -640,14 +713,25 @@
     for (var ci = 0; ci < state.commentary.length; ci++) {
       var c = state.commentary[ci];
       var alpha = Math.min(c.ttl / 30, 1);
+      var kind = c.kind || 'warning';
+      var fill = '#fbbf24';
+      if (kind === 'regret') fill = '#f5d0fe';
+      else if (kind === 'panic') fill = '#fb7185';
+      else if (kind === 'good') fill = '#fde047';
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.fillStyle = '#fbbf24';
-      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.fillStyle = fill;
+      ctx.font = kind === 'regret' ? '800 12px "Trebuchet MS", sans-serif' : 'bold 11px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(0,0,0,0.8)';
-      ctx.shadowBlur = 4;
-      ctx.fillText(c.text, c.x, c.y);
+      ctx.shadowColor = kind === 'regret' ? 'rgba(192,132,252,0.9)' : 'rgba(0,0,0,0.8)';
+      ctx.shadowBlur = kind === 'regret' ? 10 : 4;
+      var jitter = kind === 'regret' ? (Math.random() - 0.5) * 2.5 : 0;
+      ctx.fillText(c.text, c.x + jitter, c.y);
+      if (kind === 'regret') {
+        ctx.globalAlpha = alpha * 0.35;
+        ctx.fillStyle = '#fff7ed';
+        ctx.fillText(c.text, c.x - jitter * 2, c.y + 1);
+      }
       ctx.restore();
     }
   }
