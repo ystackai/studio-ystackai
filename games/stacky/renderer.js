@@ -338,6 +338,9 @@
   bgImage.onload = function() { bgLoaded = true; };
 
   function draw() {
+    try { _drawInner(); } catch(e) { console.error('draw error:', e.message, e.stack); }
+  }
+  function _drawInner() {
     var shake = getShakeOffset();
 
     ctx.save();
