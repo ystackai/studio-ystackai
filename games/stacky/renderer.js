@@ -310,24 +310,36 @@
 
   // ── Rendering ──────────────────────────────────────────────────────────
 
+  // Load factory background
+  var bgImage = new Image();
+  bgImage.src = 'assets/bg-factory.jpg';
+  var bgLoaded = false;
+  bgImage.onload = function() { bgLoaded = true; };
+
   function draw() {
     var shake = getShakeOffset();
 
     ctx.save();
     ctx.translate(shake.x, shake.y);
 
-    // Background
-    ctx.fillStyle = '#0d0d14';
-    ctx.fillRect(-5, -5, CANVAS_W + 10, CANVAS_H + 10);
-
-    // Grid lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 0.5;
-    for (var x = 1; x < P.COLS; x++) {
-      ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, CANVAS_H); ctx.stroke();
+    // Factory background — dark, atmospheric
+    if (bgLoaded) {
+      ctx.globalAlpha = 0.3;
+      ctx.drawImage(bgImage, -5, -5, CANVAS_W + 10, CANVAS_H + 10);
+      ctx.globalAlpha = 1;
+      // Dark overlay for readability
+      ctx.fillStyle = 'rgba(13,10,20,0.75)';
+      ctx.fillRect(-5, -5, CANVAS_W + 10, CANVAS_H + 10);
+    } else {
+      ctx.fillStyle = '#0d0a14';
+      ctx.fillRect(-5, -5, CANVAS_W + 10, CANVAS_H + 10);
     }
-    for (var y = 1; y < P.ROWS; y++) {
-      ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(CANVAS_W, y * CELL); ctx.stroke();
+
+    // Conveyor belt grid — subtle diagonal hatching instead of Tetris grid lines
+    ctx.strokeStyle = 'rgba(139,92,246,0.04)';
+    ctx.lineWidth = 0.5;
+    for (var d = -CANVAS_H; d < CANVAS_W + CANVAS_H; d += 15) {
+      ctx.beginPath(); ctx.moveTo(d, 0); ctx.lineTo(d + CANVAS_H, CANVAS_H); ctx.stroke();
     }
 
     // Gravity echoes (ghost afterimages)
@@ -410,19 +422,45 @@
   function drawCell(context, col, row, color, alpha) {
     var x = col * CELL;
     var y = row * CELL;
-    var inset = 1;
+    var inset = 1.5;
+    var r = 4; // corner radius — candy pill shape
+    var w = CELL - inset * 2;
+    var h = CELL - inset * 2;
+    var cx = x + inset;
+    var cy = y + inset;
+
     context.save();
     context.globalAlpha = alpha;
+
+    // Rounded candy block
+    context.beginPath();
+    context.moveTo(cx + r, cy);
+    context.arcTo(cx + w, cy, cx + w, cy + h, r);
+    context.arcTo(cx + w, cy + h, cx, cy + h, r);
+    context.arcTo(cx, cy + h, cx, cy, r);
+    context.arcTo(cx, cy, cx + w, cy, r);
+    context.closePath();
     context.fillStyle = color;
-    context.fillRect(x + inset, y + inset, CELL - inset * 2, CELL - inset * 2);
-    // Highlight
-    context.fillStyle = 'rgba(255,255,255,0.2)';
-    context.fillRect(x + inset, y + inset, CELL - inset * 2, 2);
-    context.fillStyle = 'rgba(255,255,255,0.1)';
-    context.fillRect(x + inset, y + inset, 2, CELL - inset * 2);
-    // Shadow
-    context.fillStyle = 'rgba(0,0,0,0.3)';
-    context.fillRect(x + inset, y + CELL - inset - 2, CELL - inset * 2, 2);
+    context.fill();
+
+    // Candy shine — top-left radial gradient
+    var grad = context.createRadialGradient(cx + w * 0.3, cy + h * 0.25, 1, cx + w * 0.5, cy + h * 0.5, w * 0.7);
+    grad.addColorStop(0, 'rgba(255,255,255,0.35)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    context.fillStyle = grad;
+    context.fill();
+
+    // Bottom-right shadow
+    context.beginPath();
+    context.moveTo(cx + r, cy + h);
+    context.arcTo(cx + w, cy + h, cx + w, cy, r);
+    context.arcTo(cx + w, cy, cx, cy, r);
+    context.lineTo(cx + w - 3, cy + 3);
+    context.arcTo(cx + w - 3, cy + h - 3, cx + 3, cy + h - 3, r - 1);
+    context.closePath();
+    context.fillStyle = 'rgba(0,0,0,0.2)';
+    context.fill();
+
     context.restore();
   }
 

@@ -598,24 +598,9 @@ var StackyGame = (function () {
       }
     }
 
-    // Periodic boundary check: detect if any locked block has been pushed
-    // into the top row by rising chocolate, triggering game over.
-    if (state.lastBoundaryCheck === 0) {
-      state.lastBoundaryCheck = timestamp;
-    }
-    if (timestamp - state.lastBoundaryCheck >= BOUNDARY_CHECK_INTERVAL) {
-      state.lastBoundaryCheck = timestamp;
-      // If active piece now collides after grid shift, end the game
-      if (state.activePiece && checkCollision(state.grid, state.activePiece)) {
-        state.alive = false;
-        state.phase = 'gameOver';
-        if (state.score > state.hi) {
-          state.hi = state.score;
-          saveHi(state.hi);
-        }
-        return;
-      }
-    }
+    // Boundary check removed — game over is handled by spawnPiece collision
+    // and chocolate rise collision. The periodic check was too aggressive
+    // and killed games during normal play.
 
     if (timestamp - state.lastDropTime >= state.dropInterval) {
       state.lastDropTime = timestamp;
