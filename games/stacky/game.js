@@ -437,8 +437,21 @@ var StackyGame = (function () {
       var groups = findGroups(state.grid);
       if (groups.length === 0) break;
 
+      // Mark matched cells for highlight rendering
+      state._matchedCells = [];
+      for (var mg = 0; mg < groups.length; mg++) {
+        for (var mc = 0; mc < groups[mg].cells.length; mc++) {
+          state._matchedCells.push({
+            x: groups[mg].cells[mc].x,
+            y: groups[mg].cells[mc].y,
+            color: groups[mg].color
+          });
+        }
+      }
+
       chainLevel++;
       var cellsCleared = detonateGroups(state, groups);
+      state._matchedCells = []; // clear after detonation
 
       // Score: base × cells × chain multiplier × level
       var chainMult = Math.pow(2, Math.min(chainLevel - 1, 6));

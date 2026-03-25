@@ -433,6 +433,26 @@
       }
     }
 
+    // Matched cell highlights (pulse before explosion)
+    if (state._matchedCells && state._matchedCells.length > 0) {
+      // Dim the rest of the board
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      // Bright pulse on matched cells
+      var pulse = 0.7 + Math.sin(Date.now() / 80) * 0.3;
+      for (var mi = 0; mi < state._matchedCells.length; mi++) {
+        var mc = state._matchedCells[mi];
+        var matchColor = PIECE_COLORS[mc.color] || '#fff';
+        drawCell(ctx, mc.x, mc.y, matchColor, pulse);
+        // Glow
+        ctx.save();
+        ctx.globalAlpha = pulse * 0.4;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(mc.x * CELL, mc.y * CELL, CELL, CELL);
+        ctx.restore();
+      }
+    }
+
     // Particles
     renderParticles();
 
