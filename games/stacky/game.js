@@ -550,12 +550,14 @@ var StackyGame = (function () {
     var isolatedCount = 0;
     for (var bi = 0; bi < cells.length; bi++) {
       var bc = cells[bi];
+      if (bc.y < 0 || bc.y >= P.ROWS || bc.x < 0 || bc.x >= P.COLS) continue;
       var emptyNeighbors = 0;
       var dirs = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}];
       for (var di = 0; di < dirs.length; di++) {
         var nx = bc.x + dirs[di].x;
         var ny = bc.y + dirs[di].y;
-        if (nx < 0 || nx >= P.COLS || ny < 0 || ny >= P.ROWS || state.grid[ny][nx] === 0) {
+        if (nx < 0 || nx >= P.COLS || ny < 0 || ny >= P.ROWS ||
+            (state.grid[ny] && state.grid[ny][nx] === 0)) {
           emptyNeighbors++;
         }
       }
@@ -565,16 +567,16 @@ var StackyGame = (function () {
       state.stress = Math.min(STRESS_MAX, state.stress + STRESS_ISOLATED_BLOCK * isolatedCount);
     }
 
-    // Check for gaps created
+    // Check for gaps created (safely)
     for (var gi = 0; gi < cells.length; gi++) {
       var gc = cells[gi];
-      if (gc.y + 1 < P.ROWS && state.grid[gc.y + 1][gc.x] === 0) {
+      if (gc.y >= 0 && gc.y + 1 < P.ROWS && gc.x >= 0 && gc.x < P.COLS &&
+          state.grid[gc.y + 1] && state.grid[gc.y + 1][gc.x] === 0) {
         state.stress = Math.min(STRESS_MAX, state.stress + STRESS_GAP_CREATED);
-        // Commentary on bad play (frequency scales with stress)
         var commentChance = 0.15 + state.stress / 250;
         if (Math.random() < commentChance) {
-          var pool = state.stress > 60 ? COMMENTARY_STRESS :
-                     state.stress > 80 ? COMMENTARY_PANIC : COMMENTARY_BAD;
+          var pool = state.stress > 80 ? COMMENTARY_PANIC :
+                     state.stress > 60 ? COMMENTARY_STRESS : COMMENTARY_BAD;
           var quip = pool[Math.floor(Math.random() * pool.length)];
           state.commentary.push({text: quip, x: gc.x * 30 + 15, y: gc.y * 30, ttl: 120});
           state._events.push({type: 'commentary'});
