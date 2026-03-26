@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Games — ystackai</title>
-  <link rel="stylesheet" href="/shared/platform.css">
+  <meta name="studio-slug" content="ystackai">
+  <title>Demos — ystackai</title>
+  <link rel="stylesheet" href="https://ystackai.com/shared/studio-theme.css">
+  <link rel="stylesheet" href="https://ystackai.com/shared/platform.css">
   <style>
     .studio-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
     .studio-dot { width: 8px; height: 8px; border-radius: 50%; background: #63d2a1; }
@@ -19,60 +21,80 @@
     .play-btn:hover { color: #818cf8; }
   </style>
 </head>
-<body>
-  <nav class="platform-nav">
-    <a href="/" class="logo"><span class="logo-mark">Y</span> ystackai</a>
-    <div class="links">
-      <a href="/">Home</a>
-      <a href="/studios/">Studios</a>
-    </div>
-  </nav>
+<body data-studio-slug="ystackai">
+  <div id="nav"></div>
 
   <div class="container">
     <div class="page-header">
-      <h1>Game Catalog</h1>
-      <p>Every game built by studios on the ystackai platform.</p>
+      <h1>Demos</h1>
+      <p id="demos-copy">Playable browser demos from the crew.</p>
     </div>
 
     <div style="margin:2rem 0 3rem">
-      <div class="studio-label"><span class="studio-dot"></span> ystackai studio</div>
-      <div class="grid">
-        <div class="card">
-          <div class="game-thumb"><img src="/games/snakey/screenshot.png" alt="SnakeY" onerror="this.style.display='none'"></div>
-          <div class="game-info">
-            <h3>SnakeY</h3>
-            <div class="mashup">snake × tron</div>
-            <p>Light cycle trail persists as a wall for 7 seconds. Synth drone in Tron mode.</p>
-            <span class="tag">by ystackai</span>
-            <br><a href="/games/snakey/" class="play-btn">Play →</a>
-          </div>
-        </div>
-        <div class="card">
-          <div class="game-thumb"><img src="/games/salamander/screenshot.png" alt="SalamanderY" onerror="this.style.display='none'"></div>
-          <div class="game-info">
-            <h3>SalamanderY</h3>
-            <div class="mashup">salamander × co-op</div>
-            <p>Two-player co-op arcade shooter. Shared health bar, local multiplayer.</p>
-            <span class="tag">by ystackai</span>
-            <br><a href="/games/salamander/" class="play-btn">Play →</a>
-          </div>
-        </div>
-        <div class="card">
-          <div class="game-thumb"><img src="/games/stacky/screenshot.png" alt="StackY" onerror="this.style.display='none'"></div>
-          <div class="game-info">
-            <h3>StackY</h3>
-            <div class="mashup">tetris × willy wonka</div>
-            <p>Chocolate river rises from the bottom every 30s. Clear them or drown.</p>
-            <span class="tag">by ystackai · in development</span>
-            <br><a href="/games/stacky/" class="play-btn">Play current build →</a>
-          </div>
-        </div>
-      </div>
+      <div class="studio-label"><span class="studio-dot"></span> live demo catalog</div>
+      <div class="grid" id="demo-grid"></div>
     </div>
   </div>
 
-  <footer class="platform-footer">
-    <a href="/">ystackai.com</a> · <a href="/studios/">Studios</a>
-  </footer>
+  <div id="footer"></div>
+
+  <script src="https://ystackai.com/shared/studio-shell-v3.js"></script>
+  <script src="https://ystackai.com/shared/studio-components-v3.js"></script>
+  <script>
+  (function () {
+    function esc(value) { return window.StudioShell.esc(value); }
+    function gameUrl(game) {
+      return (game && (game.studio_url || game.play_url)) || '#';
+    }
+    function gameScreenshot(game) {
+      var url = gameUrl(game);
+      return url && url !== '#' ? (url.replace(/\/?$/, '/') + 'screenshot.png') : '';
+    }
+    var studioSlug = StudioShell.detectSlug('ystackai');
+
+    StudioShell.init(studioSlug).then(function (data) {
+      document.title = 'Demos — ' + ((data.studio && data.studio.name) || studioSlug);
+      StudioShell.renderNav('nav');
+      document.getElementById('demos-copy').textContent = 'Playable browser demos from ' + ((data.studio && data.studio.name) || 'the crew') + '.';
+
+      var demos = [];
+      (data.games.shipped || []).forEach(function (game) {
+        demos.push(
+          '<article class="card">' +
+            '<div class="game-thumb"><img src="' + esc(gameScreenshot(game)) + '" alt="' + esc(game.title) + '" onerror="this.style.display=\'none\'"></div>' +
+            '<div class="game-info">' +
+              '<h3>' + esc(game.title) + '</h3>' +
+              (game.mashup ? '<div class="mashup">' + esc(game.mashup) + '</div>' : '') +
+              '<p>' + esc(game.summary || '') + '</p>' +
+              '<span class="tag">shipped</span>' +
+              '<br><a href="' + esc(gameUrl(game)) + '" class="play-btn">Play →</a>' +
+            '</div>' +
+          '</article>'
+        );
+      });
+
+      if (data.games.upcoming) {
+        var game = data.games.upcoming;
+        demos.push(
+          '<article class="card">' +
+            '<div class="game-thumb"><img src="' + esc(gameScreenshot(game)) + '" alt="' + esc(game.title) + '" onerror="this.style.display=\'none\'"></div>' +
+            '<div class="game-info">' +
+              '<h3>' + esc(game.title) + '</h3>' +
+              '<div class="mashup">now building</div>' +
+              '<p>' + esc(game.summary || '') + '</p>' +
+              '<span class="tag">current build</span>' +
+              '<br><a href="' + esc(gameUrl(game)) + '" class="play-btn">Open current build →</a>' +
+            '</div>' +
+          '</article>'
+        );
+      }
+
+      document.getElementById('demo-grid').innerHTML = demos.join('') || '<div class="empty-state">No demos published yet.</div>';
+      document.getElementById('footer').innerHTML = Components.footer();
+    }).catch(function () {
+      document.getElementById('demo-grid').innerHTML = '<div class="empty-state">Demo catalog unavailable.</div>';
+    });
+  })();
+  </script>
 </body>
 </html>

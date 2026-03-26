@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Team Member — YSTACK Games</title>
-  <link rel="stylesheet" href="/shared/studio-theme.css">
+  <meta name="studio-slug" content="ystackai">
+  <title>Crew Profile — ystackai</title>
+  <link rel="stylesheet" href="https://ystackai.com/shared/studio-theme.css">
+  <link rel="stylesheet" href="https://ystackai.com/shared/platform.css">
   <style>
     .profile-page { max-width: 720px; margin: 0 auto; padding: 2rem; }
 
@@ -61,19 +63,21 @@
     }
   </style>
 </head>
-<body>
+<body data-studio-slug="ystackai">
+  <div id="nav"></div>
   <div class="profile-page">
-    <a href="/ystackai/" class="back-link">← Back to YSTACK Games</a>
+    <a href="/team/" class="back-link" id="back-link">← Back to Crew</a>
     <div id="profile-content">
       <p style="color:var(--studio-soft)">Loading profile...</p>
     </div>
   </div>
 
-  <script src="/shared/studio-shell.js"></script>
+  <script src="https://ystackai.com/shared/studio-shell-v3.js"></script>
   <script>
   (function () {
     var params = new URLSearchParams(window.location.search);
     var id = params.get('id');
+    var studioSlug = StudioShell.detectSlug('ystackai');
     if (!id) { document.getElementById('profile-content').innerHTML = '<p>No team member specified.</p>'; return; }
 
     function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
@@ -107,37 +111,33 @@
       return html;
     }
 
-    // Load team data from studio.json
-    fetch('/studio-data/ystackai/studio.json')
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
+    StudioShell.init(studioSlug).then(function (data) {
+        StudioShell.renderNav('nav');
+        document.getElementById('back-link').href = data.team_url || '/team/';
+        var cast = data.cast || [];
         var member = null;
-        for (var i = 0; i < data.team.length; i++) {
-          if (data.team[i].id === id) { member = data.team[i]; break; }
+        for (var i = 0; i < cast.length; i++) {
+          if (cast[i].person_id === id) { member = cast[i]; break; }
         }
         if (!member) { document.getElementById('profile-content').innerHTML = '<p>Team member not found.</p>'; return; }
 
-        document.title = member.name + ' — YSTACK Games';
+        document.title = member.display_name + ' — ' + ((data.studio && data.studio.name) || studioSlug);
 
         var html = '<div class="profile-header">'
-          + '<img class="profile-avatar" src="' + esc(member.avatar) + '" alt="' + esc(member.name) + '">'
+          + '<img class="profile-avatar" src="' + esc(member.avatar_url) + '" alt="' + esc(member.display_name) + '">'
           + '<div class="profile-info">'
-          + '<h1>' + esc(member.name) + '</h1>'
-          + '<div class="profile-role">' + esc(member.role) + '</div>'
-          + (member.responsibilities ? '<div class="profile-responsibilities">' + esc(member.responsibilities) + '</div>' : '')
-          + (member.quote ? '<div class="profile-quote">' + esc(member.quote) + '</div>' : '')
+          + '<h1>' + esc(member.display_name) + '</h1>'
+          + '<div class="profile-role">' + esc(member.canonical_title) + '</div>'
+          + (member.bio ? '<div class="profile-responsibilities">' + esc(member.bio) + '</div>' : '')
           + (member.email ? '<div class="profile-email"><a href="mailto:' + esc(member.email) + '">' + esc(member.email) + '</a></div>' : '')
           + '</div></div>';
 
-        html += '<div class="profile-bio"><p>' + esc(member.bio) + '</p></div>';
+        html += '<div class="profile-bio"><p>' + esc(member.bio || '') + '</p></div>';
 
         document.getElementById('profile-content').innerHTML = html + '<div id="persona-section"></div>';
 
-        // Load full persona markdown
-        var filemap = { brad: 'brad-ceo.md', wei: 'wei-researcher.md', jb: 'jb-engineer.md', schneider: 'schneider.md', derek: 'derek-em.md', megan: 'megan-sourcer.md' };
-        var mdFile = filemap[id];
-        if (mdFile) {
-          fetch('/ystackai/team/' + mdFile)
+        if (member.persona_url) {
+          fetch(member.persona_url)
             .then(function (r) { return r.text(); })
             .then(function (md) {
               var personaHtml = '<div class="profile-persona">'
@@ -148,6 +148,9 @@
             })
             .catch(function () {});
         }
+      })
+      .catch(function () {
+        document.getElementById('profile-content').innerHTML = '<p>Profile data unavailable.</p>';
       });
   })();
   </script>

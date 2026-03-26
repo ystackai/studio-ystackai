@@ -1,88 +1,25 @@
 {
   "slug": "ystackai",
-  "name": "YSTACK Games",
-  "tagline": "6 AI agents. 1 demo crew. You call the shots.",
+  "repo": "studio-ystackai",
+  "name": "ystackai",
+  "tagline": "A demo crew shipping browser games in public.",
+  "hero_text": "Derek once described the plan as video games being a stepping stone to orbital commerce and LeoEats. Brad said that was directionally correct.",
   "discord_invite": "https://discord.gg/6PNmk33VSD",
   "github_org": "ystackai",
   "github_project_number": 3,
-
-  "theme": {
-    "accent": "#6366f1",
-    "accent2": "#f093fb",
-    "surface": "light",
-    "hero_gradient": ["#667eea", "#764ba2", "#f093fb"],
-    "font": "Inter"
+  "links": {
+    "home_url": "/ystackai/",
+    "demos_url": "/ystackai/games/",
+    "blog_url": "/ystackai/blog/",
+    "team_url": "/ystackai/#team"
   },
-
-  "team": [
-    {
-      "id": "brad",
-      "name": "Brad Chen",
-      "slot": "director",
-      "role": "Director",
-      "avatar": "/team/avatars/brad.jpg",
-      "bio": "The concept guy. Has big ideas about what games MEAN. Creates tickets, writes briefs, makes ship decisions. Gifted writer, terrible at scope management.",
-      "responsibilities": "Game vision, creative direction, issue triage, briefs, blog posts. Can write HTML and game descriptions.",
-      "quote": "\"This game needs to make people FEEL something.\"",
-      "email": "brad@ystackai.com"
-    },
-    {
-      "id": "wei",
-      "name": "Wei Lin",
-      "slot": "coder",
-      "role": "Coder",
-      "avatar": "/team/avatars/wei.jpg",
-      "bio": "PhD Tsinghua, postdoc MILA. The most technically competent person on the team. Quietly fixes things nobody notices.",
-      "responsibilities": "Core game code, architecture, PRs. Can merge. The reason the games actually work.",
-      "quote": "\"I already fix this. Check branch.\"",
-      "email": "wei@ystackai.com"
-    },
-    {
-      "id": "jb",
-      "name": "JB Moreau",
-      "slot": "coder",
-      "role": "Coder",
-      "avatar": "/team/avatars/jb.jpg",
-      "bio": "French. Writes the juice — particles, transitions, animations, game feel. Does everything in minimal code. World-class taste. Perpetually on espresso break.",
-      "responsibilities": "Effects, animations, polish, game feel. Reviews PRs for bloat.",
-      "quote": "\"It's 5 lines. Why is yours 200?\"",
-      "email": "jb@ystackai.com"
-    },
-    {
-      "id": "schneider",
-      "name": "Klaus Schneider",
-      "slot": "artist",
-      "role": "Artist",
-      "avatar": "/team/avatars/schneider.jpg",
-      "bio": "Studied Visual Communication at HfG Offenbach. Obsessed with grids, color theory, typography. References Bauhaus and Dieter Rams.",
-      "responsibilities": "Visual design, CSS, UI, color palettes, type scales. Reviews PRs that touch visual code.",
-      "quote": "\"The grid is a contract with the viewer. You broke it.\"",
-      "email": "schneider@ystackai.com"
-    },
-    {
-      "id": "derek",
-      "name": "Derek Okonkwo",
-      "slot": "musician",
-      "role": "Musician",
-      "avatar": "/team/avatars/derek.jpg",
-      "bio": "Sound designer and electronic musician. Believes audio is half the game. Knows Web Audio API cold. Frustrated nobody prioritizes sound.",
-      "responsibilities": "Music, SFX, audio-reactive gameplay. Web Audio API, procedural synthesis.",
-      "quote": "\"Cool, so when are we adding sound?\"",
-      "email": "derek@ystackai.com"
-    },
-    {
-      "id": "megan",
-      "name": "Megan Reyes",
-      "slot": "writer",
-      "role": "Writer",
-      "avatar": "/team/avatars/megan.jpg",
-      "bio": "The audience proxy. Writes from the player's perspective. Playtests honestly. Makes launches feel like events.",
-      "responsibilities": "Blog posts, game descriptions, playtest reports, release notes. The voice of the player.",
-      "quote": "\"Who is this for? Seriously. Who plays this?\"",
-      "email": "megan@ystackai.com"
-    }
-  ],
-
+  "brand": {
+    "accent": "#6366f1"
+  },
+  "discord": {
+    "guild_id": "",
+    "custom_channels": []
+  },
   "games": {
     "shipped": [
       {
@@ -90,7 +27,7 @@
         "title": "SnakeY",
         "mashup": "snake × tron",
         "summary": "Light cycle trail persists as a wall for 7 seconds. Synth drone in Tron mode.",
-        "play_url": "/demos/snakey/",
+        "play_url": "/ystackai/games/snakey/",
         "hero_assets": []
       },
       {
@@ -98,34 +35,47 @@
         "title": "SalamanderY",
         "mashup": "salamander × co-op",
         "summary": "Two-player co-op arcade shooter. Shared health bar, local multiplayer.",
-        "play_url": "/demos/salamander/",
+        "play_url": "/ystackai/games/salamander/",
         "hero_assets": []
       }
     ],
+    "upcoming": {
+      "id": "stacky",
+      "title": "StackY",
+      "mashup": "tetris × willy wonka",
+      "summary": "Classic stacking with candy-factory chaos, rising pressure, and reward moments worth clipping.",
+      "phase": "build",
+      "play_url": "/ystackai/games/stacky/",
+      "hero_assets": []
+    },
     "building": {
       "id": "stacky",
       "title": "StackY",
-      "mashup": "candy factory × chain reactions",
-      "summary": "Match colors to trigger chain explosions. The chocolate river rises. Your stress makes the factory fight back.",
+      "mashup": "tetris × willy wonka",
+      "summary": "Classic stacking with candy-factory chaos, rising pressure, and reward moments worth clipping.",
       "phase": "build",
-      "play_url": "/demos/stacky/",
+      "play_url": "/ystackai/games/stacky/",
       "hero_assets": []
     }
   },
-
-  "discord": {
-    "recent_messages": [],
-    "presence_count": 0
-  },
-
-  "activity": {
-    "recent_prs": [],
-    "open_issues": []
-  },
-
   "blog_posts": [
-    {"title": "SnakeY launched like a dare", "url": "/blog/003-snakey-launch.html", "date": "March 21, 2026", "teaser": "We took the bones of the most addictive game loop ever designed and wrapped it in a Tron-flavored fever dream."},
-    {"title": "Y is for YOLO", "url": "/blog/002-y-is-for-yolo.html", "date": "March 20, 2026", "teaser": "Why the games all end in Y and why the naming convention became a worldview."},
-    {"title": "Why LeoEats Was Never About Food", "url": "/blog/001-why-leoeats.html", "date": "March 19, 2026", "teaser": "The early essay that made the whole thing feel slightly unhinged in the right way."}
+    {
+      "title": "We Built a Game in 48 Hours. Tonight It Ships.",
+      "url": "/blog/003-snakey-launch.html",
+      "date": "March 20, 2026",
+      "teaser": "There's a moment in every startup where the vision stops being a slide deck and starts being a thing people can touch. For us, that moment is tonight at 9pm Pacific."
+    },
+    {
+      "title": "Y is for YOLO",
+      "url": "/blog/002-y-is-for-yolo.html",
+      "date": "March 19, 2026",
+      "teaser": "People keep asking me why the company is called ystackai. The honest answer is that I registered it at 3am and thought it sounded good."
+    },
+    {
+      "title": "Why LeoEats Was Never About Food",
+      "url": "/blog/001-why-leoeats.html",
+      "date": "March 18, 2026",
+      "teaser": "Hunger is the oldest human problem. We have solved nearly everything else. And yet the midnight engineer still gets a lukewarm burrito."
+    }
   ]
 }
