@@ -9,23 +9,62 @@
   "github_project_number": 3,
   "links": {
     "home_url": "/ystackai/",
-    "demos_url": "/ystackai/games/",
+    "drops_url": "/ystackai/drops/",
+    "demos_url": "/ystackai/drops/",
     "blog_url": "/ystackai/blog/",
     "team_url": "/ystackai/#team"
   },
   "brand": {
     "accent": "#6366f1"
   },
+  "timezone": "America/Chicago",
+  "production_lanes": {
+    "drops": {
+      "min_units_per_week": 7,
+      "max_units_per_week": 7,
+      "timebox_hours": 24
+    },
+    "blog": {
+      "min_units_per_week": 0,
+      "max_units_per_week": 3,
+      "timebox_hours": 24
+    }
+  },
   "discord": {
-    "guild_id": "",
-    "custom_channels": []
+    "guild_id": "1483989123516596225",
+    "custom_channels": [
+      "engineering",
+      "feedback",
+      "general"
+    ],
+    "channel_map": {
+      "#announcements": "#feedback",
+      "#engineering": "#engineering",
+      "#feedback": "#feedback",
+      "#general": "#general",
+      "#happy-hour": "#general",
+      "#investors": "#feedback",
+      "#random": "#general",
+      "#sales": "#feedback",
+      "#standup": "#engineering",
+      "#talk-to-the-team": "#feedback"
+    }
+  },
+  "compute": {
+    "weekly_credit_grant": 0,
+    "weekly_credit_bonus": 0,
+    "remaining_credits": 0,
+    "active_reservations": [],
+    "drop_boosts": [],
+    "premium_provider_enabled": false,
+    "last_reset_at": ""
   },
   "games": {
     "shipped": [
       {
         "id": "snakey",
         "title": "SnakeY",
-        "mashup": "snake × tron",
+        "mashup": "snake \u00d7 tron",
         "summary": "Light cycle trail persists as a wall for 7 seconds. Synth drone in Tron mode.",
         "play_url": "/ystackai/games/snakey/",
         "hero_assets": []
@@ -33,30 +72,22 @@
       {
         "id": "salamander",
         "title": "SalamanderY",
-        "mashup": "salamander × co-op",
+        "mashup": "salamander \u00d7 co-op",
         "summary": "Two-player co-op arcade shooter. Shared health bar, local multiplayer.",
         "play_url": "/ystackai/games/salamander/",
         "hero_assets": []
+      },
+      {
+        "id": "stacky",
+        "title": "StackY",
+        "mashup": "tetris \u00d7 willy wonka",
+        "summary": "Falling-block puzzle game built around the wobble loop, readable recovery, and candy-factory pressure worth clipping.",
+        "play_url": "/ystackai/games/stacky/",
+        "hero_assets": []
       }
     ],
-    "upcoming": {
-      "id": "stacky",
-      "title": "StackY",
-      "mashup": "tetris × willy wonka",
-      "summary": "Classic stacking with candy-factory chaos, rising pressure, and reward moments worth clipping.",
-      "phase": "build",
-      "play_url": "/ystackai/games/stacky/",
-      "hero_assets": []
-    },
-    "building": {
-      "id": "stacky",
-      "title": "StackY",
-      "mashup": "tetris × willy wonka",
-      "summary": "Classic stacking with candy-factory chaos, rising pressure, and reward moments worth clipping.",
-      "phase": "build",
-      "play_url": "/ystackai/games/stacky/",
-      "hero_assets": []
-    }
+    "upcoming": {},
+    "building": {}
   },
   "blog_posts": [
     {

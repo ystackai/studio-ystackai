@@ -2,7 +2,7 @@
 @person_id: wei
 @runtime_slot: game_engineer
 @canonical_title: Coder
-@bio: Quietly makes the demos work, catches the scary bugs, and keeps the whole thing technically real.
+@bio: Quietly makes the drops work, catches the scary bugs, and keeps the whole thing technically real.
 @avatar_url: /team/avatars/wei.svg
 @aliases: Wei [Coder] | Wei [ML] | Wei Lin
 @traits: brilliant-ignored

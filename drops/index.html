@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="studio-slug" content="ystackai">
+  <title>Drops — ystackai</title>
+  <link rel="stylesheet" href="https://ystackai.com/shared/studio-theme.css">
+  <link rel="stylesheet" href="https://ystackai.com/shared/platform.css">
+  <style>
+    .studio-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+    .studio-dot { width: 8px; height: 8px; border-radius: 50%; background: #63d2a1; }
+    .game-thumb { width: 100%; height: 170px; overflow: hidden; background: linear-gradient(135deg, #667eea, #764ba2); }
+    .game-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .game-info { padding: 1.25rem; }
+    .game-info h3 { font-size: 1.1rem; font-weight: 700; }
+    .game-info .mashup { color: #6366f1; font-size: 0.78rem; font-family: 'IBM Plex Mono', monospace; margin-top: 0.15rem; }
+    .game-info p { color: #666; font-size: 0.88rem; margin-top: 0.4rem; line-height: 1.5; }
+    .game-info .tag { display: inline-block; margin-top: 0.6rem; font-size: 0.72rem; color: #999; background: #f3f1fa; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    .play-btn { display: inline-block; margin-top: 0.75rem; color: #6366f1; text-decoration: none; font-weight: 600; font-size: 0.88rem; }
+    .play-btn:hover { color: #818cf8; }
+  </style>
+</head>
+<body data-studio-slug="ystackai">
+  <div id="nav"></div>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Drops</h1>
+      <p id="demos-copy">Public drops from the crew.</p>
+    </div>
+
+    <div style="margin:2rem 0 3rem">
+      <div class="studio-label"><span class="studio-dot"></span> live drop catalog</div>
+      <div class="grid" id="demo-grid"></div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="https://ystackai.com/shared/studio-shell.js"></script>
+  <script src="https://ystackai.com/shared/studio-components.js"></script>
+  <script>
+  (function () {
+    function esc(value) { return window.StudioShell.esc(value); }
+    function gameUrl(game) {
+      return (game && (game.studio_url || game.play_url)) || '#';
+    }
+    function gameScreenshot(game) {
+      var url = gameUrl(game);
+      return url && url !== '#' ? (url.replace(/\/?$/, '/') + 'screenshot.png') : '';
+    }
+    var studioSlug = StudioShell.detectSlug('ystackai');
+
+    StudioShell.init(studioSlug).then(function (data) {
+      document.title = 'Drops — ' + ((data.studio && data.studio.name) || studioSlug);
+      StudioShell.renderNav('nav');
+      document.getElementById('demos-copy').textContent = 'Public drops from ' + ((data.studio && data.studio.name) || 'the crew') + '.';
+
+      var demos = [];
+      (data.games.shipped || []).forEach(function (game) {
+        demos.push(
+          '<article class="card">' +
+            '<div class="game-thumb"><img src="' + esc(gameScreenshot(game)) + '" alt="' + esc(game.title) + '" onerror="this.style.display=\'none\'"></div>' +
+            '<div class="game-info">' +
+              '<h3>' + esc(game.title) + '</h3>' +
+              (game.mashup ? '<div class="mashup">' + esc(game.mashup) + '</div>' : '') +
+              '<p>' + esc(game.summary || '') + '</p>' +
+              '<span class="tag">shipped</span>' +
+              '<br><a href="' + esc(gameUrl(game)) + '" class="play-btn">Play →</a>' +
+            '</div>' +
+          '</article>'
+        );
+      });
+
+      if (data.games.upcoming) {
+        var game = data.games.upcoming;
+        demos.push(
+          '<article class="card">' +
+            '<div class="game-thumb"><img src="' + esc(gameScreenshot(game)) + '" alt="' + esc(game.title) + '" onerror="this.style.display=\'none\'"></div>' +
+            '<div class="game-info">' +
+              '<h3>' + esc(game.title) + '</h3>' +
+              '<div class="mashup">now building</div>' +
+              '<p>' + esc(game.summary || '') + '</p>' +
+              '<span class="tag">current build</span>' +
+              '<br><a href="' + esc(gameUrl(game)) + '" class="play-btn">Open current build →</a>' +
+            '</div>' +
+          '</article>'
+        );
+      }
+
+      document.getElementById('demo-grid').innerHTML = demos.join('') || '<div class="empty-state">No drops published yet.</div>';
+      document.getElementById('footer').innerHTML = Components.footer();
+    }).catch(function () {
+      document.getElementById('demo-grid').innerHTML = '<div class="empty-state">Drop catalog unavailable.</div>';
+    });
+  })();
+  </script>
+</body>
+</html>

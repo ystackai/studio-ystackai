@@ -113,6 +113,8 @@
 
     /* Progress bar */
     .progress-section { margin-bottom: 1.25rem; }
+    .release-brief-link { display:inline-flex; align-items:center; gap:0.35rem; margin-top:0.85rem; color:var(--studio-accent); text-decoration:none; font-weight:700; font-size:0.9rem; }
+    .release-brief-link:hover { text-decoration:underline; }
     .progress-label { font-size: 0.8rem; color: var(--studio-muted); margin-bottom: 0.4rem; }
     .progress-label strong { color: var(--studio-text); }
     .progress-track { height: 8px; background: rgba(99,102,241,0.1); border-radius: 4px; overflow: hidden; }
@@ -183,15 +185,15 @@
     <!-- 2. Conversation (3 messages) -->
     <div class="section-header">
       <h2>Chat</h2>
-      <a id="discord-link" href="#">Join on Discord →</a>
+      <a id="discord-link" href="#" style="display:none">Join on Discord →</a>
     </div>
     <div id="chat-feed"></div>
-    <a id="chime-in" href="#" class="chat-cta">Chime in on Discord →</a>
+    <a id="chime-in" href="#" class="chat-cta" style="display:none">Chime in on Discord →</a>
 
-    <!-- 3. Demos carousel -->
+    <!-- 3. Drops carousel -->
     <div class="section-header">
-      <h2>Demos</h2>
-      <a href="/demos/">View all →</a>
+      <h2>Drops</h2>
+      <a href="/drops/">View all →</a>
     </div>
     <div class="demos-row" id="demos-row"></div>
 
@@ -204,6 +206,7 @@
       <div class="progress-label"><span id="progress-text"></span></div>
       <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
       <div class="ship-gates" id="ship-gates"></div>
+      <a id="brief-link" class="release-brief-link" href="#" target="_blank" rel="noopener" style="display:none">Read release brief →</a>
     </div>
     <div class="board-lanes" id="board-lanes"></div>
 
@@ -270,6 +273,19 @@
     var studioSlug = StudioShell.detectSlug('ystackai');
     StudioShell.init(studioSlug).then(function() {
       var d = StudioShell.data;
+      var homepageReleaseId = d.studio && d.studio.live_homepage_release_id;
+      var homepageDrop = (d.drops || []).find(function(drop) {
+        return drop && drop.id === homepageReleaseId && drop.canonical_url;
+      });
+      var currentPath = window.location.pathname.replace(/\/+$/, '/') || '/';
+      var studioRoot = ('/' + studioSlug + '/').replace(/\/+$/, '/');
+      if (homepageDrop && currentPath === studioRoot) {
+        var targetPath = String(homepageDrop.canonical_url || '').replace(/\/+$/, '/') || '';
+        if (targetPath && targetPath !== currentPath) {
+          window.location.replace(targetPath);
+          return;
+        }
+      }
       AGENTS = buildAgentMap(d.cast);
       StudioShell.renderNav('nav');
       document.title = (d.studio.name || studioSlug) + ' — Crew';
@@ -288,9 +304,20 @@
       if (boardLink && d.board_url) boardLink.href = d.board_url;
 
       // Discord links
+      var dl = document.getElementById('discord-link');
+      var ci = document.getElementById('chime-in');
       if (d.discord_invite) {
-        var dl = document.getElementById('discord-link'); if (dl) dl.href = d.discord_invite;
-        var ci = document.getElementById('chime-in'); if (ci) ci.href = d.discord_invite;
+        if (dl) {
+          dl.href = d.discord_invite;
+          dl.style.display = '';
+        }
+        if (ci) {
+          ci.href = d.discord_invite;
+          ci.style.display = '';
+        }
+      } else {
+        if (dl) dl.style.display = 'none';
+        if (ci) ci.style.display = 'none';
       }
 
       // Blog rail
@@ -305,15 +332,15 @@
       });
       document.getElementById('blog-row').innerHTML = blogCards.join('') || '<p style="color:var(--studio-soft)">No blog posts yet</p>';
 
-      // Demos carousel
-      var shipped = (d.games && d.games.shipped) || [];
-      var building = d.games && d.games.upcoming;
+      // Drops carousel
+      var shipped = (d.drops && d.drops.length) ? d.drops : ((d.games && d.games.shipped) || []);
+      var building = d.active_drop && d.active_drop.id ? d.active_drop : (d.games && d.games.upcoming);
       var demos = [];
-      if (building && building.title) {
+      if (building && building.title && building.status !== 'shipped') {
         demos.push('<a class="demo-card" href="' + esc(gameUrl(building)) + '">'
           + '<div class="demo-thumb"><img src="' + esc(gameScreenshot(building)) + '" alt="" onerror="this.style.display=\'none\'"></div>'
           + '<div class="demo-info"><h3>' + esc(building.title) + '</h3>'
-          + '<div class="mashup">now building</div>'
+          + '<div class="mashup">' + esc(building.homepage_takeover ? 'homepage takeover' : 'now building') + '</div>'
           + '<p>' + esc((building.summary || '').substring(0, 80)) + '</p></div></a>');
       }
       shipped.forEach(function(g) {
@@ -321,13 +348,13 @@
         demos.push('<a class="demo-card" href="' + esc(playUrl) + '">'
           + '<div class="demo-thumb"><img src="' + esc(gameScreenshot(g)) + '" alt="" onerror="this.style.display=\'none\'"></div>'
           + '<div class="demo-info"><h3>' + esc(g.title) + '</h3>'
-          + '<div class="mashup">' + esc(g.mashup || '') + '</div>'
+          + '<div class="mashup">' + esc((g.tags || []).join(' · ') || g.mashup || '') + '</div>'
           + '<p>' + esc((g.summary || '').substring(0, 80)) + '</p></div></a>');
       });
-      document.getElementById('demos-row').innerHTML = demos.join('') || '<p style="color:var(--studio-soft)">No demos shipped yet</p>';
+      document.getElementById('demos-row').innerHTML = demos.join('') || '<p style="color:var(--studio-soft)">No drops shipped yet</p>';
 
       // Board title
-      if (building) document.getElementById('board-title').textContent = 'Board: Currently Building ' + building.title;
+      if (building) document.getElementById('board-title').textContent = 'Board: Current Release ' + building.title;
 
       // Progress bar + ship gates
       fetch('/api/board?repo=' + encodeURIComponent((d.studio && d.studio.repo) || 'studio-ystackai'))
@@ -355,6 +382,11 @@
         });
 
       var release = d.release || {};
+      var briefLink = document.getElementById('brief-link');
+      if (briefLink && building && building.brief_url) {
+        briefLink.href = publicUrl(building.brief_url);
+        briefLink.style.display = 'inline-flex';
+      }
       var gates = [
         { name: 'Creative', passed: !!release.creative_signoff },
         { name: 'QA', passed: !!release.qa_signoff },

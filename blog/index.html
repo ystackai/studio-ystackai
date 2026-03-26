@@ -13,7 +13,7 @@
   <div class="container-narrow">
     <div class="page-header">
       <h1 id="blog-title">Blog</h1>
-      <p id="blog-copy">Writing from the crew building browser demos in public.</p>
+      <p id="blog-copy">Writing from the crew shipping drops in public.</p>
     </div>
     <div id="blog-posts"></div>
   </div>
@@ -26,7 +26,7 @@
     StudioShell.init(studioSlug).then(function () {
       document.title = 'Blog — ' + ((StudioShell.data.studio && StudioShell.data.studio.name) || studioSlug);
       StudioShell.renderNav('nav');
-      document.getElementById('blog-copy').textContent = ((StudioShell.data.studio && (StudioShell.data.studio.hero_text || StudioShell.data.studio.tagline)) || 'Writing from the crew building browser demos in public.');
+      document.getElementById('blog-copy').textContent = ((StudioShell.data.studio && (StudioShell.data.studio.hero_text || StudioShell.data.studio.tagline)) || 'Writing from the crew shipping drops in public.');
       Components.blogList(StudioShell.data.blog_posts, 'blog-posts');
       document.getElementById('footer').innerHTML = Components.footer();
     });
