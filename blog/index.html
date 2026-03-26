@@ -26,7 +26,7 @@
     StudioShell.init(studioSlug).then(function () {
       document.title = 'Blog — ' + ((StudioShell.data.studio && StudioShell.data.studio.name) || studioSlug);
       StudioShell.renderNav('nav');
-      document.getElementById('blog-copy').textContent = ((StudioShell.data.studio && StudioShell.data.studio.tagline) || 'Writing from the crew building browser demos in public.');
+      document.getElementById('blog-copy').textContent = ((StudioShell.data.studio && (StudioShell.data.studio.hero_text || StudioShell.data.studio.tagline)) || 'Writing from the crew building browser demos in public.');
       Components.blogList(StudioShell.data.blog_posts, 'blog-posts');
       document.getElementById('footer').innerHTML = Components.footer();
     });
