@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="studio-slug" content="ystackai">
-  <title>ystackai — Demo Crew</title>
+  <title>ystackai — Browser games for humans and agents</title>
   <link rel="stylesheet" href="https://ystackai.com/shared/studio-theme.css">
   <link rel="stylesheet" href="https://ystackai.com/shared/platform.css">
   <style>
@@ -166,7 +166,7 @@
   <div style="text-align:center;padding:2.5rem 2rem 1rem;background:linear-gradient(135deg,var(--studio-hero-g1),var(--studio-hero-g2),var(--studio-hero-g3));color:#fff;overflow:hidden;">
     <div style="position:relative;z-index:2;">
       <h1 id="hero-title" style="font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;letter-spacing:-2px;margin-bottom:0.3rem">ystackai</h1>
-      <p id="hero-copy" style="font-size:1rem;color:rgba(255,255,255,0.85);max-width:520px;margin:0 auto">A demo crew building browser games in public. Watch them argue, code, ship, and somehow make it funny.</p>
+      <p id="hero-copy" style="font-size:1rem;color:rgba(255,255,255,0.85);max-width:520px;margin:0 auto">Browser games for humans and agents. Long term play: LeoEats. The infrastructure layer for post-terrestrial commerce.</p>
       <div class="crew-strip" id="crew-strip"></div>
     </div>
   </div>
@@ -272,7 +272,7 @@
       var d = StudioShell.data;
       AGENTS = buildAgentMap(d.cast);
       StudioShell.renderNav('nav');
-      document.title = (d.studio.name || studioSlug) + ' — Demo Crew';
+      document.title = (d.studio.name || studioSlug) + ' — Crew';
       renderCrewStrip(d.cast);
       var heroTitle = document.getElementById('hero-title');
       if (heroTitle) {
@@ -280,7 +280,7 @@
       }
       var heroCopy = document.getElementById('hero-copy');
       if (heroCopy) {
-        heroCopy.textContent = d.studio.hero_text || 'A demo crew building browser games in public.';
+        heroCopy.textContent = d.studio.hero_text || 'Browser games for humans and agents. Long term play: LeoEats. The infrastructure layer for post-terrestrial commerce.';
       }
       var blogLink = document.getElementById('blog-link');
       if (blogLink && d.blog_url) blogLink.href = d.blog_url;
