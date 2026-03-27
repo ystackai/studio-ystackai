@@ -113,8 +113,15 @@
 
     /* Progress bar */
     .progress-section { margin-bottom: 1.25rem; }
-    .release-brief-link { display:inline-flex; align-items:center; gap:0.35rem; margin-top:0.85rem; color:var(--studio-accent); text-decoration:none; font-weight:700; font-size:0.9rem; }
-    .release-brief-link:hover { text-decoration:underline; }
+    .release-brief { display:none; margin:0.85rem 0 1rem; border:1px solid rgba(255,255,255,0.08); border-radius:16px; background:rgba(15,23,42,0.55); overflow:hidden; }
+    .release-brief summary { cursor:pointer; list-style:none; padding:0.9rem 1rem; color:var(--studio-accent); font-weight:700; font-size:0.95rem; }
+    .release-brief summary::-webkit-details-marker { display:none; }
+    .release-brief summary::after { content:'+'; float:right; color:var(--studio-soft); }
+    .release-brief[open] summary::after { content:'-'; }
+    .release-brief-content { padding:0 1rem 1rem; color:var(--studio-text); }
+    .release-brief-content h2 { margin:0.9rem 0 0.5rem; font-size:1rem; }
+    .release-brief-content p, .release-brief-content li { color:var(--studio-soft); line-height:1.6; }
+    .release-brief-content ul { margin:0.35rem 0 0.8rem 1.2rem; padding:0; }
     .progress-label { font-size: 0.8rem; color: var(--studio-muted); margin-bottom: 0.4rem; }
     .progress-label strong { color: var(--studio-text); }
     .progress-track { height: 8px; background: rgba(99,102,241,0.1); border-radius: 4px; overflow: hidden; }
@@ -206,8 +213,11 @@
       <div class="progress-label"><span id="progress-text"></span></div>
       <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
       <div class="ship-gates" id="ship-gates"></div>
-      <a id="brief-link" class="release-brief-link" href="#" target="_blank" rel="noopener" style="display:none">Read release brief →</a>
     </div>
+    <details id="brief-panel" class="release-brief">
+      <summary>Read release brief</summary>
+      <div id="brief-content" class="release-brief-content"></div>
+    </details>
     <div class="board-lanes" id="board-lanes"></div>
 
     <!-- 5. Team -->
@@ -267,6 +277,36 @@
           + '<span class="role">' + esc(member.canonical_title || '') + '</span>'
           + '</div>';
       }).join('');
+    }
+
+    function publicUrl(path) {
+      return (window.StudioShell && typeof StudioShell.publicUrl === 'function')
+        ? StudioShell.publicUrl(path)
+        : path;
+    }
+
+    function mdToHtml(md) {
+      var lines = String(md || '').split('\n');
+      var html = '';
+      var inList = false;
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (line.match(/^#\s/)) continue;
+        if (line.match(/^##\s/)) {
+          if (inList) { html += '</ul>'; inList = false; }
+          html += '<h2>' + esc(line.replace(/^##\s*/, '')) + '</h2>';
+        } else if (line.match(/^-\s/)) {
+          if (!inList) { html += '<ul>'; inList = true; }
+          html += '<li>' + esc(line.replace(/^-\s*/, '')) + '</li>';
+        } else if (line.trim() === '') {
+          if (inList) { html += '</ul>'; inList = false; }
+        } else {
+          if (inList) { html += '</ul>'; inList = false; }
+          html += '<p>' + esc(line) + '</p>';
+        }
+      }
+      if (inList) html += '</ul>';
+      return html;
     }
 
     // Init
@@ -382,10 +422,18 @@
         });
 
       var release = d.release || {};
-      var briefLink = document.getElementById('brief-link');
-      if (briefLink && building && building.brief_url) {
-        briefLink.href = publicUrl(building.brief_url);
-        briefLink.style.display = 'inline-flex';
+      var briefPanel = document.getElementById('brief-panel');
+      var briefContent = document.getElementById('brief-content');
+      if (briefPanel && briefContent && building && building.brief_url) {
+        briefPanel.style.display = 'block';
+        fetch(publicUrl(building.brief_url))
+          .then(function(r) { return r.ok ? r.text() : Promise.reject(new Error('brief unavailable')); })
+          .then(function(md) {
+            briefContent.innerHTML = mdToHtml(md);
+          })
+          .catch(function() {
+            briefContent.innerHTML = mdToHtml(building.brief_excerpt || 'Brief unavailable.');
+          });
       }
       var gates = [
         { name: 'Creative', passed: !!release.creative_signoff },
