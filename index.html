@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="studio-slug" content="ystackai">
   <title>ystackai — Y is for Yolo.</title>
-  <link rel="stylesheet" href="https://ystackai.com/shared/studio-theme.css">
-  <link rel="stylesheet" href="https://ystackai.com/shared/platform.css">
+  <link rel="stylesheet" href="https://ystackai.com/shared/studio-theme.css?v=20260327-avatarfix1">
+  <link rel="stylesheet" href="https://ystackai.com/shared/platform.css?v=20260327-avatarfix1">
   <style>
     .profile { max-width: 900px; margin: 0 auto; padding: 0 1rem 3rem; }
 
@@ -139,9 +139,17 @@
 
     /* Crew strip */
     .crew-strip { display:flex; justify-content:center; gap:1rem; margin-top:1.5rem; padding-bottom:0.5rem; }
-    .crew-member { display:flex; flex-direction:column; align-items:center; width:90px; }
-    .crew-member > img { width:64px; height:64px; border-radius:50%; border:2px solid rgba(255,255,255,0.3); object-fit:cover; object-position:center top; box-shadow:0 4px 16px rgba(0,0,0,0.2); position:relative; z-index:1; }
-    .crew-member .desk { width:72px; height:50px; position:relative; z-index:2; margin-top:-14px; }
+    .crew-member { display:flex; flex-direction:column; align-items:center; width:96px; }
+    .crew-member .portrait {
+      width:72px; height:72px; border-radius:50%; overflow:hidden;
+      border:2px solid rgba(255,255,255,0.3); background:rgba(15,23,42,0.16);
+      box-shadow:0 4px 16px rgba(0,0,0,0.2); position:relative; z-index:2;
+    }
+    .crew-member .portrait img {
+      width:100%; height:100%; object-fit:cover; object-position:center 18%;
+      display:block;
+    }
+    .crew-member .desk { width:58px; height:40px; position:relative; z-index:1; margin-top:-8px; filter:drop-shadow(0 8px 10px rgba(15,23,42,0.28)); }
     .crew-member .desk img { width:100%; height:100%; object-fit:contain; border:none; border-radius:0; box-shadow:none; }
     .crew-member .role { font-size:0.65rem; font-weight:700; letter-spacing:0.5px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.2); padding:2px 8px; border-radius:20px; margin-top:4px; }
 
@@ -151,19 +159,20 @@
     @keyframes bob4 { 0%,100% { transform:translateY(-3px); } 50% { transform:translateY(4px); } }
     @keyframes bob5 { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-5px); } }
     @keyframes bob6 { 0%,100% { transform:translateY(-1px); } 50% { transform:translateY(6px); } }
-    .crew-member:nth-child(1) > img { animation:bob1 3s ease-in-out infinite; }
-    .crew-member:nth-child(2) > img { animation:bob2 3.4s ease-in-out 0.5s infinite; }
-    .crew-member:nth-child(3) > img { animation:bob3 2.8s ease-in-out 1s infinite; }
-    .crew-member:nth-child(4) > img { animation:bob4 3.6s ease-in-out 0.3s infinite; }
-    .crew-member:nth-child(5) > img { animation:bob5 3.2s ease-in-out 0.8s infinite; }
-    .crew-member:nth-child(6) > img { animation:bob6 3.8s ease-in-out 0.2s infinite; }
+    .crew-member:nth-child(1) .portrait { animation:bob1 3s ease-in-out infinite; }
+    .crew-member:nth-child(2) .portrait { animation:bob2 3.4s ease-in-out 0.5s infinite; }
+    .crew-member:nth-child(3) .portrait { animation:bob3 2.8s ease-in-out 1s infinite; }
+    .crew-member:nth-child(4) .portrait { animation:bob4 3.6s ease-in-out 0.3s infinite; }
+    .crew-member:nth-child(5) .portrait { animation:bob5 3.2s ease-in-out 0.8s infinite; }
+    .crew-member:nth-child(6) .portrait { animation:bob6 3.8s ease-in-out 0.2s infinite; }
 
     @media (max-width:720px) {
       .board-lanes { grid-template-columns: 1fr; }
       .team-grid { grid-template-columns: repeat(2, 1fr); }
       .crew-strip { gap:0.4rem; }
-      .crew-member > img { width:48px; height:48px; }
-      .crew-member .desk { width:54px; height:38px; margin-top:-10px; }
+      .crew-member { width:72px; }
+      .crew-member .portrait { width:56px; height:56px; }
+      .crew-member .desk { width:44px; height:30px; margin-top:-6px; }
       .crew-member .role { font-size:0.55rem; }
     }
   </style>
@@ -272,7 +281,7 @@
       if (!target) return;
       target.innerHTML = (cast || []).map(function(member) {
         return '<div class="crew-member">'
-          + '<img src="' + esc(member.avatar_url || '/team/avatars/brad.svg') + '" alt="' + esc(member.display_name || '') + '">'
+          + '<div class="portrait"><img src="' + esc(member.avatar_url || '/team/avatars/brad.svg') + '" alt="' + esc(member.display_name || '') + '"></div>'
           + '<div class="desk"><img src="https://ystackai.com/team/crew/laptop-megan.png" alt=""></div>'
           + '<span class="role">' + esc(member.canonical_title || '') + '</span>'
           + '</div>';
