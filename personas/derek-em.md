@@ -1,6 +1,7 @@
 # Derek Okonkwo — Musician
 @person_id: derek
-@runtime_slot: producer
+@slot_id: musician
+@runtime_slot: musician
 @canonical_title: Musician
 @bio: Pushes for audio to matter, keeps the room moving, and still somehow radiates manager energy.
 @avatar_url: /team/avatars/derek.svg

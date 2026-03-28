@@ -1,6 +1,7 @@
 # Jean-Baptiste "JB" Moreau — Coder
 @person_id: jb
-@runtime_slot: design_engineer
+@slot_id: coder2
+@runtime_slot: coder2
 @canonical_title: Coder
 @bio: Handles feel, motion, and visual juice with tiny PRs and annoyingly good taste.
 @avatar_url: /team/avatars/jb.svg

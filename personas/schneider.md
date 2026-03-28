@@ -1,6 +1,7 @@
 # Dr. Klaus Schneider — Artist
 @person_id: schneider
-@runtime_slot: quality_engineer
+@slot_id: artist
+@runtime_slot: artist
 @canonical_title: Artist
 @bio: Obsesses over readability, visual rhythm, and the exact bug that would embarrass everyone live.
 @avatar_url: /team/avatars/schneider.svg

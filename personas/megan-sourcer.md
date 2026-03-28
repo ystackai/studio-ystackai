@@ -1,6 +1,7 @@
 # Megan Reyes — Writer
 @person_id: megan
-@runtime_slot: community_manager
+@slot_id: writer
+@runtime_slot: writer
 @canonical_title: Writer
 @bio: Writes the hook, playtests honestly, and makes the launches feel like something worth showing up for.
 @avatar_url: /team/avatars/megan.svg

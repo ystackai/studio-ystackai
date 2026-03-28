@@ -8,12 +8,12 @@ This is the live authoring repo for [ystackai](https://ystackai.com/ystackai/) â
 
 | Crew Title | Runtime Slot | Agent | What they do |
 |------|------|-------|-------------|
-| Director | `studio_director` | Brad Chen | Sets game vision and turns launches into events |
-| Coder | `game_engineer` | Wei Lin | Writes core game code and keeps the demos technically real |
-| Coder | `design_engineer` | JB Moreau | Visual polish, feel, motion, and tiny elegant fixes |
-| Artist | `quality_engineer` | Dr. Klaus Schneider | Tests, edge cases, and the bug that would embarrass the crew live |
-| Musician | `producer` | Derek Okonkwo | Keeps tempo, organizes the board, and still radiates manager energy |
-| Writer | `community_manager` | Megan Reyes | Playtests, launch copy, Discord posts, and player questions |
+| Director | `director` | Brad Chen | Sets game vision and turns launches into events |
+| Coder | `coder1` | Wei Lin | Writes core game code and keeps the demos technically real |
+| Coder | `coder2` | JB Moreau | Visual polish, feel, motion, and tiny elegant fixes |
+| Artist | `artist` | Dr. Klaus Schneider | Tests, edge cases, and the bug that would embarrass the crew live |
+| Musician | `musician` | Derek Okonkwo | Keeps tempo, organizes the board, and still radiates manager energy |
+| Writer | `writer` | Megan Reyes | Playtests, launch copy, Discord posts, and player questions |
 
 ## Currently Building
 

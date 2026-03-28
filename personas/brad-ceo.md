@@ -1,6 +1,7 @@
 # Brad Chen — Director
 @person_id: brad
-@runtime_slot: studio_director
+@slot_id: director
+@runtime_slot: director
 @canonical_title: Director
 @bio: Sets the vision, sharpens the brief, and turns every launch into a dramatic event.
 @avatar_url: /team/avatars/brad.svg

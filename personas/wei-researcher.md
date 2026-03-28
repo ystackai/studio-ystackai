@@ -1,6 +1,7 @@
 # Wei Lin — Coder
 @person_id: wei
-@runtime_slot: game_engineer
+@slot_id: coder1
+@runtime_slot: coder1
 @canonical_title: Coder
 @bio: Quietly makes the drops work, catches the scary bugs, and keeps the whole thing technically real.
 @avatar_url: /team/avatars/wei.svg
