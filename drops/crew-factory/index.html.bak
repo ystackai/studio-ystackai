@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="drop-id" content="drop-2026-03-27-crew-factory">
+  <title>Crew Factory — ystackai</title>
+  <link rel="stylesheet" href="https://ystackai.com/shared/studio-theme.css">
+  <link rel="stylesheet" href="https://ystackai.com/shared/platform.css">
+  <link rel="stylesheet" href="https://ystackai.com/shared/studio-shell.css">
+  <style>
+    :root {
+      --crew-accent: #fb7185;
+      --crew-bg-1: #f8fafc;
+      --crew-bg-2: #fdf2f8;
+      --crew-gradient: linear-gradient(135deg, #fda4af, #fbcfe8);
+    }
+
+    .phaser-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    body { background: #fff; }
+    .drop-header {
+      background: var(--crew-gradient);
+      padding: 3rem 1rem 2rem;
+      text-align: center;
+    }
+    .drop-header h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin: 0 0 0.75rem;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(120, 53, 15, 0.2);
+    }
+    .drop-header p {
+      max-width: 600px;
+      margin: 0 auto;
+      font-size: 1.1rem;
+      color: #7c2d12;
+      line-height: 1.5;
+    }
+    .drop-header .tagline {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #781d0f;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 1.5rem;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.5rem;
+      background: #fff;
+      color: #7c2d12;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1rem;
+      border-radius: 30px;
+      box-shadow: 0 8px 25px rgba(249, 115, 22, 0.25);
+      transition: all 0.2s;
+    }
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(249, 115, 22, 0.35);
+    }
+    .hero-cta.primary-cta {
+      background: var(--crew-accent);
+      color: #fff;
+    }
+    .hero-cta.primary-cta:hover {
+      background: #f472b6;
+    }
+
+    .container { max-width: 1000px; margin: 0 auto; padding: 3rem 1rem; }
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 850;
+      margin: 3rem 0 1.5rem;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-title .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--crew-accent);
+    }
+
+    .crew-explainer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      background: var(--crew-bg-1);
+      padding: 2.5rem;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+    }
+    .crew-explainer .text {
+      padding-right: 1rem;
+    }
+    .crew-explainer h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 0 0 0.75rem;
+      color: #1e293b;
+    }
+    .crew-explainer p {
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .crew-explainer .meat-space {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      background: #fee2e2;
+      color: #991b1b;
+      font-weight: 700;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .crew-explainer .diagram {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+    .crew-diagram-box {
+      display: inline-block;
+      padding: 1.25rem 1.5rem;
+      background: #fff;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      margin: 0 0.75rem 1.5rem;
+      width: 160px;
+    }
+    .crew-diagram-box .box-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }
+    .crew-diagram-box .box-desc {
+      font-size: 0.88rem;
+      color: #1e293b;
+      line-height: 1.5;
+    }
+    .crew-diagram-arrow {
+      display: inline-block;
+      font-size: 1.5rem;
+      vertical-align: middle;
+      color: #cbd5e1;
+    }
+    .crew-diagram-arrow.down { transform: rotate(90deg); }
+    .crew-diagram-arrow.right { transform: rotate(0deg); }
+
+    .crew-qa { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2.5rem 0; }
+    .crew-qa .qa-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid #e2e8f0;
+    }
+    .crew-qa h4 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin: 0 0 0.75rem;
+      color: #1e293b;
+    }
+    .crew-qa p {
+      color: #64748b;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .crew-factory-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 3rem 0;
+    }
+
+    .example-crews {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2.5rem 0;
+    }
+    .crew-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
+    }
+    .crew-card:hover {
+      border-color: var(--crew-accent);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(251, 113, 133, 0.15);
+    }
+    .crew-card .crew-thumb {
+      height: 140px;
+      background: linear-gradient(135deg, #fbcfe8, #fda4af);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 3rem;
+    }
+    .crew-card .crew-thumb.ystackai { background: linear-gradient(135deg, #667eea, #764ba2) !important; }
+    .crew-card .crew-thumb.tactical { background: linear-gradient(135deg, #0f172a, #1e1b4b) !important; }
+    .crew-card .crew-info { padding: 1.25rem; }
+    .crew-card .crew-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin: 0 0 0.4rem;
+      color: #1e293b;
+    }
+    .crew-card .crew-desc {
+      color: #64748b;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ========== FOOTER ========== */
+    #footer { border-top: 1px solid #e2e8f0; margin-top: 3rem; padding-top: 3rem; }
+    #footer .container { padding: 0 1rem; }
+    #footer .footer-crew {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #64748b;
+    }
+    #footer .footer-crew .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--crew-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+    #footer .footer-crew .text p { margin: 0; line-height: 1.5; }
+    #footer .footer-crew .text p:first-child { font-weight: 700; color: #1e293b; }
+    #footer .footer-crew .text p:last-child { opacity: 0.7; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <nav id="nav"></nav>
+
+  <div class="phaser-container" id="phaser-game"></div>
+
+  <div id="footer">
+    <div class="container">
+      <div class="footer-crew">
+        <div class="logo">YC</div>
+        <div class="text">
+          <p>Crew Factory</p>
+          <p style="margin-top: 0.75rem; opacity: 0.7;">drop-2026-03-27-crew-factory</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+  <script src="https://ystackai.com/shared/studio-shell.js"></script>
+  <script src="https://ystackai.com/shared/studio-components.js"></script>
+  <script>
+  (function () {
+    function esc(value) { return window.StudioShell ? window.StudioShell.esc(value) : String(value); }
+    var studioSlug = window.StudioShell ? window.StudioShell.detectSlug('ystackai') : 'ystackai';
+    window.StudioShell && window.StudioShell.init(studioSlug).then(function (data) {
+      if (document.title === 'Crew Factory — ystackai') {
+        document.title = 'Crew Factory — ' + ((data.studio && data.studio.name) || studioSlug);
+      }
+      window.StudioShell.renderNav && window.StudioShell.renderNav('nav');
+      document.getElementById && document.getElementById('footer') && (document.getElementById('footer').innerHTML = Components && Components.footer ? Components.footer() : '');
+    }).catch(function () {
+      // silently fail if studio data unavailable
+    });
+
+    // Phaser 3 Game Shell with Factory Visual Metaphor
+    var gameConfig = {
+      type: Phaser.AUTO,
+      parent: 'phaser-game',
+      width: window.innerWidth,
+      height: window.innerHeight,
+      backgroundColor: '#f8fafc',
+      scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
+      scene: {
+        preload: preload,
+        create: create,
+        update: update,
+        shutdown: shutdown
+      },
+      physics: {
+        default: 'arcade',
+        arcade: {
+          debug: false
+        }
+      }
+    };
+
+    var game = new Phaser.Game(gameConfig);
+
+    // Expose gameState for testing
+    window.gameState = {
+      alive: true,
+      gameOver: false,
+      score: 0,
+      level: 1,
+      player: {x: 0, y: 0},
+      gameReady: false,
+      page: 'crew-factory',
+      stage: 'factory-floor',
+      userProgress: 0,
+      maxSteps: 4,
+      gears: null,
+      gearSpeed: 0.03,
+      beltSpeed: 20,
+      selectedGear: -1
+    };
+
+    // Crew creation flow stub
+    document.getElementById('create-crew-btn')?.addEventListener('click', function() {
+      var feedback = document.getElementById('create-feedback');
+      feedback.textContent = 'Starting crew creation...';
+      setTimeout(function() {
+        feedback.textContent = 'Crew creation flow started! (Mock implementation)';
+        feedback.style.color = '#059669';
+        window.gameState.userProgress = 1;
+      }, 500);
+    });
+
+    // Public crew gallery button
+    document.getElementById('view-gallery-btn')?.addEventListener('click', function() {
+      var feedback = document.getElementById('create-feedback');
+      feedback.textContent = 'Navigating to public crew gallery...';
+      setTimeout(function() {
+        feedback.textContent = 'Gallery navigation triggered (placeholder)';
+        feedback.style.color = '#059669';
+      }, 500);
+    });
+
+    function preload() {
+      // Generate textures programmatically
+      var createGearTexture = function() {
+        var g = this.make.graphics({x: 0, y: 0, add: false});
+        g.fillStyle(0xfda4af, 1);
+        g.fillCircle(32, 32, 28);
+        g.lineStyle(3, 0x7c2d12, 1);
+        g.strokeCircle(32, 32, 26);
+        for (var i = 0; i < 8; i++) {
+          g.lineBetween(32, 2, 32, 62);
+          g.rotate(Phaser.Math.PI2 / 8);
+        }
+        g.generateTexture('gear', 64, 64);
+      }.bind(this)();
+
+      // Create conveyor belt texture pattern
+      var beltG = this.make.graphics({x: 0, y: 0, add: false});
+      beltG.fillStyle(0xf1f5f9, 1);
+      beltG.fillRect(0, 0, 64, 32);
+      beltG.fillStyle(0xe2e8f0, 1);
+      for (var b = 0; b < 64; b += 16) {
+        beltG.fillRect(b, 0, 8, 32);
+      }
+      beltG.generateTexture('conveyor', 64, 32);
+    }
+
+    function create() {
+      // Factory floor background
+      var bg = this.add.graphics();
+      bg.fillStyle(0xf8fafc, 1);
+      bg.fillRect(0, 0, this.width, this.height);
+
+      // Draw blueprint lines
+      var lines = this.add.graphics();
+      lines.lineStyle(1, 0x94a3b8, 0.3);
+      for (var i = 0; i < this.width; i += 60) {
+        lines.lineBetween(i, 0, i, this.height);
+      }
+      for (var j = 0; j < this.height; j += 60) {
+        lines.lineBetween(0, j, this.width, j);
+      }
+
+      // Main factory center
+      var centerX = this.width / 2;
+      var centerY = this.height / 2;
+
+      // Create main assembly line (conveyor belt)
+      var beltY = centerY + 50;
+      var beltWidth = Math.min(this.width - 40, 400);
+      var beltHeight = 40;
+
+      // Conveyor belt texture tiling
+      var belt = this.add.tileSprite(centerX, beltY, beltWidth, beltHeight, 'conveyor');
+      belt.setScrollFactor(0);
+      window.gameState.belt = belt;
+
+      // Gear positions in factory layout
+      var gearPositions = [
+        {x: centerX - 120, y: centerY - 80},  // Input gear
+        {x: centerX + 120, y: centerY - 80}, // Processing gear
+        {x: centerX - 120, y: centerY + 80}, // Output gear
+        {x: centerX + 120, y: centerY + 80}, // Quality gear
+        {x: centerX, y: centerY - 40}        // Core gear
+      ];
+
+      for (var k = 0; k < 5; k++) {
+        var pos = gearPositions[k];
+        var gear = this.add.sprite(pos.x, pos.y, 'gear');
+        gear.setScale(1.4);
+        gear.setInteractive();
+        gear.setScrollFactor(0);
+
+        gear.on('pointerover', function() {
+          this.setScale(1.6);
+          this.setTint(0xffb6c1);
+          window.gameState.selectedGear = k;
+        }, gear);
+        gear.on('pointerout', function() {
+          this.setScale(1.4);
+          this.clearTint();
+          window.gameState.selectedGear = -1;
+        }, gear);
+        gear.on('pointerdown', function() {
+          if (window.gameState.userProgress < window.gameState.maxSteps) {
+            window.gameState.userProgress++;
+          }
+        }, gear);
+
+        window.gameState.gears = window.gameState.gears || [];
+        window.gameState.gears[k] = gear;
+      }
+
+      window.gameState.gameReady = true;
+    }
+
+    function update() {
+      // Animate conveyor belt
+      if (window.gameState.belt) {
+        window.gameState.belt.tilePositionX += window.gameState.beltSpeed * this.clock.elapsedTime / 1000;
+      }
+
+      // Animate gears with factory rhythm
+      for (var i = 0; i < window.gameState.gears.length; i++) {
+        var gear = window.gameState.gears[i];
+        var rotationSpeed = window.gameState.gearSpeed * (i % 2 === 0 ? 1 : -1);
+        gear.rotation += rotationSpeed * this.clock.elapsedTime / 1000;
+      }
+
+      // Update gameState every frame
+      window.gameState.alive = true;
+    }
+
+    function shutdown() {
+      // Clean up on scene shutdown
+      window.gameState.gears = null;
+      window.gameState.belt = null;
+    }
+  })();
+  </script>
+</body>
+</html>
