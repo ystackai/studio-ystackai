@@ -416,29 +416,7 @@
       if (snapshotBoard && Array.isArray(snapshotBoard.all_open_issues)) {
         renderBoard(snapshotBoard);
       } else {
-        fetch('/api/board?repo=' + encodeURIComponent((d.studio && d.studio.repo) || 'studio-ystackai'))
-          .then(function(r) { return r.json(); })
-          .then(function(boardData) {
-            // Find the active game's milestone
-            var gameName = (building && building.title) || ((d.studio && d.studio.active_game_id) || '');
-            var milestone = (boardData.milestones || []).find(function(m) {
-              return m.title === gameName;
-            });
-            if (milestone) {
-              var closed = milestone.closed_issues || 0;
-              var total = closed + (milestone.open_issues || 0);
-              var pct = total > 0 ? Math.round((closed / total) * 100) : 0;
-              document.getElementById('progress-text').innerHTML = '<strong>' + closed + ' of ' + total + '</strong> tickets done (' + pct + '%)';
-              document.getElementById('progress-fill').style.width = pct + '%';
-              document.getElementById('progress-section').style.display = 'block';
-            }
-
-            // Render board lanes
-            renderBoard(boardData);
-          })
-          .catch(function() {
-            document.getElementById('board-lanes').innerHTML = '<p style="color:var(--studio-soft)">Board unavailable</p>';
-          });
+        document.getElementById('board-lanes').innerHTML = '<p style="color:var(--studio-soft)">Board unavailable</p>';
       }
 
       var release = d.release || {};
