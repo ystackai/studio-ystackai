@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="studio-slug" content="ystackai">
+  <title>Crew Factory - StackY</title>
+  <link rel="stylesheet" href="https://ystackai.com/shared/studio-theme.css">
+  <link rel="stylesheet" href="https://ystackai.com/shared/platform.css">
+  <style>
+    .factory-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .factory-header {
+      margin-bottom: 2rem;
+    }
+
+    .factory-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(45deg, #63d2a1, #4facfe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .factory-header p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      color: #e0e0e0;
+    }
+
+    .crew-button {
+      background: linear-gradient(45deg, #63d2a1, #4facfe);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+      margin: 1rem 0;
+    }
+
+    .crew-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(79, 172, 254, 0.5);
+    }
+
+    .crew-button:active {
+      transform: translateY(1px);
+    }
+
+    .gallery-placeholder {
+      margin-top: 3rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .gallery-placeholder h2 {
+      margin-bottom: 1rem;
+      color: #63d2a1;
+    }
+
+    .gallery-placeholder p {
+      color: #ccc;
+    }
+
+    .audio-controls {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .audio-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .audio-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body data-studio-slug="ystackai">
+  <div class="factory-container">
+    <div class="factory-header">
+      <h1>Crew Factory</h1>
+      <p>You walk into a factory floor. You press one button. Your crew assembles. You own it.</p>
+      <button class="crew-button" id="createCrewBtn">Create Your Own Crew</button>
+    </div>
+
+    <div class="gallery-placeholder">
+      <h2>Public Crew Gallery</h2>
+      <p>Explore crews created by the community. This is a placeholder for the actual gallery.</p>
+    </div>
+
+    <div class="audio-controls">
+      <button class="audio-btn" id="soundToggle">Toggle Sound</button>
+      <button class="audio-btn" id="playTone">Play Launch Tone</button>
+    </div>
+  </div>
+
+  <script>
+    // Audio context and sound generation
+    let audioContext;
+    let isSoundEnabled = true;
+    let oscillator;
+    let gainNode;
+
+    // Initialize audio context on first user interaction
+    function initAudio() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    // Create a procedural sound with Web Audio API
+    function createLaunchTone() {
+      if (!isSoundEnabled || !audioContext) return;
+
+      // Create oscillator and gain node
+      oscillator = audioContext.createOscillator();
+      gainNode = audioContext.createGain();
+
+      // Configure oscillator
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3
+      oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.5); // Up to A5
+
+      // Configure gain envelope
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+      // Connect nodes
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // Start and stop
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    // Create a more complex procedural sound for the crew creation
+    function createCrewCreationSound() {
+      if (!isSoundEnabled || !audioContext) return;
+
+      // Create multiple oscillators for a richer sound
+      const osc1 = audioContext.createOscillator();
+      const osc2 = audioContext.createOscillator();
+      const osc3 = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      // Configure oscillators
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(110, audioContext.currentTime); // A2
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(220, audioContext.currentTime); // A3
+
+      osc3.type = 'triangle';
+      osc3.frequency.setValueAtTime(440, audioContext.currentTime); // A4
+
+      // Create a more complex envelope
+      const now = audioContext.currentTime;
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.2, now + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.1, now + 0.3);
+      gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+
+      // Connect all oscillators to gain node
+      osc1.connect(gainNode);
+      osc2.connect(gainNode);
+      osc3.connect(gainNode);
+
+      // Connect to destination
+      gainNode.connect(audioContext.destination);
+
+      // Start all oscillators
+      osc1.start(now);
+      osc2.start(now);
+      osc3.start(now);
+
+      // Stop oscillators after the sound duration
+      osc1.stop(now + 0.5);
+      osc2.stop(now + 0.5);
+      osc3.stop(now + 0.5);
+    }
+
+    // Toggle sound on/off
+    function toggleSound() {
+      isSoundEnabled = !isSoundEnabled;
+      const toggleBtn = document.getElementById('soundToggle');
+      toggleBtn.textContent = isSoundEnabled ? 'Toggle Sound' : 'Sound Disabled';
+      toggleBtn.style.background = isSoundEnabled ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 100, 100, 0.3)';
+    }
+
+    // Initialize event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      const createBtn = document.getElementById('createCrewBtn');
+      const soundToggle = document.getElementById('soundToggle');
+      const playTone = document.getElementById('playTone');
+
+      // Set up click handlers
+      createBtn.addEventListener('click', function() {
+        initAudio();
+        createCrewCreationSound();
+        // Simulate crew creation
+        createBtn.textContent = 'Crew Creating. .';
+        setTimeout(() => {
+          createBtn.textContent = 'Crew Created!';
+          createBtn.style.background = 'linear-gradient(45deg, #63d2a1, #4facfe)';
+        }, 1000);
+      });
+
+      soundToggle.addEventListener('click', toggleSound);
+      playTone.addEventListener('click', function() {
+        initAudio();
+        createLaunchTone();
+      });
+
+      // Initialize audio on first interaction
+      document.body.addEventListener('click', initAudio, { once: true });
+    });
+  </script>
+</body>
+</html>
