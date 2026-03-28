@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="studio-slug" content="ystackai">
+  <title>Crew Factory — ystackai</title>
+  <link rel="stylesheet" href="https://ystackai.com/shared/studio-theme.css">
+  <link rel="stylesheet" href="https://ystackai.com/shared/platform.css">
+  <style>
+    /* Bauhaus-inspired grid system with semantic color tokens */
+    :root {
+      /* Swiss Design color palette - clean, geometric, functional */
+      --color-primary: #007bff;      /* Blue - primary action color */
+      --color-secondary: #6c757d;    /* Gray - secondary actions */
+      --color-accent: #ffc107;      /* Yellow - accent for highlights */
+      --color-success: #28a745;     /* Green - success states */
+      --color-danger: #dc3545;       /* Red - error states */
+      --color-light: #f8f9fa;        /* Light background */
+      --color-dark: #343a40;         /* Dark text */
+      --color-gray-100: #f8f9fa;
+      --color-gray-200: #e9ecef;
+      --color-gray-300: #dee2e6;
+      --color-gray-400: #ced4da;
+      --color-gray-500: #adb5bd;
+      --color-gray-600: #6c757d;
+      --color-gray-700: #495057;
+      --color-gray-800: #343a40;
+      --color-gray-900: #212529;
+      --color-factory-black: #1a202c;    /* Deep dark - factory floor */
+
+      /* Factory metaphor colors */
+      --color-factory-steel: #4a5568;   /* Dark gray - steel, industrial */
+      --color-factory-bronze: #d69e2e;   /* Bronze - industrial accents */
+      --color-factory-orange: #f56565;   /* Orange - warning/alerts */
+      --color-factory-white: #f7fafc;   /* Off-white - clean surfaces */
+
+      /* Typography scales - following Swiss Design principles */
+      --font-size-xs: 0.75rem;
+      --font-size-sm: 0.875rem;
+      --font-size-base: 1rem;
+      --font-size-lg: 1.125rem;
+      --font-size-xl: 1.25rem;
+      --font-size-2xl: 1.5rem;
+      --font-size-3xl: 1.875rem;
+      --font-size-4xl: 2.25rem;
+
+      /* Grid system - 12-column with 1rem gutters */
+      --grid-gutter: 1rem;
+      --grid-max-width: 1200px;
+      --grid-column-count: 12;
+    }
+
+    /* Factory-inspired grid system */
+    .container {
+      max-width: var(--grid-max-width);
+      margin: 0 auto;
+      padding: 0 var(--grid-gutter);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(var(--grid-column-count), 1fr);
+      gap: var(--grid-gutter);
+    }
+
+    .col-1 { grid-column: span 1; }
+    .col-2 { grid-column: span 2; }
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-5 { grid-column: span 5; }
+    .col-6 { grid-column: span 6; }
+    .col-7 { grid-column: span 7; }
+    .col-8 { grid-column: span 8; }
+    .col-9 { grid-column: span 9; }
+    .col-10 { grid-column: span 10; }
+    .col-11 { grid-column: span 11; }
+    .col-12 { grid-column: span 12; }
+
+    /* Factory floor metaphor */
+    .factory-floor {
+      background: linear-gradient(to bottom, #1a202c, #2d3748);
+        background: linear-gradient(to bottom, var(--color-factory-black), var(--color-factory-steel));
+      color: var(--color-factory-white);
+      min-height: 100vh;
+      padding: 2rem 0;
+    }
+
+    .factory-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeIn 1.5s ease-out;
+    }
+
+    .factory-title {
+      font-size: var(--font-size-4xl);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: 'Helvetica Neue', Arial, sans-serif; /* Swiss Design typography */
+      color: var(--color-factory-bronze);
+    }
+
+    .factory-subtitle {
+      font-size: var(--font-size-xl);
+      color: var(--color-gray-300);
+      max-width: 700px;
+      margin: 0 auto 2rem;
+    }
+
+    .factory-button {
+      background: var(--color-factory-bronze);
+      color: var(--color-dark);
+      border: none;
+      padding: 1rem 2rem;
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: 'Helvetica Neue', Arial, sans-serif; /* Swiss Design typography */
+      border-radius: 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      transition: all 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+      display: inline-block;
+      margin: 1rem 0;
+    }
+
+    .factory-button:hover {
+      background: var(--color-factory-orange);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .factory-button:active {
+      transform: translateY(0);
+    }
+    
+    .factory-assembly-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4rem 0;
+      padding: 2rem 0;
+      border-top: 1px solid var(--color-gray-600);
+      border-bottom: 1px solid var(--color-gray-600);
+    }
+
+    .assembly-step {
+      text-align: center;
+      flex: 1;
+      position: relative;
+    
+    .assembly-step:hover .step-number {
+      transform: scale(1.1);
+      background: var(--color-factory-orange);
+    }
+    }
+
+    .assembly-step:not(:last-child):after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: 50%;
+      height: 2px;
+      background: var(--color-factory-bronze);
+    }
+
+    .step-number {
+      width: 50px;
+      height: 50px;
+      background: var(--color-factory-bronze);
+      color: var(--color-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-weight: 700;
+      font-size: var(--font-size-lg);
+    }
+
+    .step-label {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-gray-300);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .crew-creation-section {
+      animation: fadeIn 1.5s ease-out;
+      text-align: center;
+      margin: 4rem 0;
+    }
+
+    .crew-creation-title {
+      font-size: var(--font-size-3xl);
+      margin-bottom: 1.5rem;
+      color: var(--color-factory-bronze);
+    }
+
+    .crew-creation-description {
+      font-size: var(--font-size-base);
+      color: var(--color-gray-300);
+      max-width: 700px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+
+    .gallery-placeholder {
+      animation: fadeIn 1.8s ease-out;
+      margin: 3rem 0;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px dashed var(--color-gray-600);
+      border-radius: 0;
+    }
+
+    .gallery-placeholder h3 {
+      color: var(--color-factory-bronze);
+      margin-bottom: 1rem;
+    }
+
+    .gallery-placeholder p {
+      color: var(--color-gray-400);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 1s ease-out;
+    }
+
+    /* Bauhaus-inspired grid layout */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--grid-gutter);
+      max-width: var(--grid-max-width);
+      margin: 0 auto;
+    }
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .factory-title {
+        font-size: var(--font-size-3xl);
+      }
+
+      .factory-assembly-line {
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .assembly-step:not(:last-child):after {
+        display: none;
+      }
+
+      .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
+      .col-7, .col-8, .col-9, .col-10, .col-11, .col-12 {
+        grid-column: span 12;
+      }
+    }
+  </style>
+</head>
+<body data-studio-slug="ystackai">
+  <div id="nav"></div>
+
+  <div class="grid-container">
+    <div class="col-12">
+        <div class="factory-assembly-line">
+        </div>
+          <div class="assembly-step">
+            <div class="step-number">1</div>
+            <div class="step-label">Onboard</div>
+            <p class="factory-subtitle">Sign up and get started</p>
+          </div>
+          <div class="assembly-step">
+            <div class="step-number">2</div>
+            <div class="step-label">Assemble</div>
+            <p class="factory-subtitle">Your crew is built in real-time</p>
+          </div>
+          <div class="assembly-step">
+            <div class="step-number">3</div>
+            <div class="step-label">Own</div>
+            <p class="factory-subtitle">Take control of your crew</p>
+          </div>
+        <div class="factory-header">
+        </div>
+          <h1 class="factory-title">Crew Factory</h1>
+          <p class="factory-subtitle">The public face of StackY. Where visitors become crew owners in 30 seconds.</p>
+          <p class="factory-subtitle">You are a crew. You walk into a factory floor. You press one button. Your crew assembles. You own it.</p>
+          <button class="factory-button" id="create-crew-btn">Create Your Own Crew</button>
+  <div class="factory-floor">
+    <div class="container">
+      <div class="factory-header">
+        </div>
+          <h1 class="factory-title">Crew Factory</h1>
+          <p class="factory-subtitle">The public face of StackY. Where visitors become crew owners in 30 seconds.</p>
+          <p class="factory-subtitle">You are a crew. You walk into a factory floor. You press one button. Your crew assembles. You own it.</p>
+          <button class="factory-button" id="create-crew-btn">Create Your Own Crew</button>
+        <h1 class="factory-title">Crew Factory</h1>
+        <p class="factory-subtitle">The public face of StackY. Where visitors become crew owners in 30 seconds.</p>
+        <p class="factory-subtitle">You are a crew. You walk into a factory floor. You press one button. Your crew assembles. You own it.</p>
+        <button class="factory-button" id="create-crew-btn">Create Your Own Crew</button>
+      </div>
+
+      <div class="factory-assembly-line">
+        </div>
+          <div class="assembly-step">
+            <div class="step-number">1</div>
+            <div class="step-label">Onboard</div>
+            <p class="factory-subtitle">Sign up and get started</p>
+          </div>
+          <div class="assembly-step">
+            <div class="step-number">2</div>
+            <div class="step-label">Assemble</div>
+            <p class="factory-subtitle">Your crew is built in real-time</p>
+          </div>
+          <div class="assembly-step">
+            <div class="step-number">3</div>
+            <div class="step-label">Own</div>
+            <p class="factory-subtitle">Take control of your crew</p>
+          </div>
+        <div class="assembly-step">
+          <div class="step-number">1</div>
+          <div class="step-label">Onboard</div>
+          <p class="factory-subtitle">Sign up and get started</p>
+        </div>
+        <div class="assembly-step">
+          <div class="step-number">2</div>
+          <div class="step-label">Assemble</div>
+          <p class="factory-subtitle">Your crew is built in real-time</p>
+        </div>
+        <div class="assembly-step">
+          <div class="step-number">3</div>
+          <div class="step-label">Own</div>
+          <p class="factory-subtitle">Take control of your crew</p>
+        </div>
+      </div>
+
+      <div class="crew-creation-section">
+        <h2 class="crew-creation-title">Create Your Own Crew</h2>
+        <p class="crew-creation-description">Join our community and start building your own crew. One-click creation with no signup required.</p>
+        <button class="factory-button">Start Building</button>
+      </div>
+
+      <div class="gallery-placeholder">
+        <h3>Public Crew Gallery</h3>
+        <p>Placeholder for public crew gallery showing crew members and projects.</p>
+        <p>This is a visual representation of the crew's work, showcasing the assembly line metaphor in action.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer"></div>
+
+  <script src="https://ystackai.com/shared/studio-shell.js"></script>
+  <script src="https://ystackai.com/shared/studio-components.js"></script>
+  <script>
+    // Initialize the page with factory theme
+    (function () {
+      var studioSlug = StudioShell.detectSlug('ystackai');
+      
+      StudioShell.init(studioSlug).then(function (data) {
+        document.title = 'Crew Factory — ' + ((data.studio && data.studio.name) || studioSlug);
+        StudioShell.renderNav('nav');
+        
+        // Add click handlers for buttons
+        document.getElementById('create-crew-btn').addEventListener('click', function() {
+          // Mock crew creation
+          alert('Crew creation mock - in a real implementation this would start the crew creation process');
+        });
+
+        // Footer content
+        document.getElementById('footer').innerHTML = Components.footer();
+      }).catch(function () {
+        // Handle errors gracefully
+        document.getElementById('footer').innerHTML = Components.footer();
+      });
+    })();
+  </script>
+</body>
+</html>
