@@ -1,24 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crew Factory</title>
   <link rel="stylesheet" href="css/crew-factory.css">
 </head>
-      border: none;
-<head>
-  <link rel="stylesheet" href="css/crew-factory.css">
-</head>
-      padding: 1rem 2rem;
-<head>
-  <link rel="stylesheet" href="css/crew-factory.css">
-</head>
-      font-size: var(--font-size-lg);
-<head>
-  <link rel="stylesheet" href="css/crew-factory.css">
-</head>
-      font-weight: 700;
-<head>
-  <link rel="stylesheet" href="css/crew-factory.css">
-</head>
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
+<body>
+  <div class="factory-container">
+    <header class="factory-header">
+      <h1>StackY Crew Factory</h1>
+      <p class="tagline">Create your own crew in 30 seconds</p>
+    </header>
+    
+    <main class="factory-main">
+      <section class="creation-section">
+        <h2>Ready to Assemble?</h2>
+        <button class="create-crew-btn">Create Your Crew</button>
+      </section>
+      
+      <section class="gallery-section">
+        <h2>Public Crew Gallery</h2>
+        <div class="gallery-placeholder">
+          <p>Gallery placeholder - showing example crew</p>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>pacing: 0.1em;
       font-family: 'Helvetica Neue', Arial, sans-serif; /* Swiss Design typography */
       border-radius: 0;
       cursor: pointer;
@@ -245,6 +255,20 @@
       </div>
 
       <div class="gallery-placeholder">
+        <div class="gallery-grid">
+          <div class="gallery-item">
+            <h4>Example Crew</h4>
+            <p>Project description</p>
+          </div>
+          <div class="gallery-item">
+            <h4>Another Crew</h4>
+            <p>Project description</p>
+          </div>
+          <div class="gallery-item">
+            <h4>Third Crew</h4>
+            <p>Project description</p>
+          </div>
+        </div>
         <h3>Public Crew Gallery</h3>
         <p>Placeholder for public crew gallery showing crew members and projects.</p>
         <p>This is a visual representation of the crew's work, showcasing the assembly line metaphor in action.</p>
