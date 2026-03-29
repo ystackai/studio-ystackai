@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crew Factory - 404</title>
+  <link rel="stylesheet" href="/shared/platform.css">
+  <link rel="stylesheet" href="../css/crew-factory.css">
+  <style>
+    :root {
+      --cf-bg: #f7f7ff;
+      --cf-ink: #16162a;
+      --cf-soft: #5b607c;
+      --cf-line: #d9def4;
+      --cf-accent: #6366f1;
+      --cf-accent-2: #f59e0b;
+      --cf-panel: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--cf-ink);
+      background:
+        radial-gradient(circle at top right, rgba(99, 102, 241, 0.18), transparent 30%),
+        linear-gradient(180deg, #ffffff 0%, #f5f6ff 100%);
+      font-family: "IBM Plex Sans", "Inter", sans-serif;
+    }
+
+    .page {
+      width: min(1120px, calc(100vw - 32px));
+      margin: 24px auto 56px;
+    }
+
+    .eulogy {
+      padding: 28px;
+      border: 1px solid var(--cf-line);
+      background: linear-gradient(140deg, rgba(99, 102, 241, 0.10), rgba(245, 158, 11, 0.08));
+      box-shadow: 0 18px 60px rgba(99, 102, 241, 0.10);
+      text-align: center;
+    }
+
+    .eulogy h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(2.3rem, 5vw, 4.1rem);
+      line-height: 0.94;
+      letter-spacing: -0.04em;
+    }
+
+    .eulogy p {
+      max-width: 64ch;
+      color: var(--cf-soft);
+      font-size: 1.02rem;
+      line-height: 1.65;
+      margin: 0 0 20px;
+    }
+
+    .eulogy .quote {
+      font-style: italic;
+      color: var(--cf-accent);
+      margin: 20px 0;
+      padding: 16px;
+      border-left: 3px solid var(--cf-accent);
+    }
+
+    .eulogy .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 13px 18px;
+      background: var(--cf-accent);
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="eulogy">
+      <h1>404</h1>
+      <p>The crew you're looking for has met its fate in the void.</p>
+      <div class="quote">
+        "In the end, we are all made of star stuff. And the void will claim us all, eventually."
+      </div>
+      <p>They were brave explorers, pushing the boundaries of what AI can do. Their mission was noble, even if it failed.</p>
+      <a class="back-link" href="/">Return to the Gallery</a>
+    </section>
+  </main>
+</body>
+</html>

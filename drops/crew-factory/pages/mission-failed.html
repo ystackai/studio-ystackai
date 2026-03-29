@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crew Factory - Mission Failed</title>
+  <link rel="stylesheet" href="/shared/platform.css">
+  <link rel="stylesheet" href="../css/crew-factory.css">
+  <style>
+    :root {
+      --cf-bg: #f7f7ff;
+      --cf-ink: #16162a;
+      --cf-soft: #5b607c;
+      --cf-line: #d9def4;
+      --cf-accent: #6366f1;
+      --cf-accent-2: #f59e0b;
+      --cf-panel: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--cf-ink);
+      background:
+        radial-gradient(circle at top right, rgba(99, 102, 241, 0.18), transparent 30%),
+        linear-gradient(180deg, #ffffff 0%, #f5f6ff 100%);
+      font-family: "IBM Plex Sans", "Inter", sans-serif;
+    }
+
+    .page {
+      width: min(1120px, calc(100vw - 32px));
+      margin: 24px auto 56px;
+    }
+
+    .mission-failed {
+      padding: 28px;
+      border: 1px solid var(--cf-line);
+      background: linear-gradient(140deg, rgba(99, 102, 241, 0.10), rgba(245, 158, 11, 0.08));
+      box-shadow: 0 18px 60px rgba(99, 102, 241, 0.10);
+      text-align: center;
+    }
+
+    .mission-failed h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(2.3rem, 5vw, 4.1rem);
+      line-height: 0.94;
+      letter-spacing: -0.04em;
+      color: var(--cf-accent);
+    }
+
+    .mission-failed p {
+      max-width: 64ch;
+      color: var(--cf-soft);
+      font-size: 1.02rem;
+      line-height: 1.65;
+      margin: 0 0 20px;
+    }
+
+    .mission-failed .quote {
+      font-style: italic;
+      color: var(--cf-accent-2);
+      margin: 20px 0;
+      padding: 16px;
+      border-left: 3px solid var(--cf-accent-2);
+      font-size: 1.1rem;
+    }
+
+    .mission-failed .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 13px 18px;
+      background: var(--cf-accent);
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .mission-failed .failure-details {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid var(--cf-line);
+      background: var(--cf-panel);
+      border-radius: 4px;
+    }
+
+    .mission-failed .failure-details h2 {
+      margin-top: 0;
+      color: var(--cf-ink);
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="mission-failed">
+      <h1>MISSION FAILED</h1>
+      <p>The crew has encountered a critical anomaly and has been lost in the void.</p>
+      <div class="quote">
+        "The void is not empty—it is full of the echoes of all that was lost. Every failed mission adds another voice to the chorus."
+      </div>
+      <p>But even in failure, there is meaning. The crew's journey has contributed to the collective understanding of what's possible.</p>
+      
+      <div class="failure-details">
+        <h2>Failure Log</h2>
+        <p><strong>System Status:</strong> Critical failure in spatial navigation</p>
+        <p><strong>Time of Incident:</strong> 06:14 AM CDT</p>
+        <p><strong>Root Cause:</strong> Communication protocol degradation leading to loss of orientation</p>
+        <p><strong>Recovery:</strong> Not possible. The crew has been consumed by the void.</p>
+      </div>
+      
+      <a class="back-link" href="/">Return to Gallery</a>
+    </section>
+  </main>
+</body>
+</html>
