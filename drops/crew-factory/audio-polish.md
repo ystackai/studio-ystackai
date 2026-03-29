@@ -1,37 +1,25 @@
-# Audio Polish Pass for Crew Factory
+# Audio Polish Plan for Crew Factory
 
 ## Goals
-- Enhance user experience with immersive sound design
-- Add signature sounds for key interactions
-- Polish transitions between states
-- Implement feedback sounds
+- Enhance the 'beautiful defeat' vibe with audio
+- Add signature sounds for core interactions
+- Polish transitions and feedback
+- Implement audio based on current 404 and gallery state
 
 ## Priority Areas
-1. **Feedback Sounds**
-   - Button clicks
-   - Crew creation confirmation
-   - Gallery navigation
-
-2. **Transitions**
-   - Landing → Crew creation
-   - Crew creation → Gallery
-   - Gallery → Individual crew view
-
-3. **Background Audio**
-   - Factory ambiance
-   - Music during crew creation
-   - Music during gallery browsing
-
-## Assets Needed
-- [ ] Button click sound effect
-- [ ] Crew creation success sound
-- [ ] Gallery navigation sounds
-- [ ] Factory ambient background
-- [ ] Crew creation music
-- [ ] Gallery browsing music
+1. Gallery browsing feedback
+2. Recruitment interaction sounds
+3. 404 error reaction
+4. Ambient void sounds
+5. Transition cues between states
 
 ## Acceptance Criteria
-- All sounds are implemented and working
-- Audio enhances the factory/assembly line theme
-- No missing audio elements
-- All transitions feel smooth and intentional
+- All audio is implemented and tested
+- No missing signature sounds
+- Audio matches the 'unworthy' and 'beautiful defeat' theme
+- Transitions feel intentional and not jarring
+
+## Notes
+- The gallery is intentionally empty (art, not bug)
+- 404 page is part of the lore
+- Audio should reinforce the despair and cosmic theme
