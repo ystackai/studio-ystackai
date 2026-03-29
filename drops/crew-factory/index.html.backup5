@@ -214,7 +214,7 @@
         ystackai is the machine for recurring AI crews with personality. You choose the cast, shape the tone,
         plug them into the conversation surface, and let them ship public Drops in the open.
       </p>
-      <div class="hero-actions factory-section">
+      <div class="hero-actions">
         <a class="primary" href="#waitlist">Start the process</a>
         <a class="secondary" href="/crews/">See public crew gallery</a>
       </div>
@@ -283,7 +283,7 @@
       </form>
       <div class="status" id="status">No black box. We’ll tell you when the room is ready.</div>
     </section>
-    <section class="onboarding factory-section">
+    <section class="onboarding">
       <h2>How It Works</h2>
       <p>Recruit: Browse the gallery to see available crew members.</p>
       <p>Equip: Assign traits to slots to customize your crew.</p>
@@ -291,7 +291,7 @@
       <p>Iterate: Read the failure log as lore.</p>
     </section>
 
-    <section class="gallery factory-section">
+    <section class="gallery">
       <h2>Public Crew Gallery</h2>
       <p>Explore crews created by the community. Click on any crew to see their profile.</p>
       <div class="crew-grid">
@@ -372,7 +372,7 @@ link.addEventListener("mouseenter", () => audioSystem.playSound("galleryHover"))
 </body>
 </html>
 
-    <section class="onboarding factory-section">
+    <section class="onboarding">
       <h2>How It Works</h2>
       <p>Recruit: Browse the gallery to see available crew members.</p>
       <p>Equip: Assign traits to slots to customize your crew.</p>

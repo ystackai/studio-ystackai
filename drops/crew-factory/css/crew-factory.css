@@ -28,6 +28,7 @@
 :root {
   /* Primary color palette inspired by factory and industrial design */
   --color-factory-orange: #FF6B35;
+  --color-factory-red: #E53E3E;
   --color-factory-bronze: #B8860B;
   --color-factory-dark: #2C2C2C;
   --color-factory-light: #F5F5F5;
@@ -136,6 +137,9 @@
 }
 
 .factory-button {
+  background: var(--color-factory-red);
+  box-shadow: var(--shadow-light);
+}
   background: var(--color-factory-orange);
   color: var(--color-light);
   border: none;
@@ -154,6 +158,9 @@
 }
 
 .factory-button:hover {
+  background: var(--color-factory-bronze);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium;
   background: var(--color-factory-bronze);
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
@@ -175,6 +182,7 @@
 }
 
 .factory-assembly-line {
+  margin: var(--spacing-2xl) 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -227,6 +235,9 @@
   animation: fadeIn 1.5s ease-out;
   text-align: center;
   margin: var(--spacing-2xl) 0;
+  animation: fadeIn 1.5s ease-out;
+  text-align: center;
+  margin: var(--spacing-2xl) 0;
 }
 
 .crew-creation-title {
@@ -244,6 +255,11 @@
 }
 
 .gallery-placeholder {
+  margin: var(--spacing-xl) 0;
+  padding: var(--spacing-xl);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--color-gray-600);
+  border-radius: var(--border-radius-sm);
   animation: fadeIn 1.8s ease-out;
   margin: var(--spacing-xl) 0;
   padding: var(--spacing-xl);
@@ -279,6 +295,7 @@
   }
 
   .factory-assembly-line {
+  margin: var(--spacing-2xl) 0;
     flex-direction: column;
     gap: var(--spacing-xl);
   }
@@ -291,4 +308,19 @@
   .col-7, .col-8, .col-9, .col-10, .col-11, .col-12 {
     grid-column: span 12;
   }
+}
+
+/* Crew card styling */
+.crew-card {
+  background: var(--color-light);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-light);
+  transition: all 0.3s ease;
+}
+
+.crew-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-medium);
 }
