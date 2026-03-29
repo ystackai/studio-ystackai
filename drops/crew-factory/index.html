@@ -285,7 +285,15 @@
   </main>
 
   <script>
+<script src="js/audio-system.js"></script>
+function submitWaitlist(event) {
+// Play button click sound when submitting waitlist
+audioSystem.playSound("buttonClick");
     function submitWaitlist(event) {
+// Play hover sound on gallery links
+document.querySelectorAll(".hero-actions a").forEach(link => {
+link.addEventListener("mouseenter", () => audioSystem.playSound("galleryHover"))
+});
       event.preventDefault();
       const email = document.getElementById("email").value.trim();
       const status = document.getElementById("status");
