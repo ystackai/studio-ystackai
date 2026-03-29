@@ -1,13 +1,3 @@
-/*
- * Crew Factory - Visual Design System
- * 
- * Design System Overview:
- * - Bauhaus & Swiss Design Principles
- * - Industrial factory theme with geometric forms
- * - Clean typography and grid-based composition
- * - Functional design with visual hierarchy
- */
-
 /* 
  * Crew Factory - Bauhaus & Swiss Design Principles
  * 
@@ -127,12 +117,6 @@
   margin-bottom: var(--spacing-md);
   line-height: 1.2;
 }
-
-.factory-subtitle {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-normal);
-  color: var(--color-gray-400);
-  margin-bottom: var(--spacing-md);
   line-height: 1.5;
 }
 
@@ -157,14 +141,6 @@
   box-shadow: var(--shadow-light);
 }
 
-.factory-button:hover {
-  background: var(--color-factory-bronze);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-medium;
-  background: var(--color-factory-bronze);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-medium);
-}
 
 .factory-button:active {
   transform: translateY(0);
@@ -183,12 +159,6 @@
 
 .factory-assembly-line {
   margin: var(--spacing-2xl) 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: var(--spacing-2xl) 0;
-  padding: var(--spacing-xl) 0;
-  border-top: var(--border-width) solid var(--color-gray-600);
   border-bottom: var(--border-width) solid var(--color-gray-600);
 }
 
@@ -260,12 +230,6 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px dashed var(--color-gray-600);
   border-radius: var(--border-radius-sm);
-  animation: fadeIn 1.8s ease-out;
-  margin: var(--spacing-xl) 0;
-  padding: var(--spacing-xl);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px dashed var(--color-gray-600);
-  border-radius: var(--border-radius-sm);
 }
 
 .gallery-placeholder h3 {
@@ -295,12 +259,6 @@
   }
 
   .factory-assembly-line {
-  margin: var(--spacing-2xl) 0;
-    flex-direction: column;
-    gap: var(--spacing-xl);
-  }
-
-  .assembly-step:not(:last-child):after {
     display: none;
   }
 

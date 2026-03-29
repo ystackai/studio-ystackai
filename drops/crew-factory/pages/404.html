@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="cf-404-page">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,6 +33,11 @@
     }
 
     .eulogy {
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-factory);
+      margin: var(--spacing-xl) 0;
+      padding: var(--spacing-xl);
+      background: var(--color-light);
   background: var(--color-light);
   border: 1px solid var(--color-gray-300);
   border-radius: var(--border-radius-md);
@@ -60,6 +65,9 @@
     }
 
     .eulogy .quote {
+      font-family: var(--font-family-primary);
+      font-size: var(--font-size-base);
+      line-height: var(--line-height-base);
       font-style: italic;
       color: var(--cf-accent);
       margin: 20px 0;
@@ -68,6 +76,8 @@
     }
 
     .eulogy .back-link {
+      border-radius: var(--border-radius-sm);
+      transition: all var(--transition-normal);
       display: inline-block;
       margin-top: 20px;
       padding: 13px 18px;
