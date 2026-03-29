@@ -1,3 +1,13 @@
+/*
+ * Crew Factory - Visual Design System
+ * 
+ * Design System Overview:
+ * - Bauhaus & Swiss Design Principles
+ * - Industrial factory theme with geometric forms
+ * - Clean typography and grid-based composition
+ * - Functional design with visual hierarchy
+ */
+
 /* 
  * Crew Factory - Bauhaus & Swiss Design Principles
  * 
@@ -52,7 +62,15 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  /* Spacing */
+  /* Visual Hierarchy */
+  --font-size-hero: clamp(2.3rem, 5vw, 4.1rem);
+  --font-size-title: 2.5rem;
+  --font-size-subtitle: 1.5rem;
+  --font-size-body: 1.1rem;
+  --font-size-small: 0.9rem;
+
+  /* Spacing Scale */
+  --spacing-xxs: 0.25rem;
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 1.5rem;
@@ -60,25 +78,16 @@
   --spacing-xl: 3rem;
   --spacing-2xl: 4rem;
 
-  /* Grid System */
-  --grid-columns: 12;
-  --grid-gutter: var(--spacing-md);
-  --grid-max-width: 1200px;
-  --grid-container-padding: var(--spacing-lg);
-
-  /* Borders */
-  --border-radius: 0;
-  --border-width: 1px;
-
-  /* Transitions */
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow: 0.5s ease;
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
 
   /* Shadows */
   --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
   --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
   --shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+  --shadow-factory: 0 18px 60px rgba(99, 102, 241, 0.10);
 }
 
 /* Grid System - Bauhaus Grid Layout */
@@ -111,7 +120,7 @@
 }
 
 .factory-title {
-  font-size: var(--font-size-4xl);
+  font-size: var(--font-size-hero);
   font-weight: var(--font-weight-bold);
   color: var(--color-factory-bronze);
   margin-bottom: var(--spacing-md);
@@ -136,11 +145,12 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-family: var(--font-family-primary);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: all var(--transition-normal);
   display: inline-block;
   margin: var(--spacing-md) 0;
+  box-shadow: var(--shadow-light);
 }
 
 .factory-button:hover {
@@ -151,6 +161,17 @@
 
 .factory-button:active {
   transform: translateY(0);
+}
+
+.factory-button.secondary {
+  background: transparent;
+  border: 1px solid var(--color-factory-bronze);
+  color: var(--color-factory-bronze);
+}
+
+.factory-button.secondary:hover {
+  background: var(--color-factory-bronze);
+  color: var(--color-light);
 }
 
 .factory-assembly-line {
@@ -167,11 +188,7 @@
   text-align: center;
   flex: 1;
   position: relative;
-}
-
-.assembly-step:hover .step-number {
-  transform: scale(1.1);
-  background: var(--color-factory-orange);
+  padding: var(--spacing-md);
 }
 
 .assembly-step:not(:last-child):after {
@@ -213,7 +230,7 @@
 }
 
 .crew-creation-title {
-  font-size: var(--font-size-3xl);
+  font-size: var(--font-size-title);
   margin-bottom: var(--spacing-md);
   color: var(--color-factory-bronze);
 }
@@ -232,7 +249,7 @@
   padding: var(--spacing-xl);
   background: rgba(255, 255, 255, 0.05);
   border: 1px dashed var(--color-gray-600);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
 }
 
 .gallery-placeholder h3 {
@@ -258,7 +275,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .factory-title {
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-subtitle);
   }
 
   .factory-assembly-line {
