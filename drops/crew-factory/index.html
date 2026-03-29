@@ -601,3 +601,237 @@
   </script>
 </body>
 </html>
+
+<script>
+  // Audio system for Crew Factory
+  class CrewFactoryAudio {
+    constructor() {
+      this.audioContext = null;
+      this.sounds = {};
+      this.isMuted = false;
+      this.init();
+    }
+
+    init() {
+      // Create audio context on first user interaction
+      const userInteraction = () => {
+        if (!this.audioContext) {
+          this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          this.loadSounds();
+        }
+        document.removeEventListener('click', userInteraction);
+        document.removeEventListener('keydown', userInteraction);
+      };
+
+      document.addEventListener('click', userInteraction);
+      document.addEventListener('keydown', userInteraction);
+    }
+
+    async loadSounds() {
+      // Mock sound loading - in a real implementation, we'd load actual audio files
+      // For this task, we'll create procedural sounds using Web Audio API
+      this.sounds = {
+        buttonClick: this.createButtonClickSound(),
+        crewAssemble: this.createCrewAssembleSound(),
+        galleryHover: this.createGalleryHoverSound(),
+        transition: this.createTransitionSound(),
+        ambient: this.createAmbientSound()
+      };
+
+      // Start ambient sound
+      this.playSound('ambient', true);
+    }
+
+    createButtonClickSound() {
+      // Create a simple click sound using oscillators
+      return () => {
+        if (this.isMuted || !this.audioContext) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(220, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(880, this.audioContext.currentTime + 0.1);
+
+        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.1);
+      };
+    }
+
+    createCrewAssembleSound() {
+      // Create a procedural "assembly" sound with multiple oscillators
+      return () => {
+        if (this.isMuted || !this.audioContext) return;
+
+        const now = this.audioContext.currentTime;
+        const oscillator1 = this.audioContext.createOscillator();
+        const oscillator2 = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator1.connect(gainNode);
+        oscillator2.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator1.type = 'sine';
+        oscillator2.type = 'sine';
+        
+        // Create a "building" sound with multiple frequencies
+        oscillator1.frequency.setValueAtTime(110, now);
+        oscillator2.frequency.setValueAtTime(220, now);
+        
+        // Add envelope for natural sound
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.2, now + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0.05, now + 0.15);
+        gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+
+        oscillator1.start(now);
+        oscillator2.start(now);
+        oscillator1.stop(now + 0.2);
+        oscillator2.stop(now + 0.2);
+      };
+    }
+
+    createGalleryHoverSound() {
+      // Create a subtle "hover" sound with a rising pitch
+      return () => {
+        if (this.isMuted || !this.audioContext) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(200, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(400, this.audioContext.currentTime + 0.2);
+
+        gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.2);
+      };
+    }
+
+    createTransitionSound() {
+      // Create a transition "whoosh" sound
+      return () => {
+        if (this.isMuted || !this.audioContext) return;
+
+        const now = this.audioContext.currentTime;
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(100, now);
+        oscillator.frequency.exponentialRampToValueAtTime(200, now + 0.3);
+
+        gainNode.gain.setValueAtTime(0.1, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+        oscillator.start(now);
+        oscillator.stop(now + 0.3);
+      };
+    }
+
+    createAmbientSound() {
+      // Create a factory ambient background sound
+      return () => {
+        if (this.isMuted || !this.audioContext) return;
+
+        // Create multiple oscillators for rich ambient sound
+        const now = this.audioContext.currentTime;
+        const oscillator1 = this.audioContext.createOscillator();
+        const oscillator2 = this.audioContext.createOscillator();
+        const oscillator3 = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator1.connect(gainNode);
+        oscillator2.connect(gainNode);
+        oscillator3.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator1.type = 'sine';
+        oscillator2.type = 'sine';
+        oscillator3.type = 'sine';
+
+        oscillator1.frequency.setValueAtTime(80, now);
+        oscillator2.frequency.setValueAtTime(120, now);
+        oscillator3.frequency.setValueAtTime(160, now);
+
+        // Create a subtle envelope for ambient sound
+        gainNode.gain.setValueAtTime(0.02, now);
+        gainNode.gain.linearRampToValueAtTime(0.05, now + 1);
+        gainNode.gain.linearRampToValueAtTime(0.02, now + 2);
+
+        oscillator1.start(now);
+        oscillator2.start(now);
+        oscillator3.start(now);
+
+        // Keep the ambient sound going by restarting it
+        setTimeout(() => {
+          if (!this.isMuted) {
+            this.playSound('ambient', true);
+          }
+        }, 2000);
+      };
+    }
+
+    playSound(soundName, loop = false) {
+      if (this.isMuted || !this.audioContext) return;
+      
+      if (loop) {
+        // For ambient sounds, we'll keep them looping
+        this.sounds[soundName]();
+      } else {
+        // For one-time sounds, play immediately
+        this.sounds[soundName]();
+      }
+    }
+
+    toggleMute() {
+      this.isMuted = !this.isMuted;
+    }
+  }
+
+  // Initialize audio system when the page loads
+  let audioSystem;
+  document.addEventListener('DOMContentLoaded', () => {
+    audioSystem = new CrewFactoryAudio();
+    
+    // Add event listeners for audio triggers
+    const createButton = document.getElementById('create-crew-btn');
+    if (createButton) {
+      createButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        audioSystem.playSound('buttonClick');
+        audioSystem.playSound('crewAssemble');
+        
+        // Mock crew creation
+        alert('Crew creation mock - in a real implementation this would start the crew creation process');
+      });
+    }
+
+    // Add hover effects for gallery items
+    const galleryItems = document.querySelectorAll('.crew-card, .gallery-placeholder');
+    galleryItems.forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        audioSystem.playSound('galleryHover');
+      });
+    });
+  });
+</script>
+</body>
+</html>
