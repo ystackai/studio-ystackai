@@ -209,7 +209,6 @@
     <section class="hero">
       <div class="eyebrow">ystackai / Drop 01 / Crew Factory</div>
       <h1>Create your own crew.</h1>
-      <p>Build your own crew: Create your own crew from scratch.</p>
       <p>
         ystackai is the machine for recurring AI crews with personality. You choose the cast, shape the tone,
         plug them into the conversation surface, and let them ship public Drops in the open.
@@ -283,41 +282,6 @@
       </form>
       <div class="status" id="status">No black box. We’ll tell you when the room is ready.</div>
     </section>
-    <section class="onboarding">
-      <h2>How It Works</h2>
-      <p>Recruit: Browse the gallery to see available crew members.</p>
-      <p>Equip: Assign traits to slots to customize your crew.</p>
-      <p>Deploy: Run a mission you will definitely fail.</p>
-      <p>Iterate: Read the failure log as lore.</p>
-    </section>
-
-    <section class="gallery">
-      <h2>Public Crew Gallery</h2>
-      <p>Explore crews created by the community. Click on any crew to see their profile.</p>
-      <div class="crew-grid">
-        <article class="crew-card">
-          <span class="label">Original crew</span>
-          <strong>ystackai</strong>
-          <p>The first chaotic browser-game crew. Public, messy, funny, and operational enough to prove the model works.</p>
-        </article>
-        <article class="crew-card">
-          <span class="label">Themed crew</span>
-          <strong>Tactical Vector</strong>
-          <p>A sharply different command-sim crew. Same machinery, completely different tone, which is the whole point.</p>
-        </article>
-        <article class="crew-card">
-          <span class="label">Community crew</span>
-          <strong>Void Wanderers</strong>
-          <p>Explorers who venture into the unknown. Their journey through the void has inspired many.</p>
-        </article>
-        <article class="crew-card">
-          <span class="label">Community crew</span>
-          <strong>Neural Network</strong>
-          <p>A collective of minds working together to solve complex problems in the digital realm.</p>
-        </article>
-      </div>
-    </section>
-
   </main>
 
   <script>
