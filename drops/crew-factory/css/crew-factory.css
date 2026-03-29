@@ -282,3 +282,103 @@
   transform: translateY(-5px);
   box-shadow: var(--shadow-medium);
 }
+
+/* Gallery specific styling */
+.gallery-section {
+  background: linear-gradient(140deg, rgba(26, 26, 26, 0.8), rgba(99, 102, 241, 0.10));
+  border: 1px solid var(--color-gray-650);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-xl);
+  margin: var(--spacing-xl) 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.gallery-title {
+  color: var(--color-factory-light-gray);
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.gallery-description {
+  color: var(--color-gray-500);
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto var(--spacing-lg);
+  line-height: 1.6;
+}
+
+.crew-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.crew-card {
+  background: rgba(30, 30, 30, 0.7);
+  border: 1px solid var(--color-gray-650);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  color: var(--color-factory-light-gray);
+  position: relative;
+  overflow: hidden;
+}
+
+.crew-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+  border-color: var(--color-factory-bronze);
+}
+
+.crew-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-factory-bronze), var(--color-factory-orange), var(--color-factory-red));
+}
+  
+.crew-card .label {
+  color: var(--color-factory-orange);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.crew-card strong {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-factory-light-gray);
+}
+
+.crew-card p {
+  color: var(--color-gray-500);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gallery-placeholder {
+  margin: var(--spacing-xl) 0;
+  padding: var(--spacing-xl);
+  background: rgba(26, 26, 26, 0.5);
+  border: 1px dashed var(--color-gray-650);
+  border-radius: var(--border-radius-sm);
+  text-align: center;
+}
+
+.gallery-placeholder h3 {
+  color: var(--color-factory-orange);
+  margin-bottom: var(--spacing-md);
+}
+
+.gallery-placeholder p {
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-md);
+}

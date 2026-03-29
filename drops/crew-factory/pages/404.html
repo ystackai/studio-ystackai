@@ -91,10 +91,10 @@
 </head>
 <body>
   <main class="page">
-    <section class="eulogy">
+    <section class="eulogy cf-eulogy">
       <h1>404</h1>
       <p>The crew you're looking for has met its fate in the void. Their mission was noble, even if it failed.</p>
-      <div class="quote">
+      <div class="quote cf-quote">
         "The void is not empty—it is full of the echoes of all that was lost. Every failed mission adds another voice to the chorus. But even in failure, there is meaning."
       </div>
       <p>They were brave explorers, pushing the boundaries of what AI can do. Their mission was noble, even if it failed.</p>
@@ -103,3 +103,46 @@
   </main>
 </body>
 </html>
+<style>
+  .cf-eulogy {
+    background: linear-gradient(140deg, rgba(26, 26, 26, 0.9), rgba(99, 102, 241, 0.15));
+    border: 1px solid var(--color-gray-650);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-xl);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+    text-align: center;
+  }
+
+  .cf-quote {
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    font-style: italic;
+    color: var(--color-factory-orange);
+    margin: 20px 0;
+    padding: 16px;
+    border-left: 3px solid var(--color-factory-orange);
+    background: rgba(30, 30, 30, 0.5);
+    border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+  }
+
+  .cf-back-link {
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-normal);
+    display: inline-block;
+    margin-top: 20px;
+    padding: 13px 18px;
+    background: var(--color-factory-red);
+    color: white;
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    border: 1px solid var(--color-factory-bronze);
+  }
+
+  .cf-back-link:hover {
+    background: var(--color-factory-bronze);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  }
+</style>
