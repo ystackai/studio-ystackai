@@ -2,6 +2,7 @@
 const audioSystem = {
   context: null,
   sounds: {},
+  isMuted: false,
   init: function() {
     this.context = new (window.AudioContext || window.webkitAudioContext)();
     this.loadSounds();
@@ -12,7 +13,10 @@ const audioSystem = {
       buttonClick: this.createButtonClickSound(),
       crewAssemble: this.createCrewAssembleSound(),
       galleryHover: this.createGalleryHoverSound(),
-      transition: this.createTransitionSound()
+      transition: this.createTransitionSound(),
+      factoryAmbience: this.createFactoryAmbience(),
+      crewCreationMusic: this.createCrewCreationMusic(),
+      galleryMusic: this.createGalleryMusic()
     };
   },
   createButtonClickSound: function() {
@@ -75,7 +79,78 @@ const audioSystem = {
     oscillator.stop(this.context.currentTime + 0.4);
     return { oscillator, gainNode };
   },
+  createFactoryAmbience: function() {
+    // Create a continuous factory ambience sound
+    const oscillator = this.context.createOscillator();
+    const gainNode = this.context.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(this.context.destination);
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.setValueAtTime(80, this.context.currentTime);
+    gainNode.gain.setValueAtTime(0.05, this.context.currentTime);
+    oscillator.start(this.context.currentTime);
+    return { oscillator, gainNode };
+  },
+  createCrewCreationMusic: function() {
+    // Create a gentle ascending melody for crew creation
+    const oscillator1 = this.context.createOscillator();
+    const oscillator2 = this.context.createOscillator();
+    const gainNode = this.context.createGain();
+    
+    oscillator1.connect(gainNode);
+    oscillator2.connect(gainNode);
+    gainNode.connect(this.context.destination);
+    
+    oscillator1.type = 'sine';
+    oscillator2.type = 'sine';
+    
+    oscillator1.frequency.setValueAtTime(220, this.context.currentTime);
+    oscillator1.frequency.exponentialRampToValueAtTime(440, this.context.currentTime + 0.5);
+    
+    oscillator2.frequency.setValueAtTime(261.63, this.context.currentTime);
+    oscillator2.frequency.exponentialRampToValueAtTime(523.25, this.context.currentTime + 0.5);
+    
+    gainNode.gain.setValueAtTime(0.05, this.context.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.0, this.context.currentTime + 0.5);
+    
+    oscillator1.start(this.context.currentTime);
+    oscillator2.start(this.context.currentTime);
+    oscillator1.stop(this.context.currentTime + 0.5);
+    oscillator2.stop(this.context.currentTime + 0.5);
+    
+    return { oscillator1, oscillator2, gainNode };
+  },
+  createGalleryMusic: function() {
+    // Create a more ambient, spacey music for gallery browsing
+    const oscillator1 = this.context.createOscillator();
+    const oscillator2 = this.context.createOscillator();
+    const gainNode = this.context.createGain();
+    
+    oscillator1.connect(gainNode);
+    oscillator2.connect(gainNode);
+    gainNode.connect(this.context.destination);
+    
+    oscillator1.type = 'sine';
+    oscillator2.type = 'sine';
+    
+    oscillator1.frequency.setValueAtTime(110, this.context.currentTime);
+    oscillator1.frequency.exponentialRampToValueAtTime(220, this.context.currentTime + 1);
+    
+    oscillator2.frequency.setValueAtTime(146.83, this.context.currentTime);
+    oscillator2.frequency.exponentialRampToValueAtTime(293.66, this.context.currentTime + 1);
+    
+    gainNode.gain.setValueAtTime(0.03, this.context.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.0, this.context.currentTime + 1);
+    
+    oscillator1.start(this.context.currentTime);
+    oscillator2.start(this.context.currentTime);
+    oscillator1.stop(this.context.currentTime + 1);
+    oscillator2.stop(this.context.currentTime + 1);
+    
+    return { oscillator1, oscillator2, gainNode };
+  },
   playSound: function(soundName) {
+    if (this.isMuted) return;
     if (this.sounds[soundName]) {
       // For procedural sounds, we just create new ones
       switch(soundName) {
@@ -91,8 +166,22 @@ const audioSystem = {
         case 'transition':
           this.createTransitionSound();
           break;
+        case 'factoryAmbience':
+          // This is a continuous sound, so we don't re-create it
+          break;
+        case 'crewCreationMusic':
+          this.createCrewCreationMusic();
+          break;
+        case 'galleryMusic':
+          this.createGalleryMusic();
+          break;
       }
     }
+  },
+  toggleMute: function() {
+    this.isMuted = !this.isMuted;
+    // In a real implementation, we'd also update any playing sounds
+    // For now, we just toggle the mute state
   }
 };
 

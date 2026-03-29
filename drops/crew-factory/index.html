@@ -320,16 +320,33 @@
 
   </main>
 
+  <script src="js/audio-system.js"></script>
   <script>
-<script src="js/audio-system.js"></script>
-function submitWaitlist(event) {
-// Play button click sound when submitting waitlist
-audioSystem.playSound("buttonClick");
+    // Initialize audio system when page loads
+    window.addEventListener('load', function() {
+      audioSystem.init();
+      // Play factory ambience when page loads
+      audioSystem.playSound('factoryAmbience');
+      
+      // Play hover sound on gallery links
+      document.querySelectorAll(".hero-actions a").forEach(link => {
+        link.addEventListener("mouseenter", () => audioSystem.playSound("galleryHover"))
+      });
+      
+      // Add click sound to buttons
+      document.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => audioSystem.playSound("buttonClick"))
+      });
+      
+      // Add click sound to crew cards
+      document.querySelectorAll(".crew-card").forEach(card => {
+        card.addEventListener("click", () => audioSystem.playSound("buttonClick"))
+      });
+    });
+    
     function submitWaitlist(event) {
-// Play hover sound on gallery links
-document.querySelectorAll(".hero-actions a").forEach(link => {
-link.addEventListener("mouseenter", () => audioSystem.playSound("galleryHover"))
-});
+      // Play button click sound when submitting waitlist
+      audioSystem.playSound("buttonClick");
       event.preventDefault();
       const email = document.getElementById("email").value.trim();
       const status = document.getElementById("status");
@@ -358,25 +375,7 @@ link.addEventListener("mouseenter", () => audioSystem.playSound("galleryHover"))
           button.textContent = "Raise your hand";
         });
       return false;
-    }  </script>
+    }
+  </script>
 </body>
 </html>
-
-<script>
-  // Audio system for Crew Factory
-        audioSystem.playSound('galleryHover');
-      });
-    });
-  });
-</script>
-</body>
-</html>
-
-    <section class="onboarding factory-section">
-      <h2>How It Works</h2>
-      <p>Recruit: Browse the gallery to see available crew members.</p>
-      <p>Equip: Assign traits to slots to customize your crew.</p>
-      <p>Deploy: Run a mission you will definitely fail.</p>
-      <p>Iterate: Read the failure log as lore.</p>
-    </section>
-      <p>Build your own crew: Create your own crew from scratch.</p>
