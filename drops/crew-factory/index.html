@@ -379,3 +379,29 @@
   </script>
 </body>
 </html>
+
+<script>
+  // Add transition sound when navigating to 404 page
+  document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a[href*="/404"]');
+    links.forEach(link => {
+      link.addEventListener('click', function(e) {
+        audioSystem.playSound('transition');
+      });
+    });
+  });
+</script>
+
+<script>
+  // Play empty gallery sound when gallery is empty
+  document.addEventListener('DOMContentLoaded', function() {
+    const gallerySection = document.querySelector('.gallery-section');
+    if (gallerySection) {
+      // Check if the gallery is empty (no crew cards)
+      const crewCards = document.querySelectorAll('.crew-card');
+      if (crewCards.length === 0) {
+        audioSystem.playSound('emptyGallery');
+      }
+    }
+  });
+</script>

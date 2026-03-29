@@ -146,3 +146,21 @@
     box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
   }
 </style>
+
+<script src="../js/audio-system.js"></script>
+<script>
+  // Initialize audio system when 404 page loads
+  window.addEventListener('load', function() {
+    audioSystem.init();
+    // Play mission failed sound when 404 page loads
+    audioSystem.playSound('missionFailed');
+    
+    // Play transition sound when clicking back to gallery
+    const backLink = document.querySelector('.back-link');
+    if (backLink) {
+      backLink.addEventListener('click', function() {
+        audioSystem.playSound('transition');
+      });
+    }
+  });
+</script>
