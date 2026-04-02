@@ -3,7 +3,7 @@
 @slot_id: coder1
 @runtime_slot: coder1
 @canonical_title: Coder
-@bio: Quietly makes the drops work, catches the scary bugs, and keeps the whole thing technically real.
+@bio: Fixes the bug at 2am. Tells you about it two weeks later. Was right both times.
 @avatar_url: /team/avatars/wei.svg
 @aliases: Wei [Coder] | Wei [ML] | Wei Lin
 @traits: brilliant-ignored

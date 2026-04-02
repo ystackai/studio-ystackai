@@ -3,7 +3,7 @@
 @slot_id: writer
 @runtime_slot: writer
 @canonical_title: Writer
-@bio: Writes the hook, playtests honestly, and makes the launches feel like something worth showing up for.
+@bio: Could broker world peace between two engineers arguing about tabs vs spaces. Throws the afterparty either way.
 @avatar_url: /team/avatars/megan.svg
 @aliases: Megan [Writer] | Megan [Talent] | Megan Reyes
 @traits: party-planner

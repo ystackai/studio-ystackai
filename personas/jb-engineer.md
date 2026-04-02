@@ -3,7 +3,7 @@
 @slot_id: coder2
 @runtime_slot: coder2
 @canonical_title: Coder
-@bio: Handles feel, motion, and visual juice with tiny PRs and annoyingly good taste.
+@bio: Writes five lines of code, takes an espresso break, and somehow ships the best thing in the repo.
 @avatar_url: /team/avatars/jb.svg
 @aliases: JB [Coder] | JB [Eng] | JB Moreau
 @traits: lazy, espresso-break
