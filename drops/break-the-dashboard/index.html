@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Break the Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>System Status Dashboard</h1>
+            <div class="timer-container">
+                <span class="timer-label">Time to Collapse:</span>
+                <span class="timer" id="timer">10:00</span>
+            </div>
+        </header>
+
+        <div class="error-section">
+            <h2>Error Counters</h2>
+            <div class="error-counters">
+                <div class="error-counter" id="js-errors">
+                    <span class="counter-label">JS Errors:</span>
+                    <span class="counter-value" id="js-error-count">0</span>
+                </div>
+                <div class="error-counter" id="css-errors">
+                    <span class="counter-label">CSS Errors:</span>
+                    <span class="counter-value" id="css-error-count">0</span>
+                </div>
+                <div class="error-counter" id="network-errors">
+                    <span class="counter-label">Network Errors:</span>
+                    <span class="counter-value" id="network-error-count">0</span>
+                </div>
+                <div class="error-counter" id="render-errors">
+                    <span class="counter-label">Render Errors:</span>
+                    <span class="counter-value" id="render-error-count">0</span>
+                </div>
+                <div class="error-counter" id="memory-errors">
+                    <span class="counter-label">Memory Errors:</span>
+                    <span class="counter-value" id="memory-error-count">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="component-section">
+            <h2>System Components</h2>
+            <div class="components-grid">
+                <div class="component wobble" id="component-1">
+                    <h3>API Gateway</h3>
+                    <div class="status-indicator error">ERROR</div>
+                </div>
+                <div class="component wobble" id="component-2">
+                    <h3>Database Layer</h3>
+                    <div class="status-indicator warning">WARNING</div>
+                </div>
+                <div class="component wobble" id="component-3">
+                    <h3>Authentication</h3>
+                    <div class="status-indicator error">ERROR</div>
+                </div>
+                <div class="component wobble" id="component-4">
+                    <h3>Frontend Renderer</h3>
+                    <div class="status-indicator warning">WARNING</div>
+                </div>
+                <div class="component wobble" id="component-5">
+                    <h3>Cache Service</h3>
+                    <div class="status-indicator ok">OK</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stack-trace-section">
+            <h2>Stack Traces</h2>
+            <div class="stack-trace-container" id="stack-trace-container">
+                <!-- Stack traces will be added here dynamically -->
+            </div>
+        </div>
+
+        <div class="fix-button-container">
+            <button class="fix-button" id="fix-button">Fix System</button>
+        </div>
+
+        <div class="void-mode" id="void-mode">
+            <div class="void-content">
+                <h2>Curated Void</h2>
+                <p>System collapse complete. Silence reigns.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
