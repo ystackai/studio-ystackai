@@ -1,5 +1,6 @@
 /* Semantic color tokens for the dashboard */
 :root {
+    /* System color tokens */
     --color-primary: #00ff00;
     --color-error: #ff0000;
     --color-warning: #ffff00;
@@ -18,6 +19,16 @@
     --color-void-text: #ffffff;
     --color-timer: #ffff00;
     --color-timer-critical: #ff0000;
+    
+    /* Visual enhancement tokens */
+    --color-glow-primary: rgba(0, 255, 0, 0.5);
+    --color-glow-error: rgba(255, 0, 0, 0.5);
+    --color-glow-critical: rgba(255, 0, 255, 0.5);
+    --color-flicker: rgba(255, 255, 255, 0.1);
+    --color-fade-out: rgba(0, 0, 0, 0.8);
+    --transition-speed-fast: 0.2s;
+    --transition-speed-normal: 0.5s;
+    --transition-speed-slow: 1s;
 }
 
 /* Base styles */
@@ -33,6 +44,20 @@ body {
     color: var(--color-text);
     line-height: 1.4;
     overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+    overflow-y: auto;
+    background-image: 
+        radial-gradient(circle at 10% 20%, var(--color-flicker) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, var(--color-flicker) 0%, transparent 20%);
+    background-repeat: no-repeat;
+    background-size: 200% 200%;
+    animation: background-pulse 15s infinite alternate;
+}
+
+@keyframes background-pulse {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
 }
 
 /* Dashboard container */
@@ -41,6 +66,7 @@ body {
     margin: 0 auto;
     padding: 20px;
     position: relative;
+    z-index: 1;
 }
 
 /* Header styles */
@@ -58,6 +84,9 @@ body {
     0% { opacity: 0.8; }
     50% { opacity: 1; }
     100% { opacity: 0.8; }
+    0% { text-shadow: 0 0 5px var(--color-primary); }
+    50% { text-shadow: 0 0 15px var(--color-primary); }
+    100% { text-shadow: 0 0 5px var(--color-primary); }
 }
 
 /* Timer styles */
@@ -78,6 +107,9 @@ body {
     0% { opacity: 1; }
     50% { opacity: 0.5; }
     100% { opacity: 1; }
+    0% { text-shadow: 0 0 5px var(--color-timer); }
+    50% { text-shadow: 0 0 20px var(--color-timer); }
+    100% { text-shadow: 0 0 5px var(--color-timer); }
 }
 
 /* Error counters */
@@ -95,6 +127,8 @@ body {
     border-radius: 5px;
     text-align: center;
     animation: counter-shake 0.5s infinite;
+    box-shadow: 0 0 5px var(--color-primary);
+    transition: all var(--transition-speed-fast) ease;
 }
 
 @keyframes counter-shake {
@@ -103,6 +137,11 @@ body {
     50% { transform: translateX(5px); }
     75% { transform: translateX(-5px); }
     100% { transform: translateX(0); }
+    0% { box-shadow: 0 0 5px var(--color-primary); }
+    25% { box-shadow: 0 0 15px var(--color-primary); }
+    50% { box-shadow: 0 0 5px var(--color-primary); }
+    75% { box-shadow: 0 0 15px var(--color-primary); }
+    100% { box-shadow: 0 0 5px var(--color-primary); }
 }
 
 .counter-label {
@@ -117,6 +156,14 @@ body {
     font-size: 1.8em;
     font-weight: bold;
     color: var(--color-primary);
+    text-shadow: 0 0 5px var(--color-glow-primary);
+    animation: counter-glow 1.5s infinite;
+}
+
+@keyframes counter-glow {
+    0% { text-shadow: 0 0 5px var(--color-glow-primary); }
+    50% { text-shadow: 0 0 15px var(--color-glow-primary); }
+    100% { text-shadow: 0 0 5px var(--color-glow-primary); }
 }
 
 /* Wobbling components */
@@ -135,6 +182,18 @@ body {
     position: relative;
     overflow: hidden;
     animation: wobble 3s infinite ease-in-out;
+    box-shadow: 
+        0 0 10px var(--color-glow-primary),
+        inset 0 0 10px var(--color-glow-primary);
+    transition: all var(--transition-speed-fast) ease;
+}
+
+.wobbling-component:hover {
+    animation: wobble 1.5s infinite ease-in-out;
+    box-shadow: 
+        0 0 20px var(--color-glow-primary),
+        inset 0 0 20px var(--color-glow-primary);
+    transform: scale(1.02);
 }
 
 @keyframes wobble {
@@ -148,6 +207,20 @@ body {
     70% { transform: translateX(-5px) rotate(-1deg); }
     80% { transform: translateX(5px) rotate(1deg); }
     90% { transform: translateX(-5px) rotate(-1deg); }
+    100% { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes wobble-intense {
+    0% { transform: translateX(0) rotate(0deg); }
+    10% { transform: translateX(-20px) rotate(-5deg); }
+    20% { transform: translateX(20px) rotate(5deg); }
+    30% { transform: translateX(-20px) rotate(-5deg); }
+    40% { transform: translateX(20px) rotate(5deg); }
+    50% { transform: translateX(0) rotate(0deg); }
+    60% { transform: translateX(10px) rotate(2deg); }
+    70% { transform: translateX(-10px) rotate(-2deg); }
+    80% { transform: translateX(10px) rotate(2deg); }
+    90% { transform: translateX(-10px) rotate(-2deg); }
     100% { transform: translateX(0) rotate(0deg); }
 }
 
@@ -187,11 +260,22 @@ body {
     font-family: monospace;
     font-size: 0.8em;
     animation: trace-fade 1s;
+    box-shadow: 0 0 5px var(--color-glow-primary);
 }
 
 @keyframes trace-fade {
-    0% { opacity: 0; transform: translateY(10px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0% { opacity: 0; transform: translateY(10px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+    0% { 
+        opacity: 0; 
+        transform: translateY(10px) scale(0.95); 
+        box-shadow: 0 0 5px var(--color-glow-primary);
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+        box-shadow: 0 0 10px var(--color-glow-primary);
+    }
 }
 
 /* Fix button */
@@ -222,6 +306,11 @@ body {
     0% { box-shadow: 0 0 5px var(--color-fix-button); }
     50% { box-shadow: 0 0 20px var(--color-fix-button); }
     100% { box-shadow: 0 0 5px var(--color-fix-button); }
+    0% { box-shadow: 0 0 5px var(--color-fix-button); }
+    25% { box-shadow: 0 0 15px var(--color-fix-button); }
+    50% { box-shadow: 0 0 25px var(--color-fix-button); }
+    75% { box-shadow: 0 0 15px var(--color-fix-button); }
+    100% { box-shadow: 0 0 5px var(--color-fix-button); }
 }
 
 /* Void mode */
@@ -232,13 +321,50 @@ body {
     padding: 40px;
     border: 2px solid var(--color-critical);
     border-radius: 10px;
-    animation: void-pulse 0.5s infinite;
+    animation: void-pulse 0.3s infinite;
+    box-shadow: 
+        0 0 20px var(--color-critical),
+        inset 0 0 20px var(--color-critical);
+    position: relative;
+    overflow: hidden;
+}
+
+.void-mode::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(45deg, transparent 49%, var(--color-flicker) 50%, transparent 51%),
+        linear-gradient(-45deg, transparent 49%, var(--color-flicker) 50%, transparent 51%);
+    background-size: 40px 40px;
+    animation: void-flicker 0.2s infinite;
+}
+
+@keyframes void-flicker {
+    0% { opacity: 0.1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.1; }
 }
 
 @keyframes void-pulse {
     0% { opacity: 0.8; }
     50% { opacity: 1; }
     100% { opacity: 0.8; }
+    0% { 
+        text-shadow: 0 0 5px var(--color-critical); 
+        background-color: var(--color-void-bg);
+    }
+    50% { 
+        text-shadow: 0 0 20px var(--color-critical); 
+        background-color: rgba(0, 0, 0, 0.9);
+    }
+    100% { 
+        text-shadow: 0 0 5px var(--color-critical); 
+        background-color: var(--color-void-bg);
+    }
 }
 
 .void-mode.hidden {
@@ -260,17 +386,19 @@ body {
     .dashboard-container {
         padding: 10px;
     }
-
-    .dashboard-header {
-        flex-direction: column;
-        gap: 15px;
+    
+    /* Enhanced mobile animations */
+    @keyframes mobile-wobble {
+        0% { transform: translateX(0) rotate(0deg); }
+        10% { transform: translateX(-5px) rotate(-1deg); }
+        20% { transform: translateX(5px) rotate(1deg); }
+        30% { transform: translateX(-5px) rotate(-1deg); }
+        40% { transform: translateX(5px) rotate(1deg); }
+        50% { transform: translateX(0) rotate(0deg); }
+        100% { transform: translateX(0) rotate(0deg); }
     }
-
-    .error-counters {
-        grid-template-columns: 1fr;
-    }
-
-    .wobbling-components {
-        grid-template-columns: 1fr;
+    
+    .wobbling-component {
+        animation: mobile-wobble 5s infinite ease-in-out;
     }
 }

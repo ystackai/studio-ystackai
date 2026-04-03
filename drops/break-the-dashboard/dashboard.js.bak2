@@ -108,23 +108,17 @@ function handleFixButtonClick() {
     generateRandomError();
     generateRandomError();
     
-    // Add visual degradation to the fix button itself
-    elements.fixButton.style.transform = 'scale(1.2)';
-    elements.fixButton.style.boxShadow = '0 0 30px var(--color-glow-error)';
-    elements.fixButton.style.backgroundColor = '#ff5555';
-    
-    // Add a more intense visual feedback
-    setTimeout(() => {
-        elements.fixButton.style.transform = 'scale(1)';
-        elements.fixButton.style.boxShadow = '0 0 20px var(--color-fix-button)';
-        elements.fixButton.style.backgroundColor = '#ff0000';
-    }, 100);
-    
     // Add to trace history for void mode detection
     addTraceToHistory();
     
     // Play trap sound effect
     playSound('trap');
+    
+    // Visual feedback for the trap
+    elements.fixButton.style.animation = 'button-pulse 0.2s';
+    setTimeout(() => {
+        elements.fixButton.style.animation = 'button-pulse 1.5s infinite';
+    }, 200);
 }
 
 // Generate initial errors to make dashboard feel alive
@@ -182,6 +176,8 @@ function updateComponentStatuses() {
 
 // Add stack trace to display
 function addStackTrace() {
+    if (window.gameState.voidMode) return;
+    
     const trace = stackTraceTemplates[Math.floor(Math.random() * stackTraceTemplates.length)];
     const traceElement = document.createElement('div');
     traceElement.className = 'stack-trace-item';
@@ -293,28 +289,7 @@ function gameLoop() {
 }
 
 // Update wobbling effects on components
-function updateWobblingEffects() {
-    if (window.gameState.voidMode) return;
-    
-    const components = [elements.component1, elements.component2, elements.component3, elements.component4, elements.component5];
-    
-    components.forEach(component => {
-        // Randomly change wobble effect intensity based on error count
-        const errorCount = window.gameState.stackTraces + window.gameState.uiErrors;
-        const intensity = Math.min(1, errorCount / 10);
-        
-        // Apply wobble with random variation
-        const wobbleIntensity = 5 + intensity * 15;
-        const rotationIntensity = 2 + intensity * 5;
-        
-        component.style.animation = `wobble ${3 - intensity}s infinite ease-in-out`;
-        
-        // Add subtle visual degradation based on error count
-        if (errorCount > 5) {
-            component.style.filter = `contrast(${1 + intensity * 0.5}) brightness(${1 - intensity * 0.3})`;
-        }
-        
-        // Add more visual degradation as errors increase
+                // Add more visual degradation as errors increase
         if (errorCount > 10) {
             // Add glitch effects
             component.style.textShadow = `0 0 ${5 + intensity * 10}px var(--color-glow-error)`;
@@ -337,6 +312,26 @@ function updateWobblingEffects() {
         if (errorCount > 30) {
             component.style.opacity = `${1 - intensity * 0.5}`;
             component.style.animation = `wobble-intense 0.5s infinite ease-in-out`;
+        }
+function updateWobblingEffects() {
+    if (window.gameState.voidMode) return;
+    
+    const components = [elements.component1, elements.component2, elements.component3, elements.component4, elements.component5];
+    
+    components.forEach(component => {
+        // Randomly change wobble effect intensity based on error count
+        const errorCount = window.gameState.stackTraces + window.gameState.uiErrors;
+        const intensity = Math.min(1, errorCount / 10);
+        
+        // Apply wobble with random variation
+        const wobbleIntensity = 5 + intensity * 15;
+        const rotationIntensity = 2 + intensity * 5;
+        
+        component.style.animation = `wobble ${3 - intensity}s infinite ease-in-out`;
+        
+        // Add subtle visual degradation based on error count
+        if (errorCount > 5) {
+            component.style.filter = `contrast(${1 + intensity * 0.5}) brightness(${1 - intensity * 0.3})`;
         }
     });
 }
