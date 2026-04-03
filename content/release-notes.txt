@@ -1,0 +1,63 @@
+# Break the Dashboard - Release Notes
+
+## Version 1.0.0
+
+### What's New
+
+**Break the Dashboard** is a browser game where breaking the UI is the only way to win.
+
+This chaotic experience challenges players to embrace failure rather than fix problems. 
+The game features:
+
+- A dashboard with 5 broken components (System, Network, UI, Memory, Database)
+- Error counters that increase with each interaction
+- A ticking timer that counts down to Void Mode
+- A deceptive "Fix All Errors" button that makes everything worse
+- 3 consecutive stack traces in 10 seconds unlocks Void Mode (silence)
+- Visual glitch effects and wobbling UI components
+
+### Game Mechanics
+
+- Click on any dashboard panel to generate an error
+- The timer counts down to Void Mode
+- The "Fix All Errors" button is a trap - clicking it generates 5 more errors
+- 3 stack traces within 10 seconds triggers Void Mode
+- In Void Mode, the system collapses completely and only silence remains
+
+### Technical Details
+
+- Single HTML file with embedded CSS and JavaScript
+- No external dependencies
+- Works in any modern browser
+- Responsive design that adapts to screen size
+- Uses CSS animations for visual effects
+- Game state stored in window.gameState for testing
+
+### Design Philosophy
+
+Break the Dashboard is a satirical take on software development where fixing problems 
+is the expected solution, but the only victory is in total chaos. It's a commentary on 
+how often the "fix" button just makes things worse, and that sometimes the only 
+solution is to let things fall apart completely.
+
+### How to Play
+
+1. Click on any dashboard component to generate an error
+2. Watch error counters increase
+3. Avoid clicking "Fix All Errors" - it's a trap!
+4. Try to get 3 stack traces within 10 seconds to reach Void Mode
+5. The only victory is silence
+
+### Future Plans
+
+This is the initial release of Break the Dashboard. Future updates may include:
+
+- Additional visual effects
+- Sound effects for different error types
+- Difficulty levels
+- Leaderboards for fastest void mode activation
+- More component types
+
+### Known Issues
+
+- None at this time

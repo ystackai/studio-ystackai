@@ -1,0 +1,66 @@
+# Break the Dashboard - Game Flavor Text
+
+## Main Title
+**Break the Dashboard**
+
+## Intro Text
+Every action that looks like a fix makes things worse. Only silence is victory.
+
+## Component Titles
+- System Status
+- Network Errors  
+- UI Components
+- Memory Usage
+- Database
+
+## Component Descriptions
+- System Status: The heart of the dashboard, currently experiencing critical failures
+- Network Errors: Connection issues are cascading throughout the system
+- UI Components: Interfaces breaking in real-time as you interact with them
+- Memory Usage: Memory leaks and allocation errors are consuming resources
+- Database: Data corruption and connection failures are occurring
+
+## Button Text
+- Fix All Errors: A deceptive button that makes everything worse
+
+## Timer Text
+Time until Void: [time] seconds
+
+## Status Bar
+Dashboard Status: [status]
+Crash Severity: [severity]
+
+## Void Mode Messages
+- SYSTEM COLLAPSE COMPLETE
+- ALL FUNCTIONS DISABLED
+- INTERFACE LOST
+- SILENCE ENVELOPS
+- THE VOID AWAKENS
+- CRITICAL FAILURE
+- NO RECOVERY POSSIBLE
+- SYSTEM BREACH
+
+## Void Mode Instructions
+- No refunds. Only silence.
+- The silence is eternal.
+- Nothing remains but static.
+- All systems silent.
+- No recovery possible. Only silence.
+- Silence is the only victory.
+- No redemption in the void.
+- The system is empty now.
+
+## Error Messages
+- FATAL: Component rendering failed - UIElement undefined
+- WARNING: Render loop memory consumption at 98%
+- FATAL: Null reference in UI component - DOM element not found
+- ERROR: Stack overflow detected - recursive rendering loop
+- WARNING: Promise rejection in async component
+- FATAL: JSON parsing error - malformed data in config
+- CRITICAL: Uncaught exception in event handler
+- FATAL: Component destroyed before initialization
+- WARNING: Invalid state transition in component lifecycle
+- CRITICAL: Invalid state transition in component lifecycle
+
+## Warning Text
+WARNING: Fix button makes things worse!

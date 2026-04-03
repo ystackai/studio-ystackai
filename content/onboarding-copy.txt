@@ -1,0 +1,36 @@
+# Break the Dashboard - Onboarding Copy
+
+## Welcome to the Dashboard
+
+This is not a typical dashboard.
+
+Every component is broken. Every interaction breaks something else.
+
+## How to Play
+
+1. Click on any panel to cause an error
+2. Watch the error counters increase
+3. The timer counts down to Void Mode
+4. Clicking "Fix All Errors" makes things worse
+5. 3 stack traces in 10 seconds triggers Void Mode
+
+## Victory Condition
+
+Only silence is victory. Once Void Mode activates, the system is completely broken and there's nothing left to fix.
+
+## Game Philosophy
+
+In a world where fixing things is expected, this is a game about embracing chaos.
+
+The only way to win is to break everything until silence prevails.
+
+## Tips
+
+- Don't trust the "Fix All Errors" button - it's a trap
+- The more errors you generate, the more chaotic it gets
+- Focus on the timer - you have 10 seconds to break things
+- The void is the only victory
+
+## Final Message
+
+Welcome to the chaos.
