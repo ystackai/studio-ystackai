@@ -9,8 +9,9 @@
             font-family: 'Courier New', monospace;
             background-color: #0a0a0a;
             color: #00ff00;
-            margin: 0;
-            padding: 20px;
+    <h1>Break the Dashboard</h1>
+    <p>Every action that looks like a fix makes things worse. Only silence is victory.</p>
+
             overflow: hidden;
             position: relative;
             height: 100vh;
@@ -41,8 +42,8 @@
 
         .stack-trace {
             background-color: #222;
-            border: 1px solid #ff0000;
-            padding: 10px;
+    <button id="fix-button">Fix All Errors</button>
+
             border-radius: 3px;
             margin-top: 10px;
             font-size: 12px;
@@ -58,8 +59,8 @@
             border: none;
             padding: 15px 30px;
             font-size: 18px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
+    <div id="timer">Time until Void: <span id="time-left">10</span> seconds</div>
+
             cursor: pointer;
             margin: 20px 0;
             border-radius: 5px;
@@ -89,8 +90,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
-            text-align: center;
+        <div class="glitch-text">VOID MODE ACTIVATED</div>
+
             padding-top: 20%;
             font-size: 48px;
             color: #00ff00;
@@ -256,10 +257,10 @@
                 type: "error",
                 message: "ERROR: Stack overflow detected - recursive rendering loop",
                 stack: [
-                    "at Component.render (component.js:56)
-                    at Component.render (component.js:58)
-                    at Component.render (component.js:60)
-                    at Component.render (component.js:62)",
+                    "at Component.render (component.js:56)",
+                    "at Component.render (component.js:58)",
+                    "at Component.render (component.js:60)",
+                    "at Component.render (component.js:62)",
                     "at Component.render (component.js:58)",
                     "at Component.render (component.js:60)",
                     "at Component.render (component.js:62)"
@@ -278,27 +279,33 @@
                 type: "error",
                 message: "ERROR: Maximum call stack size exceeded - infinite recursion",
                 stack: [
-                    "at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)",
-                    "at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)",
-                    "at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)",
-                    "at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)
-                    at recursiveFunction (utils.js:45)"
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)"
                 ]
             },
             {
                 type: "error",
                 message: "FATAL: JSON parsing error - malformed data in config",
+                stack: [
+                    "at parseJSON (json.js:23)",
+                    "at loadConfig (config.js:67)",
+                    "at initDashboard (dashboard.js:45)"
+                ]
+            },
             {
                 type: "error",
                 message: "WARNING: Memory leak detected - unreleased resources",
@@ -333,6 +340,99 @@
                     "at renderUI (ui.js:45)",
                     "at updateComponent (component.js:67)",
                     "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "error",
+                message: "CRITICAL: Invalid state transition in component lifecycle",
+                stack: [
+                    "at setState (state.js:89)",
+                    "at updateUI (ui.js:34)",
+                    "at renderDashboard (dashboard.js:89)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "error",
+                message: "FATAL: Unhandled promise rejection - async error propagation failure",
+                stack: [
+                    "at handleAsyncError (async.js:12)",
+                    "at processAsyncOperation (async.js:34)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+        const voidMessages = [
+            "CRASH SEQUENCE ENGAGED",
+            "SYSTEM COLLAPSE INITIATED",
+            "CRASH SEQUENCE INITIATED",
+            "VOID MODE ACTIVATED",
+            "ALL COMPONENTS FAILED",
+            "SILENCE IS GOLDEN",
+            "VICTORY THROUGH CRASH",
+            "TOTAL SYSTEM FAILURE",
+            "INTERFACE DESTROYED",
+            "GAME OVER - NO RESTART"
+        ];
+
+        const voidInstructions = [
+            "No return. Only silence.",
+            "No recovery. Only silence.",
+            "No recovery possible. Only silence.",
+            "No salvation. Only silence.",
+            "Congratulations on the curated crash.",
+            "The silence is eternal.",
+            "All systems down. All systems silent.",
+            "No refunds. Only silence.",
+            "You have achieved the impossible.",
+            "The dashboard has found peace."
+        ];
+            },
+            {
+                type: "error",
+                message: "FATAL: Configuration load failure - missing environment variables",
+                stack: [
+                    "at loadEnvConfig (config.js:23)",
+                    "at initDashboard (dashboard.js:45)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "warning",
+                message: "WARNING: Database connection pool exhausted",
+                stack: [
+                    "at getConnection (db.js:67)",
+                    "at processQuery (db.js:89)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "error",
+                message: "ERROR: Module not found - required library missing",
+                stack: [
+                    "at requireModule (loader.js:45)",
+                    "at loadDashboard (dashboard.js:67)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "error",
+                message: "CRITICAL: Security vulnerability detected in UI component",
+                stack: [
+                    "at validateInput (security.js:34)",
+                    "at renderComponent (ui.js:45)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "warning",
+                message: "WARNING: CPU usage spiking - 95% utilization",
+                stack: [
+                    "at processTask (engine.js:12)",
+                    "at renderDashboard (dashboard.js:89)",
+                    "at window.onload (index.html:12)"
+                ]
+            }
+        ];
                 ]
             },
             {
