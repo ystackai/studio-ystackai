@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Break the Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>System Status Dashboard</h1>
+            <div class="timer-container">
+                <span class="timer-label">Time to Void:</span>
+                <span id="timer" class="timer">10:00</span>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <!-- Error counters -->
+            <div class="error-counters">
+                <div class="error-counter">
+                    <span class="counter-label">Stack Traces:</span>
+                    <span id="stack-trace-count" class="counter-value">0</span>
+                </div>
+                <div class="error-counter">
+                    <span class="counter-label">UI Errors:</span>
+                    <span id="ui-error-count" class="counter-value">0</span>
+                </div>
+                <div class="error-counter">
+                    <span class="counter-label">Memory Leaks:</span>
+                    <span id="memory-leak-count" class="counter-value">0</span>
+                </div>
+                <div class="error-counter">
+                    <span class="counter-label">Network Failures:</span>
+                    <span id="network-failure-count" class="counter-value">0</span>
+                </div>
+                <div class="error-counter">
+                    <span class="counter-label">Resource Crashes:</span>
+                    <span id="resource-crash-count" class="counter-value">0</span>
+                </div>
+            </div>
+
+            <!-- Wobbling components -->
+            <div class="wobbling-components">
+                <div id="component-1" class="wobbling-component">
+                    <h3>Database Connection</h3>
+                    <div class="component-status error">ERROR</div>
+                </div>
+                <div id="component-2" class="wobbling-component">
+                    <h3>Authentication Service</h3>
+                    <div class="component-status warning">WARNING</div>
+                </div>
+                <div id="component-3" class="wobbling-component">
+                    <h3>Cache Manager</h3>
+                    <div class="component-status error">ERROR</div>
+                </div>
+                <div id="component-4" class="wobbling-component">
+                    <h3>API Gateway</h3>
+                    <div class="component-status critical">CRITICAL</div>
+                </div>
+                <div id="component-5" class="wobbling-component">
+                    <h3>Notification System</h3>
+                    <div class="component-status warning">WARNING</div>
+                </div>
+            </div>
+
+            <!-- Stack trace display -->
+            <div id="stack-trace-display" class="stack-trace-display">
+                <h3>Recent Stack Traces</h3>
+                <div id="stack-trace-list"></div>
+            </div>
+
+            <!-- Fix button (trap) -->
+            <div class="fix-button-container">
+                <button id="fix-button" class="fix-button">Fix All Errors</button>
+            </div>
+
+            <!-- Void mode indicator -->
+            <div id="void-mode" class="void-mode hidden">
+                <h2>VOID MODE ACTIVATED</h2>
+                <p>System collapse in progress...</p>
+            </div>
+        </div>
+
+        <footer class="dashboard-footer">
+            <p>Warning: Attempting to fix system errors may cause cascading failures</p>
+        </footer>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
