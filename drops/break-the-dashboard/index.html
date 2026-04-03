@@ -226,7 +226,7 @@
         const errorMessages = [
             {
                 type: "error",
-                message: "ReferenceError: UIElement is not defined",
+                message: "CRITICAL: Component rendering failed - UIElement undefined",
                 stack: [
                     "at UIComponent.update (ui.js:123)",
                     "at Dashboard.render (dashboard.js:45)",
@@ -236,7 +236,7 @@
             },
             {
                 type: "warning",
-                message: "Warning: Memory leak detected in render loop",
+                message: "WARNING: Render loop memory consumption at 98%",
                 stack: [
                     "at renderLoop (renderer.js:234)",
                     "at processFrame (engine.js:67)",
@@ -245,7 +245,7 @@
             },
             {
                 type: "error",
-                message: "TypeError: Cannot read property 'innerHTML' of null",
+                message: "FATAL: Null reference in UI component - DOM element not found",
                 stack: [
                     "at updateUI (ui.js:34)",
                     "at renderDashboard (dashboard.js:89)",
@@ -254,9 +254,12 @@
             },
             {
                 type: "error",
-                message: "Stack overflow in recursive component",
+                message: "CRITICAL: Stack overflow detected - recursive rendering loop",
                 stack: [
-                    "at Component.render (component.js:56)",
+                    "at Component.render (component.js:56)
+                    at Component.render (component.js:58)
+                    at Component.render (component.js:60)
+                    at Component.render (component.js:62)",
                     "at Component.render (component.js:58)",
                     "at Component.render (component.js:60)",
                     "at Component.render (component.js:62)"
@@ -264,7 +267,7 @@
             },
             {
                 type: "warning",
-                message: "Warning: Unhandled promise rejection",
+                message: "WARNING: Promise rejection in async component",
                 stack: [
                     "at fetchUserData (api.js:34)",
                     "at renderUserCard (user.js:78)",
@@ -273,17 +276,29 @@
             },
             {
                 type: "error",
-                message: "RangeError: Maximum call stack size exceeded",
+                message: "CRITICAL: Maximum call stack size exceeded - infinite recursion",
                 stack: [
-                    "at recursiveFunction (utils.js:45)",
-                    "at recursiveFunction (utils.js:45)",
-                    "at recursiveFunction (utils.js:45)",
-                    "at recursiveFunction (utils.js:45)"
+                    "at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)",
+                    "at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)
+                    at recursiveFunction (utils.js:45)"
                 ]
             },
             {
                 type: "error",
-                message: "SyntaxError: Unexpected token '}' in JSON",
+                message: "FATAL: JSON parsing error - malformed data in config",
                 stack: [
                     "at parseJSON (json.js:23)",
                     "at loadConfig (config.js:67)",
@@ -301,18 +316,18 @@
         ];
 
         const voidMessages = [
-            "SYSTEM COLLAPSE COMPLETE",
-            "CASCADING FAILURE ACHIEVED",
+            "CRASH SEQUENCE ENGAGED",
+            "SYSTEM COLLAPSE INITIATED",
             "CRASH SEQUENCE INITIATED",
             "VOID MODE ACTIVATED",
             "ALL COMPONENTS FAILED"
         ];
 
         const voidInstructions = [
-            "No refunds. Only silence.",
-            "You have achieved total system collapse.",
-            "This is the intended outcome.",
-            "The silence is your reward.",
+            "No return. Only silence.",
+            "No recovery. Only silence.",
+            "No recovery possible. Only silence.",
+            "No salvation. Only silence.",
             "Congratulations on the curated crash."
         ];
 
