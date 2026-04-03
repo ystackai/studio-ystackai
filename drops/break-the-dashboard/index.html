@@ -211,90 +211,67 @@
         #void-subtext {
             font-size: 24px;
             text-align: center;
-            margin-bottom: 30px;
-            animation: pulse 3s infinite;
+            margin-bottom: 20px;
+            animation: glitch 2s infinite;
         }
         
         #void-timer {
             font-size: 36px;
-            animation: pulse 1s infinite;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #0f0;
         }
         
         #void-sound {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: #000;
-            border: 1px solid #0f0;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: #00f;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
             cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            box-shadow: 0 0 10px #00f;
+            transition: all 0.3s;
         }
         
         #void-sound.playing {
-            animation: spin 1s infinite linear;
+            background: #00ff00;
+            box-shadow: 0 0 15px #00ff00;
         }
         
-        #void-sound::before {
-            content: "🔊";
-        }
-        
-        #void-sound.paused::before {
-            content: "🔇";
+        #void-sound.paused {
+            background: #ff0000;
+            box-shadow: 0 0 15px #ff0000;
         }
         
         .glitch-text {
-            animation: glitch 5s infinite;
+            animation: glitch 1s infinite;
         }
         
-        .error-counter {
-            color: #f00;
-            font-weight: bold;
+        .wobble-text {
+            animation: wobble 0.5s infinite alternate;
         }
         
-        .warning-counter {
-            color: #ff0;
-            font-weight: bold;
-        }
-        
-        .info-counter {
-            color: #0ff;
-            font-weight: bold;
-        }
-        
-        #timer {
-            font-size: 24px;
-            text-align: center;
-            margin: 20px 0;
-            color: #0f0;
-            text-shadow: 0 0 10px #0f0;
+        .float-text {
+            animation: float 3s ease-in-out infinite;
         }
     </style>
 </head>
 <body>
     <div id="dashboard">
-        <div id="header">
-            <h1>SYSTEM DASHBOARD</h1>
-            <p class="glitch-text">ERROR DETECTION INTERFACE v2.7.4</p>
-        </div>
-        
-        <div id="timer">Time Remaining: <span id="time-remaining">60</span>s</div>
+        <h1 id="header">SYSTEM DASHBOARD</h1>
         
         <div id="stats">
             <div class="stat-box">
-                <div class="stat-value error-counter" id="error-count">0</div>
+                <div class="stat-value" id="error-count">0</div>
                 <div class="stat-label">ERRORS</div>
             </div>
             <div class="stat-box">
-                <div class="stat-value warning-counter" id="warning-count">0</div>
+                <div class="stat-value" id="warning-count">0</div>
                 <div class="stat-label">WARNINGS</div>
             </div>
             <div class="stat-box">
-                <div class="stat-value info-counter" id="info-count">0</div>
+                <div class="stat-value" id="info-count">0</div>
                 <div class="stat-label">INFO</div>
             </div>
             <div class="stat-box">
@@ -304,43 +281,43 @@
         </div>
         
         <div id="error-container">
-            <h3>ACTIVE ERRORS</h3>
-            <div id="error-list"></div>
+            <!-- Error items will be added here dynamically -->
         </div>
         
         <div id="components">
-            <div class="component" onclick="triggerError('Component A')">
-                <div class="component-title">Component A</div>
-                <div class="component-value">Status: <span id="comp-a-status">OK</span></div>
+            <div class="component" onclick="triggerError('COMPONENT FAILURE')">
+                <div class="component-title">SYSTEM MONITOR</div>
+                <div class="component-value" id="monitor-value">0</div>
             </div>
-            <div class="component" onclick="triggerError('Component B')">
-                <div class="component-title">Component B</div>
-                <div class="component-value">Status: <span id="comp-b-status">OK</span></div>
+            <div class="component" onclick="triggerError('COMPONENT FAILURE')">
+                <div class="component-title">DATA PROCESSOR</div>
+                <div class="component-value" id="processor-value">0</div>
             </div>
-            <div class="component" onclick="triggerError('Component C')">
-                <div class="component-title">Component C</div>
-                <div class="component-value">Status: <span id="comp-c-status">OK</span></div>
+            <div class="component" onclick="triggerError('COMPONENT FAILURE')">
+                <div class="component-title">MEMORY MANAGER</div>
+                <div class="component-value" id="memory-value">0</div>
             </div>
-            <div class="component" onclick="triggerError('Component D')">
-                <div class="component-title">Component D</div>
-                <div class="component-value">Status: <span id="comp-d-status">OK</span></div>
+            <div class="component" onclick="triggerError('COMPONENT FAILURE')">
+                <div class="component-title">NETWORK MODULE</div>
+                <div class="component-value" id="network-value">0</div>
             </div>
-            <div class="component" onclick="triggerError('Component E')">
-                <div class="component-title">Component E</div>
-                <div class="component-value">Status: <span id="comp-e-status">OK</span></div>
+            <div class="component" onclick="triggerError('COMPONENT FAILURE')">
+                <div class="component-title">SECURITY CHECK</div>
+                <div class="component-value" id="security-value">0</div>
             </div>
         </div>
         
         <button id="fix-button" onclick="fixButtonClicked()">FIX BUTTON (TRAP)</button>
+        
+        <div id="time-remaining">00:30</div>
     </div>
     
     <div id="void-mode">
         <div id="void-text">CURATED VOID</div>
         <div id="void-subtext">SYSTEM COLLAPSE IMMINENT</div>
-        <div id="void-timer">00:00</div>
+        <div id="void-timer">00:10</div>
+        <button id="void-sound">SOUND: <span class="glitch-text">ON</span></button>
     </div>
-    
-    <div id="void-sound"></div>
     
     <script>
         // Game state
@@ -349,141 +326,112 @@
             warnings: 0,
             info: 0,
             stackTraces: 0,
-            stackTraceCount: 0,
             stackTraceHistory: [],
-            timeRemaining: 60,
             voidMode: false,
             voidTimer: 0,
-            soundPlaying: false
+            timeRemaining: 30,
+            soundPlaying: true,
+            audioContext: null,
+            soundElement: null
         };
-        
-        // Audio context for glitch effects
-        let audioContext;
-        let soundElement;
         
         // Initialize the game
         function initGame() {
-            updateStats();
-            startTimer();
-            setupSound();
+            // Set up audio context
+            try {
+                window.gameState.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+            
+            // Setup sound button
+            const soundButton = document.getElementById('void-sound');
+            soundButton.addEventListener('click', toggleSound);
+            
+            // Start game loop
+            setInterval(updateGame, 1000);
+            
+            // Update components periodically
+            setInterval(updateComponents, 2000);
         }
         
-        // Update stats display
-        function updateStats() {
-            document.getElementById('error-count').textContent = window.gameState.errors;
-            document.getElementById('warning-count').textContent = window.gameState.warnings;
-            document.getElementById('info-count').textContent = window.gameState.info;
-            document.getElementById('stack-trace-count').textContent = window.gameState.stackTraces;
-        }
-        
-        // Start the main timer
-        function startTimer() {
-            const timer = setInterval(() => {
-                if (window.gameState.voidMode) {
-                    window.gameState.voidTimer--;
-                    updateVoidTimer();
-                    if (window.gameState.voidTimer <= 0) {
-                        // Final collapse
-                        document.getElementById('void-mode').classList.add('show');
-                        document.body.style.background = '#000';
-                        document.body.style.color = '#000';
-                        document.body.style.animation = 'none';
-                        window.gameState.voidMode = false;
-                    }
-                } else {
-                    window.gameState.timeRemaining--;
-                    document.getElementById('time-remaining').textContent = window.gameState.timeRemaining;
-                    
-                    if (window.gameState.timeRemaining <= 0) {
-                        clearInterval(timer);
-                        triggerError("SYSTEM TIMEOUT");
-                    }
+        // Update game state
+        function updateGame() {
+            if (window.gameState.voidMode) {
+                window.gameState.voidTimer--;
+                updateVoidTimer();
+                
+                if (window.gameState.voidTimer <= 0) {
+                    // Final collapse - show void screen
+                    document.getElementById('void-mode').classList.add('show');
+                    document.getElementById('void-text').textContent = 'SYSTEM COLLAPSED';
+                    document.getElementById('void-subtext').textContent = 'VOID ACHIEVED';
                 }
-            }, 1000);
+            } else {
+                window.gameState.timeRemaining--;
+                document.getElementById('time-remaining').textContent = 
+                    `00:${window.gameState.timeRemaining.toString().padStart(2, '0')}`;
+                
+                if (window.gameState.timeRemaining <= 0) {
+                    // Time's up, trigger void mode
+                    activateVoidMode();
+                }
+            }
         }
         
         // Trigger an error
-        function triggerError(source) {
-            // Add error to the counter
-            window.gameState.errors++;
+        function triggerError(description) {
+            // Add to error container
+            const errorContainer = document.getElementById('error-container');
+            const errorItem = document.createElement('div');
+            errorItem.className = 'error-item';
+            errorItem.textContent = `[${new Date().toLocaleTimeString()}] ${description}`;
+            errorContainer.appendChild(errorItem);
             
-            // Add warning every 3 errors
+            // Scroll to bottom
+            errorContainer.scrollTop = errorContainer.scrollHeight;
+            
+            // Update counters
+            window.gameState.errors++;
+            document.getElementById('error-count').textContent = window.gameState.errors;
+            
+            // Randomly increment other counters
             if (window.gameState.errors % 3 === 0) {
                 window.gameState.warnings++;
+                document.getElementById('warning-count').textContent = window.gameState.warnings;
             }
             
-            // Add info every 5 errors
             if (window.gameState.errors % 5 === 0) {
                 window.gameState.info++;
+                document.getElementById('info-count').textContent = window.gameState.info;
             }
             
-            // Add stack trace every 2 errors
+            // Randomly trigger stack trace
             if (window.gameState.errors % 2 === 0) {
                 window.gameState.stackTraces++;
+                document.getElementById('stack-trace-count').textContent = window.gameState.stackTraces;
                 window.gameState.stackTraceHistory.push(Date.now());
                 
-                // Check for cascade effect
+                // Check if we have 3 consecutive stack traces within 10 seconds
                 if (window.gameState.stackTraceHistory.length >= 3) {
                     const latest = window.gameState.stackTraceHistory[window.gameState.stackTraceHistory.length - 1];
                     const secondLatest = window.gameState.stackTraceHistory[window.gameState.stackTraceHistory.length - 2];
                     const thirdLatest = window.gameState.stackTraceHistory[window.gameState.stackTraceHistory.length - 3];
                     
-                    // If last 3 stack traces were within 10 seconds
+                    // If all 3 traces happened within 10 seconds, activate void mode
                     if (latest - thirdLatest <= 10000) {
                         activateVoidMode();
                     }
                 }
             }
-            
-            // Add error to display
-            const errorList = document.getElementById('error-list');
-            const errorItem = document.createElement('div');
-            errorItem.className = 'error-item';
-            errorItem.innerHTML = `<strong>${source}</strong>: ${getErrorDescription()} [${new Date().toLocaleTimeString()}]`;
-            errorList.appendChild(errorItem);
-            
-            // Scroll to bottom
-            errorList.scrollTop = errorList.scrollHeight;
-            
-            // Update display
-            updateStats();
-            
-            // Add wobbling effect to components
-            const components = document.querySelectorAll('.component');
-            components.forEach(comp => {
-                comp.style.animation = 'none';
-                setTimeout(() => {
-                    comp.style.animation = 'float 3s ease-in-out infinite';
-                }, 10);
-            });
-            
-            // Add glitch effect to dashboard
-            document.getElementById('dashboard').style.animation = 'none';
-            setTimeout(() => {
-                document.getElementById('dashboard').style.animation = 'pulse 2s infinite';
-            }, 10);
         }
         
-        // Get random error description
-        function getErrorDescription() {
-            const descriptions = [
-                "Stack overflow detected",
-                "Memory allocation failed",
-                "Component initialization error",
-                "Resource leak detected",
-                "Null pointer dereference",
-                "Buffer overflow",
-                "Invalid state transition",
-                "Critical system failure",
-                "Module not found",
-                "Configuration error",
-                "Security violation",
-                "Data corruption detected",
-                "Connection timeout",
-                "Service unavailable",
-                "Authentication failed"
-            ];
-            return descriptions[Math.floor(Math.random() * descriptions.length)];
+        // Update components with random values
+        function updateComponents() {
+            const components = document.querySelectorAll('.component-value');
+            components.forEach(component => {
+                component.textContent = Math.floor(Math.random() * 1000);
+            });
         }
         
         // Fix button clicked (trap!)
@@ -545,8 +493,8 @@
                 soundButton.classList.add('paused');
                 soundButton.classList.remove('playing');
                 // Stop audio
-                if (soundElement) {
-                    soundElement.pause();
+                if (window.gameState.soundElement) {
+                    window.gameState.soundElement.pause();
                 }
             }
         }
@@ -556,43 +504,43 @@
             if (!window.gameState.soundPlaying) return;
             
             // Create audio elements for glitch effects
-            if (soundElement) {
-                soundElement.pause();
+            if (window.gameState.soundElement) {
+                window.gameState.soundElement.pause();
             }
             
             // Create a simple glitch effect using Web Audio API
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
+            const oscillator = window.gameState.audioContext.createOscillator();
+            const gainNode = window.gameState.audioContext.createGain();
             
             oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            gainNode.connect(window.gameState.audioContext.destination);
             
             oscillator.type = 'sawtooth';
-            oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.1);
+            oscillator.frequency.setValueAtTime(100, window.gameState.audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(1000, window.gameState.audioContext.currentTime + 0.1);
             
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.3, window.gameState.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, window.gameState.audioContext.currentTime + 0.1);
             
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
+            oscillator.start(window.gameState.audioContext.currentTime);
+            oscillator.stop(window.gameState.audioContext.currentTime + 0.1);
             
             // Add some random distortion
             for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
-                    const distortion = audioContext.createOscillator();
-                    const distortionGain = audioContext.createGain();
+                    const distortion = window.gameState.audioContext.createOscillator();
+                    const distortionGain = window.gameState.audioContext.createGain();
                     
                     distortion.connect(distortionGain);
-                    distortionGain.connect(audioContext.destination);
+                    distortionGain.connect(window.gameState.audioContext.destination);
                     
                     distortion.type = 'square';
-                    distortion.frequency.setValueAtTime(50 + Math.random() * 100, audioContext.currentTime);
-                    distortionGain.gain.setValueAtTime(0.5, audioContext.currentTime);
-                    distortionGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                    distortion.frequency.setValueAtTime(50 + Math.random() * 100, window.gameState.audioContext.currentTime);
+                    distortionGain.gain.setValueAtTime(0.5, window.gameState.audioContext.currentTime);
+                    distortionGain.gain.exponentialRampToValueAtTime(0.01, window.gameState.audioContext.currentTime + 0.05);
                     
-                    distortion.start(audioContext.currentTime);
-                    distortion.stop(audioContext.currentTime + 0.05);
+                    distortion.start(window.gameState.audioContext.currentTime);
+                    distortion.stop(window.gameState.audioContext.currentTime + 0.05);
                 }, i * 200);
             }
         }
