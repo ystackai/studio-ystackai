@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 class AudioSystem {
     constructor() {
         this.audioContext = null;
@@ -371,3 +372,104 @@ class AudioSystem {
         }
     }
 }
+
+    // Create a more aggressive glitch sound
+    createAggressiveGlitch(frequency = 100, duration = 0.2) {
+        if (!this.isInitialized || this.isSilenced) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.type = 'square';
+        oscillator.frequency.value = frequency;
+
+        // Apply intense modulation
+        const lfo = this.audioContext.createOscillator();
+        lfo.type = 'sawtooth';
+        lfo.frequency.value = 10 + Math.random() * 20;
+
+        const lfoGain = this.audioContext.createGain();
+        lfoGain.gain.value = 200 + Math.random() * 300;
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(oscillator.frequency);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.masterGain);
+
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + duration);
+
+        // Clean up
+        oscillator.onended = () => {
+            oscillator.disconnect();
+            gainNode.disconnect();
+            lfo.disconnect();
+            lfoGain.disconnect();
+        };
+    }
+
+    // Create a short, sharp glitch sound
+    createSharpGlitch(frequency = 500, duration = 0.05) {
+        if (!this.isInitialized || this.isSilenced) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.value = frequency;
+
+        // Apply envelope for sharp attack
+        const now = this.audioContext.currentTime;
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(1, now + 0.001);
+        gainNode.gain.linearRampToValueAtTime(0, now + duration);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.masterGain);
+
+        oscillator.start(now);
+        oscillator.stop(now + duration);
+
+        // Clean up
+        oscillator.onended = () => {
+            oscillator.disconnect();
+            gainNode.disconnect();
+        };
+    }
+
+    // Play a glitch sound effect
+    playGlitchSound() {
+        this.createGlitchOscillator(100 + Math.random() * 200, 'sawtooth', 0.1 + Math.random() * 0.1);
+        this.createAggressiveGlitch(50 + Math.random() * 100, 0.15 + Math.random() * 0.1);
+        this.createSharpGlitch(500 + Math.random() * 1000, 0.05 + Math.random() * 0.05);
+    }
+
+    // Create a reactive sound for wobbling components
+    playWobbleSound() {
+        if (!this.isInitialized || this.isSilenced) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 100 + Math.random() * 200;
+
+        // Apply envelope
+        const now = this.audioContext.currentTime;
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(0.3, now + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0, now + 0.15);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.masterGain);
+
+        oscillator.start(now);
+        oscillator.stop(now + 0.15);
+
+        // Clean up
+        oscillator.onended = () => {
+            oscillator.disconnect();
+            gainNode.disconnect();
+        };
+    }
