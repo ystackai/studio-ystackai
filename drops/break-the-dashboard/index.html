@@ -25,12 +25,12 @@
         .component {
             background-color: #111;
             border: 1px solid #0f0;
-            padding: 15px;
-            border-radius: 5px;
-            position: relative;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
             transition: all 0.1s ease;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            position: relative;
+            padding: 15px;
+            border-radius: 5px;
         }
 
         .component:hover {
@@ -124,6 +124,11 @@
             100% { opacity: 0.5; }
         }
 
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
         .glitch {
             animation: glitch 0.3s infinite;
         }
@@ -135,11 +140,6 @@
             60% { transform: translate(2px, 2px); }
             80% { transform: translate(2px, -2px); }
             100% { transform: translate(0); }
-        }
-
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
         }
 
         .error-source {
@@ -171,6 +171,11 @@
     <h1>Break the Dashboard</h1>
     <div id="timer">Time until collapse: <span id="time-left">10</span> seconds</div>
     
+    <div class="status-bar">
+        <span>System Health: <span id="system-health">100</span>%</span>
+        <span>Stack Traces: <span id="stack-trace-count">0</span></span>
+    </div>
+
     <div id="dashboard">
         <div class="component" id="component-1">
             <div class="error-counter">Errors: <span id="error-count-1">0</span></div>
@@ -197,12 +202,12 @@
             <div class="stack-trace" id="stack-trace-6"></div>
         </div>
     </div>
-    
-    <button id="fix-button">Fix Button</button>
-    
+
+    <button id="fix-button">FIX BUTTON</button>
+
     <div id="void-mode">
-        <h1>VOID MODE ACTIVATED</h1>
-        <p>System collapse complete</p>
+        <h1>VOID MODE</h1>
+        <p>You have broken the dashboard!</p>
     </div>
 
     <script>
@@ -213,55 +218,62 @@
             stackTraces: [],
             cascadeThreshold: 3,
             cascadeCount: 0,
+            systemHealth: 100,
             voidMode: false,
-            systemHealth: 100
+            components: []
         };
 
         // Initialize the game
         function initGame() {
-            // Set up the fix button
-            document.getElementById('fix-button').addEventListener('click', triggerFixTrap);
-            
+            // Create components array
+            for (let i = 1; i <= 6; i++) {
+                gameState.components.push({
+                    id: i,
+                    errorCount: 0,
+                    stackTrace: ''
+                });
+            }
+
             // Start the timer
             startTimer();
-            
-            // Start random error generation
-            setInterval(generateRandomError, 1500);
+
+            // Set up the fix button
+            document.getElementById('fix-button').addEventListener('click', triggerFixTrap);
+
+            // Random error generation
+            setInterval(generateRandomError, 2000);
         }
 
         // Generate a random error
         function generateRandomError() {
             if (gameState.voidMode) return;
-            
-            // Pick a random component
+
+            // Random component
             const componentId = Math.floor(Math.random() * 6) + 1;
-            
-            // Generate stack trace
-            const stackTrace = generateStackTrace();
-            
-            // Add to component
-            const stackTraceElement = document.getElementById(`stack-trace-${componentId}`);
-            stackTraceElement.textContent += stackTrace + '\n';
+            const component = document.getElementById(`component-${componentId}`);
             
             // Update error counter
-            const errorCountElement = document.getElementById(`error-count-${componentId}`);
-            const currentCount = parseInt(errorCountElement.textContent);
-            errorCountElement.textContent = currentCount + 1;
+            const errorCount = parseInt(document.getElementById(`error-count-${componentId}`).textContent);
+            document.getElementById(`error-count-${componentId}`).textContent = errorCount + 1;
             
-            // Add wobble effect
-            const component = document.getElementById(`component-${componentId}`);
+            // Add to component stack trace
+            const stackTrace = document.getElementById(`stack-trace-${componentId}`);
+            const trace = generateStackTrace();
+            stackTrace.textContent += trace + '\n';
+            
+            // Apply wobble effect
             component.classList.add('wobble');
             setTimeout(() => {
                 component.classList.remove('wobble');
             }, 500);
             
-            // Track stack trace
-            gameState.stackTraces.push(stackTrace);
+            // Add to global stack traces
+            gameState.stackTraces.push(trace);
+            document.getElementById('stack-trace-count').textContent = gameState.stackTraces.length;
             
-            // Keep only last 10 stack traces
-            if (gameState.stackTraces.length > 10) {
-                gameState.stackTraces.shift();
-            }
+            // Update system health
+            gameState.systemHealth = Math.max(0, gameState.systemHealth - 5);
+            document.getElementById('system-health').textContent = gameState.systemHealth;
             
             // Check for cascading failure
             checkCascadingFailure();
@@ -269,8 +281,9 @@
 
         // Generate stack trace
         function generateStackTrace() {
-            const functions = ['validateUserInput', 'processData', 'calculateMetrics', 'renderUI', 'updateState', 'handleEvent', 'sendRequest', 'receiveResponse', 'parseJSON', 'serializeData', 'encryptData', 'decryptData', 'authenticateUser', 'authorizeAccess', 'logEvent', 'trackMetrics', 'sendNotification', 'processPayment', 'validateForm', 'formatData', 'transformData', 'filterData', 'sortData', 'searchData', 'cacheData', 'fetchData', 'postData', 'updateData', 'deleteData', 'createData', 'initializeSystem', 'shutdownSystem', 'handleError', 'logError', 'reportError', 'notifyAdmin', 'retryOperation', 'fallbackToBackup', 'switchToStandby', 'activateEmergency', 'triggerAlarm', 'executeScript', 'runProcess', 'startService', 'stopService', 'restartService', 'monitorSystem', 'analyzeLogs', 'generateReport', 'sendEmail', 'sendSMS', 'sendPush', 'connectToDB', 'connectToAPI', 'connectToNetwork', 'connectToDevice', 'disconnectFromDB', 'disconnectFromAPI', 'disconnectFromNetwork', 'disconnectFromDevice'];
-            const errors = ['Error: Invalid input validation', 'Error: Data processing failed', 'Error: Calculation overflow', 'Error: UI rendering error', 'Error: State update failed', 'Error: Event handling failed', 'Error: Network request timeout', 'Error: Response parsing error', 'Error: JSON parsing error', 'Error: Data serialization error', 'Error: Encryption failed', 'Error: Decryption failed', 'Error: Authentication failed', 'Error: Authorization denied', 'Error: Event logging failed', 'Error: Metrics tracking failed', 'Error: Notification delivery failed', 'Error: Payment processing failed', 'Error: Form validation error', 'Error: Data formatting error', 'Error: Data transformation error', 'Error: Data filtering error', 'Error: Data sorting error', 'Error: Data search error', 'Error: Data caching error', 'Error: Data fetching error', 'Error: Data posting error', 'Error: Data updating error', 'Error: Data deleting error', 'Error: Data creating error', 'Error: System initialization failed', 'Error: System shutdown failed', 'Error: Error handling failed', 'Error: Error logging failed', 'Error: Error reporting failed', 'Error: Admin notification failed', 'Error: Operation retry failed', 'Error: Backup fallback failed', 'Error: Standby mode activation failed', 'Error: Emergency mode activation failed', 'Error: Alarm triggering failed', 'Error: Script execution failed', 'Error: Process execution failed', 'Error: Service starting failed', 'Error: Service stopping failed', 'Error: Service restarting failed', 'Error: System monitoring failed', 'Error: Log analysis failed', 'Error: Report generation failed', 'Error: Email sending failed', 'Error: SMS sending failed', 'Error: Push notification failed', 'Error: Database connection failed', 'Error: API connection failed', 'Error: Network connection failed', 'Error: Device connection failed', 'Error: Database disconnection failed', 'Error: API disconnection failed', 'Error: Network disconnection failed', 'Error: Device disconnection failed'];
+            const functions = ['handleSystemInit', 'processUserRequest', 'validateInput', 'executeCommand', 'parseJSON', 'sendNotification', 'updateStatus', 'syncDatabase', 'checkPermissions', 'authenticateUser', 'handleAuthentication', 'processData', 'validateData', 'sendEmail', 'processPayment', 'handleError', 'logEvent', 'updateConfig', 'refreshToken', 'connectToService', 'disconnectService', 'initComponent', 'shutdownComponent', 'handleEvent', 'processRequest', 'validateToken', 'encryptData', 'decryptData', 'compressData', 'decompressData', 'parseXML', 'serializeData', 'handleResponse', 'processNotification', 'checkStatus', 'updateCache', 'clearCache', 'validateForm', 'processForm', 'sendRequest', 'handleResponse', 'processError', 'logError', 'sendAlert', 'handleTimeout', 'retryOperation', 'abortOperation', 'scheduleTask', 'executeTask', 'processQueue', 'updateDatabase', 'backupDatabase', 'restoreDatabase', 'upgradeSystem', 'downgradeSystem', 'configureSystem', 'initializeSystem', 'shutdownSystem', 'restartSystem', 'monitorSystem', 'analyzeSystem', 'optimizeSystem', 'debugSystem', 'testSystem', 'deploySystem', 'rollbackSystem', 'updateSystem', 'patchSystem', 'secureSystem', 'encryptSystem', 'decryptSystem', 'compressSystem', 'decompressSystem', 'parseSystem', 'serializeSystem', 'handleSystemEvent', 'processSystemEvent', 'validateSystemEvent', 'sendSystemEvent', 'receiveSystemEvent', 'processSystemRequest', 'validateSystemRequest', 'executeSystemCommand', 'handleSystemCommand', 'processSystemNotification', 'sendSystemNotification', 'receiveSystemNotification', 'processSystemError', 'handleSystemError', 'logSystemError', 'sendSystemAlert', 'handleSystemAlert', 'monitorSystemHealth', 'analyzeSystemPerformance', 'optimizeSystemPerformance', 'debugSystemCode', 'testSystemCode', 'deploySystemCode', 'rollbackSystemCode', 'updateSystemCode', 'patchSystemCode', 'secureSystemCode', 'encryptSystemCode', 'decryptSystemCode', 'compressSystemCode', 'decompressSystemCode', 'parseSystemCode', 'serializeSystemCode', 'handleSystemCodeEvent', 'processSystemCodeEvent', 'validateSystemCodeEvent', 'sendSystemCodeEvent', 'receiveSystemCodeEvent', 'processSystemCodeRequest', 'validateSystemCodeRequest', 'executeSystemCodeCommand', 'handleSystemCodeCommand', 'processSystemCodeNotification', 'sendSystemCodeNotification', 'receiveSystemCodeNotification', 'processSystemCodeError', 'handleSystemCodeError', 'logSystemCodeError', 'sendSystemCodeAlert', 'handleSystemCodeAlert'];
+            
+            const errors = ['Error: Initialization failed', 'Error: Connection timeout', 'Error: Authentication failed', 'Error: Permission denied', 'Error: Data validation failed', 'Error: Memory allocation failed', 'Error: Network unreachable', 'Error: Service unavailable', 'Error: Database connection failed', 'Error: API limit exceeded', 'Error: Resource exhausted', 'Error: Invalid configuration', 'Error: File not found', 'Error: Process terminated', 'Error: Stack overflow', 'Error: Heap corruption', 'Error: Memory leak', 'Error: Thread crash', 'Error: Race condition', 'Error: Deadlock', 'Error: Timeout exception', 'Error: Invalid input', 'Error: Unexpected end of stream', 'Error: Protocol violation', 'Error: Serialization failed', 'Error: Deserialization failed', 'Error: Encryption failed', 'Error: Decryption failed', 'Error: Compression failed', 'Error: Decompression failed', 'Error: Validation failed', 'Error: Parsing failed', 'Error: Execution failed', 'Error: Compilation failed', 'Error: Linking failed', 'Error: Deployment failed', 'Error: Rollback failed', 'Error: Upgrade failed', 'Error: Downgrade failed', 'Error: Configuration failed', 'Error: Initialization timeout', 'Error: Connection reset', 'Error: Security breach', 'Error: Access denied', 'Error: Invalid operation', 'Error: Operation failed', 'Error: System crash', 'Error: System corruption', 'Error: System failure', 'Error: System error', 'Error: System alert', 'Error: System notification', 'Error: System event', 'Error: System command', 'Error: System request', 'Error: System response', 'Error: System notification failed', 'Error: System reporting failed', 'Error: Admin notification failed', 'Error: Operation retry failed', 'Error: Backup fallback failed', 'Error: Standby mode activation failed', 'Error: Emergency mode activation failed', 'Error: Alarm triggering failed', 'Error: Script execution failed', 'Error: Process execution failed', 'Error: Service starting failed', 'Error: Service stopping failed', 'Error: Service restarting failed', 'Error: System monitoring failed', 'Error: Log analysis failed', 'Error: Report generation failed', 'Error: Email sending failed', 'Error: SMS sending failed', 'Error: Push notification failed', 'Error: Database connection failed', 'Error: API connection failed', 'Error: Network connection failed', 'Error: Device connection failed', 'Error: Database disconnection failed', 'Error: API disconnection failed', 'Error: Network disconnection failed', 'Error: Device disconnection failed'];
             
             const trace = [];
             trace.push('Stack trace:');
@@ -338,6 +351,37 @@
             gameState.systemHealth = Math.max(0, gameState.systemHealth - 30);
             document.getElementById('system-health').textContent = gameState.systemHealth;
 
+            // Check for cascading failure
+            checkCascadingFailure();
+        }
+
+        // Trigger error on a specific component
+        function triggerError(componentId) {
+            const component = document.getElementById(`component-${componentId}`);
+            
+            // Update error counter
+            const errorCount = parseInt(document.getElementById(`error-count-${componentId}`).textContent);
+            document.getElementById(`error-count-${componentId}`).textContent = errorCount + 1;
+            
+            // Add to component stack trace
+            const stackTrace = document.getElementById(`stack-trace-${componentId}`);
+            const trace = generateStackTrace();
+            stackTrace.textContent += trace + '\n';
+            
+            // Apply wobble effect
+            component.classList.add('wobble');
+            setTimeout(() => {
+                component.classList.remove('wobble');
+            }, 500);
+            
+            // Add to global stack traces
+            gameState.stackTraces.push(trace);
+            document.getElementById('stack-trace-count').textContent = gameState.stackTraces.length;
+            
+            // Update system health
+            gameState.systemHealth = Math.max(0, gameState.systemHealth - 5);
+            document.getElementById('system-health').textContent = gameState.systemHealth;
+            
             // Check for cascading failure
             checkCascadingFailure();
         }
