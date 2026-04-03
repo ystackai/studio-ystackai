@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Break the Dashboard</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #000;
+      color: #0f0;
+      margin: 0;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .component {
+      background-color: #111;
+      border: 1px solid #0f0;
+      padding: 15px;
+      border-radius: 5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .component h3 {
+      margin-top: 0;
+      color: #0f0;
+    }
+
+    .error-counter {
+      font-size: 24px;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .stack-trace {
+      font-size: 12px;
+      margin: 5px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fix-button {
+      background-color: #ff0000;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .fix-button:hover {
+      background-color: #ff5555;
+    }
+
+    .void-mode {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      font-size: 48px;
+      color: #0f0;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    .void-mode.active {
+      opacity: 1;
+    }
+
+    .timer {
+      font-size: 24px;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .wobbling {
+      animation: wobble 0.5s infinite alternate;
+    }
+
+    @keyframes wobble {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(5px); }
+    }
+
+    .glitch {
+      animation: glitch 0.3s infinite;
+    }
+
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+      100% { transform: translate(0); }
+    }
+
+    .terminal-output {
+      background-color: #000;
+      color: #0f0;
+      padding: 10px;
+      font-family: 'Courier New', monospace;
+      height: 200px;
+      overflow-y: auto;
+    }
+
+    .terminal-line {
+      margin: 2px 0;
+    }
+
+    .error {
+      color: #f00;
+    }
+
+    .warning {
+      color: #ff0;
+    }
+
+    .success {
+      color: #0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard" id="dashboard">
+    <div class="component" id="component1">
+      <h3>System Status</h3>
+      <div class="error-counter" id="error1">0</div>
+      <div class="stack-trace" id="trace1">No errors</div>
+    </div>
+    <div class="component" id="component2">
+      <h3>Memory Monitor</h3>
+      <div class="error-counter" id="error2">0</div>
+      <div class="stack-trace" id="trace2">No errors</div>
+    </div>
+    <div class="component" id="component3">
+      <h3>Network Interface</h3>
+      <div class="error-counter" id="error3">0</div>
+      <div class="stack-trace" id="trace3">No errors</div>
+    </div>
+    <div class="component" id="component4">
+      <h3>UI Renderer</h3>
+      <div class="error-counter" id="error4">0</div>
+      <div class="stack-trace" id="trace4">No errors</div>
+    </div>
+    <div class="component" id="component5">
+      <h3>Audio Engine</h3>
+      <div class="error-counter" id="error5">0</div>
+      <div class="stack-trace" id="trace5">No errors</div>
+    </div>
+    <div class="component">
+      <h3>Terminal Output</h3>
+      <div class="terminal-output" id="terminal"></div>
+    </div>
+  </div>
+
+  <div class="timer" id="timer">Time until collapse: 10s</div>
+
+  <div class="component">
+    <h3>System Controls</h3>
+    <button class="fix-button" id="fixButton">FIX SYSTEM (TRAP)</button>
+  </div>
+
+  <div class="void-mode" id="voidMode">
+    <div>
+      VOID MODE ACTIVATED<br>
+      SYSTEM COLLAPSE IN PROGRESS
+    </div>
+  </div>
+
+  <script src="audio.js"></script>
+  <script>
+    // Initialize audio system
+    window.addEventListener('load', function() {
+      audioSystem.init();
+      audioSystem.startAmbient();
+    });
+
+    // Dashboard state
+    const dashboardState = {
+      errorCount: 0,
+      stackTraces: [],
+      voidMode: false,
+      timeUntilCollapse: 10,
+      errorSources: [
+        { id: 'component1', name: 'System Status' },
+        { id: 'component2', name: 'Memory Monitor' },
+        { id: 'component3', name: 'Network Interface' },
+        { id: 'component4', name: 'UI Renderer' },
+        { id: 'component5', name: 'Audio Engine' }
+      ]
+    };
+
+    // Initialize dashboard
+    function initDashboard() {
+      // Add click events to error sources
+      dashboardState.errorSources.forEach(source => {
+        const component = document.getElementById(source.id);
+        if (component) {
+          component.addEventListener('click', () => addError(source.id));
+        }
+      });
+
+      // Fix button trap
+      document.getElementById('fixButton').addEventListener('click', () => {
+        audioSystem.playFixTrap();
+        addError('component1'); // Add error to system status
+      });
+
+      // Start timer
+      startTimer();
+    }
+
+    function addError(sourceId) {
+      dashboardState.errorCount++;
+      const errorCountElement = document.getElementById('error' + sourceId.split('component')[1]);
+      if (errorCountElement) {
+        errorCountElement.textContent = dashboardState.errorCount;
+      }
+
+      // Add to stack trace
+      const trace = generateStackTrace(sourceId);
+      dashboardState.stackTraces.push(trace);
+
+      // Update terminal output
+      const terminal = document.getElementById('terminal');
+      const line = document.createElement('div');
+      line.className = 'terminal-line error';
+      line.textContent = `[ERROR] ${trace}`;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+
+      // Update component trace
+      const traceElement = document.getElementById('trace' + sourceId.split('component')[1]);
+      if (traceElement) {
+        traceElement.textContent = trace;
+        traceElement.classList.add('glitch');
+        setTimeout(() => traceElement.classList.remove('glitch'), 300);
+      }
+
+      // Play error sound
+      audioSystem.playErrorSound();
+
+      // Check for void mode
+      checkVoidMode();
+    }
+
+    function generateStackTrace(sourceId) {
+      const sources = ['System Status', 'Memory Monitor', 'Network Interface', 'UI Renderer', 'Audio Engine'];
+      const errors = [
+        'Uncaught TypeError: Cannot read property "x" of null',
+        'ReferenceError: Variable is not defined',
+        'RangeError: Maximum call stack size exceeded',
+        'SyntaxError: Unexpected token',
+        'DOMException: Invalid state',
+        'InternalError: too much recursion',
+        'NetworkError: failed to fetch',
+        'SecurityError: Access denied',
+        'URIError: malformed URI',
+        'Error: Invalid operation'
+      ];
+
+      const randomSource = sources[Math.floor(Math.random() * sources.length)];
+      const randomError = errors[Math.floor(Math.random() * errors.length)];
+
+      return `${randomError} at ${randomSource} (${Math.floor(Math.random() * 1000)}ms)`;
+    }
+
+    function checkVoidMode() {
+      // Check if 3 consecutive errors within 10 seconds
+      if (dashboardState.errorCount >= 3) {
+        // Start void mode
+        audioSystem.activateVoidMode();
+        document.getElementById('voidMode').classList.add('active');
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('timer').style.display = 'none';
+        dashboardState.voidMode = true;
+      }
+    }
+
+    function startTimer() {
+      const timerElement = document.getElementById('timer');
+      const countdown = setInterval(() => {
+        if (dashboardState.voidMode) {
+          clearInterval(countdown);
+          return;
+        }
+
+        dashboardState.timeUntilCollapse--;
+        timerElement.textContent = `Time until collapse: ${dashboardState.timeUntilCollapse}s`;
+
+        if (dashboardState.timeUntilCollapse <= 0) {
+          clearInterval(countdown);
+          audioSystem.activateVoidMode();
+          document.getElementById('voidMode').classList.add('active');
+          document.getElementById('dashboard').style.display = 'none';
+          timerElement.style.display = 'none';
+          dashboardState.voidMode = true;
+        }
+      }, 1000);
+    }
+
+    // Initialize when page loads
+    window.addEventListener('load', initDashboard);
+  </script>
+</body>
+</html>
