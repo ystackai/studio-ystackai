@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Break the Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background-color: #000;
+            color: #0f0;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        #dashboard {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-gap: 20px;
+            align-content: start;
+        }
+
+        .panel {
+            background-color: rgba(0, 20, 0, 0.8);
+            border: 1px solid #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel h2 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            color: #0f0;
+        }
+
+        .counter {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .error-stack {
+            background-color: rgba(20, 0, 0, 0.7);
+            border: 1px solid #f00;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-size: 0.8em;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .stack-trace {
+            color: #f00;
+            margin: 5px 0;
+            font-size: 0.8em;
+        }
+
+        .wobbling {
+            animation: wobble 0.5s infinite alternate;
+        }
+
+        @keyframes wobble {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(10px); }
+        }
+
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        #fixButton {
+            background-color: #000;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            border-radius: 5px;
+            text-align: center;
+            width: 200px;
+            transition: all 0.3s;
+        }
+
+        #fixButton:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+
+        #timer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            color: #0f0;
+        }
+
+        #voidMode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        #voidMode h1 {
+            font-size: 4em;
+            color: #0f0;
+            text-shadow: 0 0 20px #0f0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        #voidMode p {
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        .warning {
+            color: #f00;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .component-failure {
+            animation: failure 0.5s infinite;
+        }
+
+        @keyframes failure {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        #status {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 1.2em;
+        }
+
+        #status.warning {
+            color: #f00;
+        }
+
+        #status.success {
+            color: #0f0;
+        }
+    </style>
+</head>
+<body>
+    <div id="dashboard">
+        <div class="panel">
+            <h2>Error Counter</h2>
+            <div class="counter" id="errorCount">0</div>
+            <div class="error-stack" id="errorStack"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Component Status</h2>
+            <div id="componentStatus">All systems operational</div>
+            <div class="counter" id="componentCount">0</div>
+            <div id="wobblingComponent" class="wobbling">Wobbling Component</div>
+        </div>
+
+        <div class="panel">
+            <h2>Memory Usage</h2>
+            <div class="counter" id="memoryUsage">87%</div>
+            <div class="error-stack" id="memoryStack"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Network Status</h2>
+            <div class="counter" id="networkCount">0</div>
+            <div class="error-stack" id="networkStack"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Processing Queue</h2>
+            <div class="counter" id="queueCount">0</div>
+            <div class="error-stack" id="queueStack"></div>
+        </div>
+
+        <div class="panel">
+            <h2>System Logs</h2>
+            <div class="error-stack" id="systemLogs"></div>
+        </div>
+    </div>
+
+    <div id="timer">10:00</div>
+    <div id="status">Dashboard operational</div>
+
+    <button id="fixButton">FIX BUTTON</button>
+
+    <div id="voidMode">
+        <div>
+            <h1>VOID MODE</h1>
+            <p>SYSTEM COLLAPSE INITIATED</p>
+            <p>ALL COMPONENTS FAILED</p>
+            <p>NO REFUNDS</p>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        window.gameState = {
+            errorCount: 0,
+            componentCount: 0,
+            memoryUsage: 87,
+            networkCount: 0,
+            queueCount: 0,
+            stackTraces: [],
+            consecutiveTraces: 0,
+            timer: 600, // 10 minutes in seconds
+            voidMode: false,
+            voidTimer: 0,
+            audioEnabled: true
+        };
+
+        // DOM elements
+        const errorCountEl = document.getElementById('errorCount');
+        const componentCountEl = document.getElementById('componentCount');
+        const memoryUsageEl = document.getElementById('memoryUsage');
+        const networkCountEl = document.getElementById('networkCount');
+        const queueCountEl = document.getElementById('queueCount');
+        const errorStackEl = document.getElementById('errorStack');
+        const memoryStackEl = document.getElementById('memoryStack');
+        const networkStackEl = document.getElementById('networkStack');
+        const queueStackEl = document.getElementById('queueStack');
+        const systemLogsEl = document.getElementById('systemLogs');
+        const timerEl = document.getElementById('timer');
+        const fixButton = document.getElementById('fixButton');
+        const voidModeEl = document.getElementById('voidMode');
+        const statusEl = document.getElementById('status');
+        const wobblingComponent = document.getElementById('wobblingComponent');
+
+        // Error messages for different components
+        const errorMessages = [
+            "System call failed",
+            "Memory allocation error",
+            "Component timeout",
+            "Stack overflow detected",
+            "Invalid reference",
+            "Null pointer exception",
+            "Buffer overrun",
+            "Resource deadlock",
+            "Invalid state transition",
+            "Uncaught exception"
+        ];
+
+        // Stack trace generation
+        function generateStackTrace() {
+            const trace = [];
+            const components = ['Component A', 'Component B', 'Component C', 'Module X', 'Module Y', 'Service Z'];
+            const methods = ['process()', 'validate()', 'execute()', 'render()', 'update()', 'handle()'];
+            const fileNames = ['main.js', 'utils.js', 'core.js', 'renderer.js', 'network.js', 'memory.js'];
+
+            for (let i = 0; i < 3; i++) {
+                const component = components[Math.floor(Math.random() * components.length)];
+                const method = methods[Math.floor(Math.random() * methods.length)];
+                const file = fileNames[Math.floor(Math.random() * fileNames.length)];
+                const line = Math.floor(Math.random() * 1000);
+                trace.push(`    at ${component}.${method} (${file}:${line})`);
+            }
+            return trace.join('\n');
+        }
+
+        // Add a new error
+        function addError() {
+            const error = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+            const stackTrace = generateStackTrace();
+            
+            window.gameState.errorCount++;
+            window.gameState.stackTraces.push({
+                message: error,
+                stack: stackTrace,
+                timestamp: Date.now()
+            });
+            
+            // Update UI
+            errorCountEl.textContent = window.gameState.errorCount;
+            errorStackEl.innerHTML += `<div class="stack-trace">${error}</div>`;
+            errorStackEl.innerHTML += `<div class="stack-trace"><pre>${stackTrace}</pre></div>`;
+            
+            // Keep only last 10 stack traces
+            if (window.gameState.stackTraces.length > 10) {
+                window.gameState.stackTraces.shift();
+            }
+            
+            // Check for consecutive traces
+            checkConsecutiveTraces();
+            
+            // Add to system logs
+            systemLogsEl.innerHTML += `<div class="stack-trace">${new Date().toLocaleTimeString()} - ${error}</div>`;
+            
+            // Random component failure
+            if (Math.random() > 0.7) {
+                window.gameState.componentCount++;
+                componentCountEl.textContent = window.gameState.componentCount;
+                componentStatus.textContent = "Component failure detected";
+                wobblingComponent.classList.add('component-failure');
+                setTimeout(() => {
+                    wobblingComponent.classList.remove('component-failure');
+                }, 1000);
+            }
+            
+            // Update memory usage
+            window.gameState.memoryUsage = Math.max(0, window.gameState.memoryUsage - Math.floor(Math.random() * 5));
+            memoryUsageEl.textContent = window.gameState.memoryUsage + '%';
+            
+            // Add visual effects
+            document.body.classList.add('glitch');
+            setTimeout(() => {
+                document.body.classList.remove('glitch');
+            }, 300);
+        }
+
+        // Check for consecutive stack traces
+        function checkConsecutiveTraces() {
+            if (window.gameState.stackTraces.length >= 3) {
+                const lastThree = window.gameState.stackTraces.slice(-3);
+                const now = Date.now();
+                
+                // Check if last three traces were within 10 seconds
+                if (lastThree.every(trace => now - trace.timestamp <= 10000)) {
+                    window.gameState.consecutiveTraces++;
+                    
+                    if (window.gameState.consecutiveTraces >= 3) {
+                        unlockVoidMode();
+                    }
+                }
+            }
+        }
+
+        // Unlock Void Mode
+        function unlockVoidMode() {
+            window.gameState.voidMode = true;
+            voidModeEl.style.display = 'flex';
+            statusEl.textContent = "VOID MODE UNLOCKED";
+            statusEl.className = "warning";
+            
+            // Start the final collapse timer
+            window.gameState.voidTimer = 10; // 10 seconds to final collapse
+            
+            // Add audio effect (in a real implementation, this would play an actual sound)
+            if (window.gameState.audioEnabled) {
+                // Simulate audio effect
+                console.log("Void mode audio triggered");
+            }
+        }
+
+        // Update timer
+        function updateTimer() {
+            if (window.gameState.timer > 0) {
+                window.gameState.timer--;
+                const minutes = Math.floor(window.gameState.timer / 60);
+                const seconds = window.gameState.timer % 60;
+                timerEl.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+            
+            // If we're in void mode, count down to final collapse
+            if (window.gameState.voidMode && window.gameState.voidTimer > 0) {
+                window.gameState.voidTimer--;
+                if (window.gameState.voidTimer <= 0) {
+                    // Final collapse - silence
+                    statusEl.textContent = "SYSTEM COLLAPSED";
+                    statusEl.className = "warning";
+                    voidModeEl.innerHTML = `
+                        <div>
+                            <h1>VOID MODE</h1>
+                            <p>SYSTEM COLLAPSED</p>
+                            <p>ALL COMPONENTS FAILED</p>
+                            <p>NO REFUNDS</p>
+                            <p>YOU WIN</p>
+                        </div>
+                    `;
+                    voidModeEl.style.backgroundColor = 'rgba(0, 0, 0, 0.99)';
+                    
+                    // Add final audio effect
+                    if (window.gameState.audioEnabled) {
+                        console.log("Final collapse audio triggered");
+                    }
+                }
+            }
+        }
+
+        // Fix button - makes things worse
+        fixButton.addEventListener('click', function() {
+            // Make the game worse
+            addError();
+            addError();
+            addError();
+            
+            // Add a warning message
+            statusEl.textContent = "FIX BUTTON TRIGGERED - SYSTEM DEGRADATION";
+            statusEl.className = "warning";
+            
+            // Visual effect
+            this.textContent = "FIXING...";
+            this.style.backgroundColor = "#f00";
+            this.style.color = "#000";
+            
+            setTimeout(() => {
+                this.textContent = "FIX BUTTON";
+                this.style.backgroundColor = "#000";
+                this.style.color = "#0f0";
+            }, 1000);
+            
+            // Add visual glitch effect
+            document.body.classList.add('glitch');
+            setTimeout(() => {
+                document.body.classList.remove('glitch');
+            }, 500);
+        });
+
+        // Initialize the dashboard
+        function initDashboard() {
+            // Add some initial errors to make it feel like it's already broken
+            for (let i = 0; i < 5; i++) {
+                addError();
+            }
+            
+            // Add random errors periodically
+            setInterval(addError, 2000);
+            
+            // Update timer
+            setInterval(updateTimer, 1000);
+        }
+
+        // Start the dashboard
+        initDashboard();
+    </script>
+</body>
+</html>
