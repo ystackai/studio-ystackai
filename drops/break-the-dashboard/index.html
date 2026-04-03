@@ -192,173 +192,114 @@
             <div class="error-counter">Errors: <span id="error-count-5">0</span></div>
             <div class="stack-trace" id="stack-trace-5"></div>
         </div>
+        <div class="component" id="component-6">
+            <div class="error-counter">Errors: <span id="error-count-6">0</span></div>
+            <div class="stack-trace" id="stack-trace-6"></div>
+        </div>
     </div>
 
     <button id="fix-button">FIX BUTTON (TRAP)</button>
 
     <div class="status-bar">
         <span>Stack Traces: <span id="stack-trace-count">0</span></span>
-        <span>System Health: <span id="health">100%</span></span>
-    </div>
-
-    <div id="error-sources">
-        <h3>Error Sources:</h3>
-        <div class="error-source" id="source-1">Memory Leak</div>
-        <div class="error-source" id="source-2">Network Timeout</div>
-        <div class="error-source" id="source-3">Invalid Configuration</div>
-        <div class="error-source" id="source-4">API Crash</div>
-        <div class="error-source" id="source-5">UI Render Failure</div>
+        <span>System Health: <span id="system-health">100</span>%</span>
     </div>
 
     <div id="void-mode">
-        <h1>CURATED VOID</h1>
-        <p>System collapse achieved</p>
+        <h1>VOID MODE</h1>
+        <p>System collapse complete</p>
+        <p>Curated silence achieved</p>
     </div>
 
     <script>
         // Game state
         const gameState = {
-            errors: 0,
-            stackTraces: [],
-            voidMode: false,
             timeLeft: 10,
-            cascadeThreshold: 3,
-            cascadeCount: 0,
             timer: null,
-            stackTraceCount: 0,
-            health: 100,
-            maxStackTraces: 10
+            stackTraces: [],
+            cascadeCount: 0,
+            cascadeThreshold: 3,
+            voidMode: false,
+            systemHealth: 100,
+            errorSources: []
         };
 
         // Initialize the game
         function initGame() {
-            // Set up components to be clickable
-            for (let i = 1; i <= 5; i++) {
-                const component = document.getElementById(`component-${i}`);
-                component.addEventListener('click', () => addError(i));
-            }
-
             // Set up error sources
-            for (let i = 1; i <= 5; i++) {
-                const source = document.getElementById(`source-${i}`);
-                source.addEventListener('click', () => addErrorFromSource(i));
-            }
-
-            // Set up fix button (trap)
-            const fixButton = document.getElementById('fix-button');
-            fixButton.addEventListener('click', () => {
-                // This is the trap - clicking fix makes things worse
-                addError(1);
-                addError(2);
-                addError(3);
-                addError(4);
-                addError(5);
-                // Also add random errors to make it worse
-                addRandomError();
-                addRandomError();
-                
-                // Add more errors from error sources
-                addErrorFromSource(1);
-                addErrorFromSource(2);
-            });
+            gameState.errorSources = [
+                { id: 'component-1', name: 'Authentication Module' },
+                { id: 'component-2', name: 'Database Connector' },
+                { id: 'component-3', name: 'User Interface Engine' },
+                { id: 'component-4', name: 'Network Layer' },
+                { id: 'component-5', name: 'Security Firewall' },
+                { id: 'component-6', name: 'Memory Manager' }
+            ];
 
             // Start the timer
             startTimer();
-            
-            // Update health bar
-            updateHealthBar();
+
+            // Add event listeners
+            document.getElementById('fix-button').addEventListener('click', triggerFixTrap);
+
+            // Add click handlers to all components
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById(`component-${i}`).addEventListener('click', () => triggerError(i));
+            }
+
+            // Add random error sources
+            setInterval(() => {
+                if (!gameState.voidMode) {
+                    const randomSource = gameState.errorSources[Math.floor(Math.random() * gameState.errorSources.length)];
+                    triggerErrorFromSource(randomSource);
+                }
+            }, 2000);
         }
 
-        // Add an error to a component
-        function addError(componentId) {
+        // Trigger an error on a component
+        function triggerError(componentId) {
+            if (gameState.voidMode) return;
+
+            const component = document.getElementById(`component-${componentId}`);
             const errorCount = document.getElementById(`error-count-${componentId}`);
             const stackTrace = document.getElementById(`stack-trace-${componentId}`);
-            
+
             // Increase error count
             const currentCount = parseInt(errorCount.textContent);
             errorCount.textContent = currentCount + 1;
-            
-            // Add stack trace
+
+            // Add a stack trace
             const trace = generateStackTrace();
             stackTrace.textContent += trace + '\n';
-            
-            // Add to global stack traces
+
+            // Add to global stack trace count
             gameState.stackTraces.push(trace);
-            gameState.stackTraceCount++;
-            document.getElementById('stack-trace-count').textContent = gameState.stackTraceCount;
-            
-            // Make component wobble
-            const component = document.getElementById(`component-${componentId}`);
+            document.getElementById('stack-trace-count').textContent = gameState.stackTraces.length;
+
+            // Apply wobble effect
             component.classList.add('wobble');
-            setTimeout(() => component.classList.remove('wobble'), 1000);
+            setTimeout(() => {
+                component.classList.remove('wobble');
+            }, 500);
 
-            // Update global error count
-            gameState.errors++;
-            
-            // Check if we have cascading failures
+            // Decrease system health
+            gameState.systemHealth = Math.max(0, gameState.systemHealth - 5);
+            document.getElementById('system-health').textContent = gameState.systemHealth;
+
+            // Check for cascading failure
             checkCascadingFailure();
-            
-            // Check if we should enter void mode
-            if (gameState.stackTraces.length >= gameState.maxStackTraces) {
-                enterVoidMode();
-            }
-            
-            // Update health
-            updateHealth();
         }
 
-        // Add error from an error source
-        function addErrorFromSource(sourceId) {
-            // Add to a random component
-            const randomComponent = Math.floor(Math.random() * 5) + 1;
-            addError(randomComponent);
-            
-            // Add to a second random component to create cascading
-            const secondComponent = Math.floor(Math.random() * 5) + 1;
-            if (secondComponent !== randomComponent) {
-                addError(secondComponent);
-            }
-            
-            // Add to a third random component
-            const thirdComponent = Math.floor(Math.random() * 5) + 1;
-            if (thirdComponent !== randomComponent && thirdComponent !== secondComponent) {
-                addError(thirdComponent);
-            }
-        }
-
-        // Update health bar
-        function updateHealth() {
-            // Decrease health based on number of stack traces
-            gameState.health = Math.max(0, 100 - (gameState.stackTraces.length * 2));
-            document.getElementById('health').textContent = gameState.health + '%';
-            
-            // Change color based on health
-            const healthElement = document.getElementById('health');
-            if (gameState.health > 70) {
-                healthElement.style.color = '#0f0';
-            } else if (gameState.health > 30) {
-                healthElement.style.color = '#ff0';
-            } else {
-                healthElement.style.color = '#f00';
-            }
-        }
-
-        // Update health bar display
-        function updateHealthBar() {
-            const healthElement = document.getElementById('health');
-            healthElement.textContent = gameState.health + '%';
-        }
-
-        // Add a random error (for the trap button)
-        function addRandomError() {
-            const randomComponent = Math.floor(Math.random() * 5) + 1;
-            addError(randomComponent);
+        // Trigger error from a specific source
+        function triggerErrorFromSource(source) {
+            const componentId = source.id.split('-')[1];
+            triggerError(componentId);
         }
 
         // Generate a stack trace
         function generateStackTrace() {
-            const functions = ['validateInput()', 'processData()', 'renderComponent()', 'handleEvent()', 'calculateResult()', 'updateUI()', 'connectToAPI()', 'parseJSON()', 'formatOutput()', 'checkSecurity()', 'handleRequest()', 'validateForm()', 'processTransaction()', 'updateState()', 'checkPermissions()', 'loadModule()', 'initializeComponent()', 'setupEnvironment()', 'executeTask()', 'handleResponse()', 'connectToDatabase()', 'authenticateUser()', 'processPayment()', 'sendEmail()', 'validateToken()', 'generateReport()', 'updateInventory()', 'syncData()', 'handleRequest()', 'validateSchema()', 'transformData()', 'serializeObject()', 'deserializeObject()', 'encryptData()', 'decryptData()', 'compressData()', 'decompressData()', 'cacheResult()', 'invalidateCache()', 'handleException()', 'logError()', 'sendNotification()', 'triggerEvent()', 'dispatchAction()', 'updateModel()', 'renderTemplate()', 'compileTemplate()', 'executeQuery()', 'processBatch()', 'handleCallback()', 'setupListener()', 'registerModule()', 'initializeService()', 'connectSocket()', 'handleTimeout()', 'retryOperation()', 'abortOperation()', 'completeTask()', 'scheduleJob()', 'executeScript()', 'parseXML()', 'formatJSON()', 'validateURL()', 'normalizePath()', 'resolveHost()', 'handleRedirect()', 'processRequest()', 'validateResponse()', 'handleAuthentication()', 'manageSession()', 'handleAuthorization()', 'processTransaction()', 'validateInput()', 'processData()', 'renderComponent()', 'handleEvent()', 'calculateResult()', 'updateUI()', 'connectToAPI()', 'parseJSON()', 'formatOutput()', 'checkSecurity()', 'handleRequest()', 'validateForm()', 'processTransaction()', 'updateState()', 'checkPermissions()', 'loadModule()', 'initializeComponent()', 'setupEnvironment()', 'executeTask()', 'handleResponse()', 'connectToDatabase()', 'authenticateUser()', 'processPayment()', 'sendEmail()', 'validateToken()', 'generateReport()', 'updateInventory()', 'syncData()', 'handleRequest()', 'validateSchema()', 'transformData()', 'serializeObject()', 'deserializeObject()', 'encryptData()', 'decryptData()', 'compressData()', 'decompressData()', 'cacheResult()', 'invalidateCache()', 'handleException()', 'logError()', 'sendNotification()', 'triggerEvent()', 'dispatchAction()', 'updateModel()', 'renderTemplate()', 'compileTemplate()', 'executeQuery()', 'processBatch()', 'handleCallback()', 'setupListener()', 'registerModule()', 'initializeService()', 'connectSocket()', 'handleTimeout()', 'retryOperation()', 'abortOperation()', 'completeTask()', 'scheduleJob()', 'executeScript()', 'parseXML()', 'formatJSON()', 'validateURL()', 'normalizePath()', 'resolveHost()', 'handleRedirect()', 'processRequest()', 'validateResponse()', 'handleAuthentication()', 'manageSession()', 'handleAuthorization()', 'processTransaction()'];
-            const errors = ['TypeError: Cannot read property "x" of undefined', 'ReferenceError: variable is not defined', 'SyntaxError: Unexpected token', 'RangeError: Maximum call stack size exceeded', 'Error: Invalid state transition', 'Error: Connection timeout', 'Error: Resource not found', 'Error: Permission denied', 'Error: Out of memory', 'Error: Invalid configuration', 'Error: Service unavailable', 'Error: Internal server error', 'Error: Network error', 'Error: Invalid input', 'Error: Timeout exceeded', 'Error: Memory leak detected', 'Error: Stack overflow', 'Error: Unhandled exception', 'Error: Critical failure', 'Error: System crash', 'Error: Module not found', 'Error: Invalid parameter', 'Error: Out of bounds', 'Error: Division by zero', 'Error: File not accessible', 'Error: Database connection failed', 'Error: Invalid response', 'Error: Timeout during operation', 'Error: Invalid format', 'Error: Configuration error', 'Error: Security violation', 'Error: Access denied', 'Error: Resource exhausted', 'Error: Invalid operation', 'Error: Invalid state', 'Error: Service not available', 'Error: Communication failure', 'Error: Data corruption', 'Error: License expired', 'Error: Invalid certificate', 'Error: Authentication failed', 'Error: Authorization required', 'Error: Session timeout', 'Error: Invalid token', 'Error: Cache miss', 'Error: Resource deadlock', 'Error: Invalid memory access', 'Error: Stack corruption', 'Error: Invalid instruction', 'Error: Memory allocation failed', 'Error: Invalid pointer', 'Error: Buffer overflow', 'Error: Invalid array access', 'Error: Invalid class instantiation', 'Error: Invalid method call', 'Error: Invalid property access', 'Error: Invalid interface implementation', 'Error: Invalid inheritance', 'Error: Invalid polymorphism', 'Error: Invalid encapsulation', 'Error: Invalid abstraction', 'Error: Invalid module loading', 'Error: Invalid dependency', 'Error: Circular dependency', 'Error: Missing dependency', 'Error: Invalid configuration file', 'Error: Invalid environment variable', 'Error: Invalid system path', 'Error: Invalid user input', 'Error: Invalid data type', 'Error: Invalid data structure', 'Error: Invalid algorithm', 'Error: Invalid logic flow', 'Error: Invalid conditional statement', 'Error: Invalid loop structure', 'Error: Invalid function signature', 'Error: Invalid parameter count', 'Error: Invalid return type', 'Error: Invalid exception handling', 'Error: Invalid error propagation', 'Error: Invalid error recovery', 'Error: Invalid error reporting', 'Error: Invalid error logging', 'Error: Invalid error monitoring', 'Error: Invalid error alerting', 'Error: Invalid error notification', 'Error: Invalid error resolution', 'Error: Invalid error tracking', 'Error: Invalid error categorization', 'Error: Invalid error classification', 'Error: Invalid error priority', 'Error: Invalid error severity', 'Error: Invalid error impact', 'Error: Invalid error mitigation', 'Error: Invalid error prevention', 'Error: Invalid error detection', 'Error: Invalid error resolution', 'Error: Invalid error recovery', 'Error: Invalid error reporting', 'Error: Invalid error logging', 'Error: Invalid error monitoring', 'Error: Invalid error alerting', 'Error: Invalid error notification', 'Error: Invalid error resolution', 'Error: Invalid error tracking', 'Error: Invalid error categorization', 'Error: Invalid error classification', 'Error: Invalid error priority', 'Error: Invalid error severity', 'Error: Invalid error impact', 'Error: Invalid error mitigation', 'Error: Invalid error prevention', 'Error: Invalid error detection'];
+            const functions = ['authenticateUser()', 'connectDatabase()', 'renderUI()', 'handleNetworkRequest()', 'validateInput()', 'processPayment()', 'encryptData()', 'decryptData()', 'parseJSON()', 'serializeData()', 'loadModule()', 'unloadModule()', 'updateCache()', 'clearCache()', 'sendEmail()', 'receiveMessage()', 'parseXML()', 'formatDate()', 'calculateTotal()', 'validateToken()', 'checkPermission()', 'handleException()', 'logEvent()', 'emitSignal()', 'subscribeToChannel()', 'unsubscribeFromChannel()', 'createInstance()', 'destroyInstance()', 'getEnvironment()', 'setEnvironment()', 'getConfiguration()', 'setConfiguration()', 'openConnection()', 'closeConnection()', 'startTimer()', 'stopTimer()', 'scheduleTask()', 'executeTask()', 'abortTask()', 'completeTask()', 'processRequest()', 'handleResponse()', 'validateResponse()', 'transformData()', 'filterData()', 'sortData()', 'searchData()', 'updateData()', 'deleteData()', 'createData()', 'fetchData()', 'storeData()', 'retrieveData()', 'serializeData()', 'deserializeData()', 'encodeData()', 'decodeData()', 'compressData()', 'decompressData()', 'encryptData()', 'decryptData()', 'signData()', 'verifySignature()', 'generateKey()', 'validateKey()', 'authenticateToken()', 'refreshToken()', 'revokeToken()', 'loginUser()', 'logoutUser()', 'registerUser()', 'updateUser()', 'deleteUser()', 'getUser()', 'listUsers()', 'searchUsers()', 'filterUsers()', 'sortUsers()', 'validateUser()', 'authorizeUser()', 'checkAccess()', 'grantAccess()', 'revokeAccess()', 'updatePermission()', 'createPermission()', 'deletePermission()', 'getPermission()', 'listPermissions()', 'searchPermissions()', 'filterPermissions()', 'sortPermissions()', 'validatePermission()', 'authorizePermission()', 'checkPermission()', 'grantPermission()', 'revokePermission()', 'updateRole()', 'createRole()', 'deleteRole()', 'getRole()', 'listRoles()', 'searchRoles()', 'filterRoles()', 'sortRoles()', 'validateRole()', 'authorizeRole()', 'checkRole()', 'grantRole()', 'revokeRole()', 'createSession()', 'destroySession()', 'validateSession()', 'refreshSession()', 'getSessions()', 'listSessions()', 'searchSessions()', 'filterSessions()', 'sortSessions()', 'updateSession()', 'expireSession()', 'renewSession()', 'checkSession()', 'createToken()', 'validateToken()', 'refreshToken()', 'revokeToken()', 'generateToken()', 'getToken()', 'setToken()', 'removeToken()', 'clearTokens()', 'getTokenInfo()', 'getUserInfo()', 'getDeviceInfo()', 'getAppInfo()', 'getSystemInfo()', 'getNetworkInfo()', 'getStorageInfo()', 'getMemoryInfo()', 'getCpuInfo()', 'getGpuInfo()', 'getBatteryInfo()', 'getGeolocation()', 'getCamera()', 'getMicrophone()', 'getSpeaker()', 'getBluetooth()', 'getWifi()', 'getNfc()', 'getGps()', 'getSensors()', 'getCamera()', 'getMicrophone()', 'getSpeaker()', 'getBluetooth()', 'getWifi()', 'getNfc()', 'getGps()', 'getSensors()'];
+            const errors = ['Error: Invalid user credentials', 'Error: Database connection failed', 'Error: UI rendering error', 'Error: Network timeout', 'Error: Security violation', 'Error: Memory leak detected', 'Error: Stack overflow', 'Error: Out of memory', 'Error: Invalid parameter', 'Error: Null reference', 'Error: Division by zero', 'Error: File not found', 'Error: Permission denied', 'Error: Timeout occurred', 'Error: License expired', 'Error: Invalid certificate', 'Error: Authentication failed', 'Error: Authorization required', 'Error: Session timeout', 'Error: Invalid token', 'Error: Cache miss', 'Error: Resource deadlock', 'Error: Invalid memory access', 'Error: Stack corruption', 'Error: Invalid instruction', 'Error: Memory allocation failed', 'Error: Invalid pointer', 'Error: Buffer overflow', 'Error: Invalid array access', 'Error: Invalid class instantiation', 'Error: Invalid method call', 'Error: Invalid property access', 'Error: Invalid interface implementation', 'Error: Invalid inheritance', 'Error: Invalid polymorphism', 'Error: Invalid encapsulation', 'Error: Invalid abstraction', 'Error: Invalid module loading', 'Error: Invalid dependency', 'Error: Circular dependency', 'Error: Missing dependency', 'Error: Invalid configuration file', 'Error: Invalid environment variable', 'Error: Invalid system path', 'Error: Invalid user input', 'Error: Invalid data type', 'Error: Invalid data structure', 'Error: Invalid algorithm', 'Error: Invalid logic flow', 'Error: Invalid conditional statement', 'Error: Invalid loop structure', 'Error: Invalid function signature', 'Error: Invalid parameter count', 'Error: Invalid return type', 'Error: Invalid exception handling', 'Error: Invalid error propagation', 'Error: Invalid error recovery', 'Error: Invalid error reporting', 'Error: Invalid error logging', 'Error: Invalid error monitoring', 'Error: Invalid error alerting', 'Error: Invalid error notification', 'Error: Invalid error resolution', 'Error: Invalid error tracking', 'Error: Invalid error categorization', 'Error: Invalid error classification', 'Error: Invalid error priority', 'Error: Invalid error severity', 'Error: Invalid error impact', 'Error: Invalid error mitigation', 'Error: Invalid error prevention', 'Error: Invalid error detection', 'Error: Invalid error resolution', 'Error: Invalid error recovery', 'Error: Invalid error reporting', 'Error: Invalid error logging', 'Error: Invalid error monitoring', 'Error: Invalid error alerting', 'Error: Invalid error notification', 'Error: Invalid error resolution', 'Error: Invalid error tracking', 'Error: Invalid error categorization', 'Error: Invalid error classification', 'Error: Invalid error priority', 'Error: Invalid error severity', 'Error: Invalid error impact', 'Error: Invalid error mitigation', 'Error: Invalid error prevention', 'Error: Invalid error detection'];
             
             const trace = [];
             trace.push('Stack trace:');
@@ -394,6 +335,42 @@
             }, 1000);
         }
 
+        // Trigger the fix button trap
+        function triggerFixTrap() {
+            if (gameState.voidMode) return;
+
+            // Make things worse when the fix button is clicked
+            const trapMessage = 'ERROR: Fix button is a trap! System degradation initiated.';
+            const trapTrace = generateStackTrace();
+            document.getElementById('stack-trace-count').textContent = parseInt(document.getElementById('stack-trace-count').textContent) + 1;
+            gameState.stackTraces.push(trapTrace);
+
+            // Add to all components
+            for (let i = 1; i <= 6; i++) {
+                const stackTrace = document.getElementById(`stack-trace-${i}`);
+                stackTrace.textContent += trapMessage + '\n' + trapTrace + '\n';
+                
+                // Apply wobble effect
+                const component = document.getElementById(`component-${i}`);
+                component.classList.add('wobble');
+                setTimeout(() => {
+                    component.classList.remove('wobble');
+                }, 500);
+            }
+
+            // Add extra errors
+            for (let i = 1; i <= 3; i++) {
+                triggerError(Math.floor(Math.random() * 6) + 1);
+            }
+
+            // Decrease system health rapidly
+            gameState.systemHealth = Math.max(0, gameState.systemHealth - 30);
+            document.getElementById('system-health').textContent = gameState.systemHealth;
+
+            // Check for cascading failure
+            checkCascadingFailure();
+        }
+
         // Enter void mode
         function enterVoidMode() {
             gameState.voidMode = true;
@@ -406,7 +383,7 @@
             }
             
             // Add final stack traces to make it look like a complete system collapse
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 6; i++) {
                 const stackTrace = document.getElementById(`stack-trace-${i}`);
                 stackTrace.textContent += 'System collapse: ' + generateStackTrace() + '\n';
             }
