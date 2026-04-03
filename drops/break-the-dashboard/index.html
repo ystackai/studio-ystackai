@@ -202,97 +202,68 @@
             <div class="stack-trace" id="stack-trace-6"></div>
         </div>
     </div>
-
-    <button id="fix-button">FIX BUTTON</button>
-
+    
+    <button id="fix-button">Fix System</button>
+    
     <div id="void-mode">
-        <h1>VOID MODE</h1>
-        <p>You have broken the dashboard!</p>
+        <h1>VOID MODE ACTIVATED</h1>
+        <p>System has collapsed completely</p>
+        <p>Press F5 to restart</p>
     </div>
 
     <script>
         // Game state
         const gameState = {
             timeLeft: 10,
-            timer: null,
-            stackTraces: [],
-            cascadeThreshold: 3,
-            cascadeCount: 0,
             systemHealth: 100,
+            stackTraces: [],
+            cascadeCount: 0,
+            cascadeThreshold: 3,
             voidMode: false,
-            components: []
+            timer: null
         };
 
         // Initialize the game
         function initGame() {
-            // Create components array
+            // Add click handlers to components
             for (let i = 1; i <= 6; i++) {
-                gameState.components.push({
-                    id: i,
-                    errorCount: 0,
-                    stackTrace: ''
+                document.getElementById(`component-${i}`).addEventListener('click', () => {
+                    triggerError(i);
                 });
             }
+
+            // Add fix button handler
+            document.getElementById('fix-button').addEventListener('click', triggerFixTrap);
 
             // Start the timer
             startTimer();
 
-            // Set up the fix button
-            document.getElementById('fix-button').addEventListener('click', triggerFixTrap);
-
-            // Random error generation
-            setInterval(generateRandomError, 2000);
+            // Start triggering random errors
+            setInterval(() => {
+                if (!gameState.voidMode) {
+                    triggerError(Math.floor(Math.random() * 6) + 1);
+                }
+            }, 2000);
         }
 
-        // Generate a random error
-        function generateRandomError() {
-            if (gameState.voidMode) return;
-
-            // Random component
-            const componentId = Math.floor(Math.random() * 6) + 1;
-            const component = document.getElementById(`component-${componentId}`);
-            
-            // Update error counter
-            const errorCount = parseInt(document.getElementById(`error-count-${componentId}`).textContent);
-            document.getElementById(`error-count-${componentId}`).textContent = errorCount + 1;
-            
-            // Add to component stack trace
-            const stackTrace = document.getElementById(`stack-trace-${componentId}`);
-            const trace = generateStackTrace();
-            stackTrace.textContent += trace + '\n';
-            
-            // Apply wobble effect
-            component.classList.add('wobble');
-            setTimeout(() => {
-                component.classList.remove('wobble');
-            }, 500);
-            
-            // Add to global stack traces
-            gameState.stackTraces.push(trace);
-            document.getElementById('stack-trace-count').textContent = gameState.stackTraces.length;
-            
-            // Update system health
-            gameState.systemHealth = Math.max(0, gameState.systemHealth - 5);
-            document.getElementById('system-health').textContent = gameState.systemHealth;
-            
-            // Check for cascading failure
-            checkCascadingFailure();
-        }
-
-        // Generate stack trace
+        // Generate a stack trace
         function generateStackTrace() {
-            const functions = ['handleSystemInit', 'processUserRequest', 'validateInput', 'executeCommand', 'parseJSON', 'sendNotification', 'updateStatus', 'syncDatabase', 'checkPermissions', 'authenticateUser', 'handleAuthentication', 'processData', 'validateData', 'sendEmail', 'processPayment', 'handleError', 'logEvent', 'updateConfig', 'refreshToken', 'connectToService', 'disconnectService', 'initComponent', 'shutdownComponent', 'handleEvent', 'processRequest', 'validateToken', 'encryptData', 'decryptData', 'compressData', 'decompressData', 'parseXML', 'serializeData', 'handleResponse', 'processNotification', 'checkStatus', 'updateCache', 'clearCache', 'validateForm', 'processForm', 'sendRequest', 'handleResponse', 'processError', 'logError', 'sendAlert', 'handleTimeout', 'retryOperation', 'abortOperation', 'scheduleTask', 'executeTask', 'processQueue', 'updateDatabase', 'backupDatabase', 'restoreDatabase', 'upgradeSystem', 'downgradeSystem', 'configureSystem', 'initializeSystem', 'shutdownSystem', 'restartSystem', 'monitorSystem', 'analyzeSystem', 'optimizeSystem', 'debugSystem', 'testSystem', 'deploySystem', 'rollbackSystem', 'updateSystem', 'patchSystem', 'secureSystem', 'encryptSystem', 'decryptSystem', 'compressSystem', 'decompressSystem', 'parseSystem', 'serializeSystem', 'handleSystemEvent', 'processSystemEvent', 'validateSystemEvent', 'sendSystemEvent', 'receiveSystemEvent', 'processSystemRequest', 'validateSystemRequest', 'executeSystemCommand', 'handleSystemCommand', 'processSystemNotification', 'sendSystemNotification', 'receiveSystemNotification', 'processSystemError', 'handleSystemError', 'logSystemError', 'sendSystemAlert', 'handleSystemAlert', 'monitorSystemHealth', 'analyzeSystemPerformance', 'optimizeSystemPerformance', 'debugSystemCode', 'testSystemCode', 'deploySystemCode', 'rollbackSystemCode', 'updateSystemCode', 'patchSystemCode', 'secureSystemCode', 'encryptSystemCode', 'decryptSystemCode', 'compressSystemCode', 'decompressSystemCode', 'parseSystemCode', 'serializeSystemCode', 'handleSystemCodeEvent', 'processSystemCodeEvent', 'validateSystemCodeEvent', 'sendSystemCodeEvent', 'receiveSystemCodeEvent', 'processSystemCodeRequest', 'validateSystemCodeRequest', 'executeSystemCodeCommand', 'handleSystemCodeCommand', 'processSystemCodeNotification', 'sendSystemCodeNotification', 'receiveSystemCodeNotification', 'processSystemCodeError', 'handleSystemCodeError', 'logSystemCodeError', 'sendSystemCodeAlert', 'handleSystemCodeAlert'];
-            
-            const errors = ['Error: Initialization failed', 'Error: Connection timeout', 'Error: Authentication failed', 'Error: Permission denied', 'Error: Data validation failed', 'Error: Memory allocation failed', 'Error: Network unreachable', 'Error: Service unavailable', 'Error: Database connection failed', 'Error: API limit exceeded', 'Error: Resource exhausted', 'Error: Invalid configuration', 'Error: File not found', 'Error: Process terminated', 'Error: Stack overflow', 'Error: Heap corruption', 'Error: Memory leak', 'Error: Thread crash', 'Error: Race condition', 'Error: Deadlock', 'Error: Timeout exception', 'Error: Invalid input', 'Error: Unexpected end of stream', 'Error: Protocol violation', 'Error: Serialization failed', 'Error: Deserialization failed', 'Error: Encryption failed', 'Error: Decryption failed', 'Error: Compression failed', 'Error: Decompression failed', 'Error: Validation failed', 'Error: Parsing failed', 'Error: Execution failed', 'Error: Compilation failed', 'Error: Linking failed', 'Error: Deployment failed', 'Error: Rollback failed', 'Error: Upgrade failed', 'Error: Downgrade failed', 'Error: Configuration failed', 'Error: Initialization timeout', 'Error: Connection reset', 'Error: Security breach', 'Error: Access denied', 'Error: Invalid operation', 'Error: Operation failed', 'Error: System crash', 'Error: System corruption', 'Error: System failure', 'Error: System error', 'Error: System alert', 'Error: System notification', 'Error: System event', 'Error: System command', 'Error: System request', 'Error: System response', 'Error: System notification failed', 'Error: System reporting failed', 'Error: Admin notification failed', 'Error: Operation retry failed', 'Error: Backup fallback failed', 'Error: Standby mode activation failed', 'Error: Emergency mode activation failed', 'Error: Alarm triggering failed', 'Error: Script execution failed', 'Error: Process execution failed', 'Error: Service starting failed', 'Error: Service stopping failed', 'Error: Service restarting failed', 'Error: System monitoring failed', 'Error: Log analysis failed', 'Error: Report generation failed', 'Error: Email sending failed', 'Error: SMS sending failed', 'Error: Push notification failed', 'Error: Database connection failed', 'Error: API connection failed', 'Error: Network connection failed', 'Error: Device connection failed', 'Error: Database disconnection failed', 'Error: API disconnection failed', 'Error: Network disconnection failed', 'Error: Device disconnection failed'];
-            
-            const trace = [];
-            trace.push('Stack trace:');
-            trace.push('  at ' + functions[Math.floor(Math.random() * functions.length)]);
-            trace.push('  at ' + functions[Math.floor(Math.random() * functions.length)]);
-            trace.push('  at ' + functions[Math.floor(Math.random() * functions.length)]);
-            trace.push('  at ' + errors[Math.floor(Math.random() * errors.length)]);
-            
-            return trace.join('\n');
+            const errorMessages = [
+                "ReferenceError: undefinedVariable is not defined",
+                "TypeError: Cannot read property 'foo' of null",
+                "SyntaxError: Unexpected token '}'",
+                "RangeError: Maximum call stack size exceeded",
+                "Error: System overload detected",
+                "Error: Component failure in module 'dashboard'",
+                "Warning: Memory leak detected in component",
+                "Critical: Stack overflow in main thread",
+                "Exception: Unhandled promise rejection",
+                "Fatal: Segmentation fault in UI layer"
+            ];
+
+            const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+            const stackTrace = `at ${randomError} (line ${Math.floor(Math.random() * 1000) + 1})`;
+            return stackTrace;
         }
 
         // Check for cascading failures
