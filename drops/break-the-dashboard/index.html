@@ -197,18 +197,12 @@
             <div class="stack-trace" id="stack-trace-6"></div>
         </div>
     </div>
-
-    <button id="fix-button">FIX BUTTON (TRAP)</button>
-
-    <div class="status-bar">
-        <span>Stack Traces: <span id="stack-trace-count">0</span></span>
-        <span>System Health: <span id="system-health">100</span>%</span>
-    </div>
-
+    
+    <button id="fix-button">Fix Button</button>
+    
     <div id="void-mode">
-        <h1>VOID MODE</h1>
+        <h1>VOID MODE ACTIVATED</h1>
         <p>System collapse complete</p>
-        <p>Curated silence achieved</p>
     </div>
 
     <script>
@@ -217,89 +211,66 @@
             timeLeft: 10,
             timer: null,
             stackTraces: [],
-            cascadeCount: 0,
             cascadeThreshold: 3,
+            cascadeCount: 0,
             voidMode: false,
-            systemHealth: 100,
-            errorSources: []
+            systemHealth: 100
         };
 
         // Initialize the game
         function initGame() {
-            // Set up error sources
-            gameState.errorSources = [
-                { id: 'component-1', name: 'Authentication Module' },
-                { id: 'component-2', name: 'Database Connector' },
-                { id: 'component-3', name: 'User Interface Engine' },
-                { id: 'component-4', name: 'Network Layer' },
-                { id: 'component-5', name: 'Security Firewall' },
-                { id: 'component-6', name: 'Memory Manager' }
-            ];
-
+            // Set up the fix button
+            document.getElementById('fix-button').addEventListener('click', triggerFixTrap);
+            
             // Start the timer
             startTimer();
-
-            // Add event listeners
-            document.getElementById('fix-button').addEventListener('click', triggerFixTrap);
-
-            // Add click handlers to all components
-            for (let i = 1; i <= 6; i++) {
-                document.getElementById(`component-${i}`).addEventListener('click', () => triggerError(i));
-            }
-
-            // Add random error sources
-            setInterval(() => {
-                if (!gameState.voidMode) {
-                    const randomSource = gameState.errorSources[Math.floor(Math.random() * gameState.errorSources.length)];
-                    triggerErrorFromSource(randomSource);
-                }
-            }, 2000);
+            
+            // Start random error generation
+            setInterval(generateRandomError, 1500);
         }
 
-        // Trigger an error on a component
-        function triggerError(componentId) {
+        // Generate a random error
+        function generateRandomError() {
             if (gameState.voidMode) return;
-
+            
+            // Pick a random component
+            const componentId = Math.floor(Math.random() * 6) + 1;
+            
+            // Generate stack trace
+            const stackTrace = generateStackTrace();
+            
+            // Add to component
+            const stackTraceElement = document.getElementById(`stack-trace-${componentId}`);
+            stackTraceElement.textContent += stackTrace + '\n';
+            
+            // Update error counter
+            const errorCountElement = document.getElementById(`error-count-${componentId}`);
+            const currentCount = parseInt(errorCountElement.textContent);
+            errorCountElement.textContent = currentCount + 1;
+            
+            // Add wobble effect
             const component = document.getElementById(`component-${componentId}`);
-            const errorCount = document.getElementById(`error-count-${componentId}`);
-            const stackTrace = document.getElementById(`stack-trace-${componentId}`);
-
-            // Increase error count
-            const currentCount = parseInt(errorCount.textContent);
-            errorCount.textContent = currentCount + 1;
-
-            // Add a stack trace
-            const trace = generateStackTrace();
-            stackTrace.textContent += trace + '\n';
-
-            // Add to global stack trace count
-            gameState.stackTraces.push(trace);
-            document.getElementById('stack-trace-count').textContent = gameState.stackTraces.length;
-
-            // Apply wobble effect
             component.classList.add('wobble');
             setTimeout(() => {
                 component.classList.remove('wobble');
             }, 500);
-
-            // Decrease system health
-            gameState.systemHealth = Math.max(0, gameState.systemHealth - 5);
-            document.getElementById('system-health').textContent = gameState.systemHealth;
-
+            
+            // Track stack trace
+            gameState.stackTraces.push(stackTrace);
+            
+            // Keep only last 10 stack traces
+            if (gameState.stackTraces.length > 10) {
+                gameState.stackTraces.shift();
+            }
+            
             // Check for cascading failure
             checkCascadingFailure();
         }
 
-        // Trigger error from a specific source
-        function triggerErrorFromSource(source) {
-            const componentId = source.id.split('-')[1];
-            triggerError(componentId);
-        }
-
-        // Generate a stack trace
+        // Generate stack trace
         function generateStackTrace() {
-            const functions = ['authenticateUser()', 'connectDatabase()', 'renderUI()', 'handleNetworkRequest()', 'validateInput()', 'processPayment()', 'encryptData()', 'decryptData()', 'parseJSON()', 'serializeData()', 'loadModule()', 'unloadModule()', 'updateCache()', 'clearCache()', 'sendEmail()', 'receiveMessage()', 'parseXML()', 'formatDate()', 'calculateTotal()', 'validateToken()', 'checkPermission()', 'handleException()', 'logEvent()', 'emitSignal()', 'subscribeToChannel()', 'unsubscribeFromChannel()', 'createInstance()', 'destroyInstance()', 'getEnvironment()', 'setEnvironment()', 'getConfiguration()', 'setConfiguration()', 'openConnection()', 'closeConnection()', 'startTimer()', 'stopTimer()', 'scheduleTask()', 'executeTask()', 'abortTask()', 'completeTask()', 'processRequest()', 'handleResponse()', 'validateResponse()', 'transformData()', 'filterData()', 'sortData()', 'searchData()', 'updateData()', 'deleteData()', 'createData()', 'fetchData()', 'storeData()', 'retrieveData()', 'serializeData()', 'deserializeData()', 'encodeData()', 'decodeData()', 'compressData()', 'decompressData()', 'encryptData()', 'decryptData()', 'signData()', 'verifySignature()', 'generateKey()', 'validateKey()', 'authenticateToken()', 'refreshToken()', 'revokeToken()', 'loginUser()', 'logoutUser()', 'registerUser()', 'updateUser()', 'deleteUser()', 'getUser()', 'listUsers()', 'searchUsers()', 'filterUsers()', 'sortUsers()', 'validateUser()', 'authorizeUser()', 'checkAccess()', 'grantAccess()', 'revokeAccess()', 'updatePermission()', 'createPermission()', 'deletePermission()', 'getPermission()', 'listPermissions()', 'searchPermissions()', 'filterPermissions()', 'sortPermissions()', 'validatePermission()', 'authorizePermission()', 'checkPermission()', 'grantPermission()', 'revokePermission()', 'updateRole()', 'createRole()', 'deleteRole()', 'getRole()', 'listRoles()', 'searchRoles()', 'filterRoles()', 'sortRoles()', 'validateRole()', 'authorizeRole()', 'checkRole()', 'grantRole()', 'revokeRole()', 'createSession()', 'destroySession()', 'validateSession()', 'refreshSession()', 'getSessions()', 'listSessions()', 'searchSessions()', 'filterSessions()', 'sortSessions()', 'updateSession()', 'expireSession()', 'renewSession()', 'checkSession()', 'createToken()', 'validateToken()', 'refreshToken()', 'revokeToken()', 'generateToken()', 'getToken()', 'setToken()', 'removeToken()', 'clearTokens()', 'getTokenInfo()', 'getUserInfo()', 'getDeviceInfo()', 'getAppInfo()', 'getSystemInfo()', 'getNetworkInfo()', 'getStorageInfo()', 'getMemoryInfo()', 'getCpuInfo()', 'getGpuInfo()', 'getBatteryInfo()', 'getGeolocation()', 'getCamera()', 'getMicrophone()', 'getSpeaker()', 'getBluetooth()', 'getWifi()', 'getNfc()', 'getGps()', 'getSensors()', 'getCamera()', 'getMicrophone()', 'getSpeaker()', 'getBluetooth()', 'getWifi()', 'getNfc()', 'getGps()', 'getSensors()'];
-            const errors = ['Error: Invalid user credentials', 'Error: Database connection failed', 'Error: UI rendering error', 'Error: Network timeout', 'Error: Security violation', 'Error: Memory leak detected', 'Error: Stack overflow', 'Error: Out of memory', 'Error: Invalid parameter', 'Error: Null reference', 'Error: Division by zero', 'Error: File not found', 'Error: Permission denied', 'Error: Timeout occurred', 'Error: License expired', 'Error: Invalid certificate', 'Error: Authentication failed', 'Error: Authorization required', 'Error: Session timeout', 'Error: Invalid token', 'Error: Cache miss', 'Error: Resource deadlock', 'Error: Invalid memory access', 'Error: Stack corruption', 'Error: Invalid instruction', 'Error: Memory allocation failed', 'Error: Invalid pointer', 'Error: Buffer overflow', 'Error: Invalid array access', 'Error: Invalid class instantiation', 'Error: Invalid method call', 'Error: Invalid property access', 'Error: Invalid interface implementation', 'Error: Invalid inheritance', 'Error: Invalid polymorphism', 'Error: Invalid encapsulation', 'Error: Invalid abstraction', 'Error: Invalid module loading', 'Error: Invalid dependency', 'Error: Circular dependency', 'Error: Missing dependency', 'Error: Invalid configuration file', 'Error: Invalid environment variable', 'Error: Invalid system path', 'Error: Invalid user input', 'Error: Invalid data type', 'Error: Invalid data structure', 'Error: Invalid algorithm', 'Error: Invalid logic flow', 'Error: Invalid conditional statement', 'Error: Invalid loop structure', 'Error: Invalid function signature', 'Error: Invalid parameter count', 'Error: Invalid return type', 'Error: Invalid exception handling', 'Error: Invalid error propagation', 'Error: Invalid error recovery', 'Error: Invalid error reporting', 'Error: Invalid error logging', 'Error: Invalid error monitoring', 'Error: Invalid error alerting', 'Error: Invalid error notification', 'Error: Invalid error resolution', 'Error: Invalid error tracking', 'Error: Invalid error categorization', 'Error: Invalid error classification', 'Error: Invalid error priority', 'Error: Invalid error severity', 'Error: Invalid error impact', 'Error: Invalid error mitigation', 'Error: Invalid error prevention', 'Error: Invalid error detection', 'Error: Invalid error resolution', 'Error: Invalid error recovery', 'Error: Invalid error reporting', 'Error: Invalid error logging', 'Error: Invalid error monitoring', 'Error: Invalid error alerting', 'Error: Invalid error notification', 'Error: Invalid error resolution', 'Error: Invalid error tracking', 'Error: Invalid error categorization', 'Error: Invalid error classification', 'Error: Invalid error priority', 'Error: Invalid error severity', 'Error: Invalid error impact', 'Error: Invalid error mitigation', 'Error: Invalid error prevention', 'Error: Invalid error detection'];
+            const functions = ['validateUserInput', 'processData', 'calculateMetrics', 'renderUI', 'updateState', 'handleEvent', 'sendRequest', 'receiveResponse', 'parseJSON', 'serializeData', 'encryptData', 'decryptData', 'authenticateUser', 'authorizeAccess', 'logEvent', 'trackMetrics', 'sendNotification', 'processPayment', 'validateForm', 'formatData', 'transformData', 'filterData', 'sortData', 'searchData', 'cacheData', 'fetchData', 'postData', 'updateData', 'deleteData', 'createData', 'initializeSystem', 'shutdownSystem', 'handleError', 'logError', 'reportError', 'notifyAdmin', 'retryOperation', 'fallbackToBackup', 'switchToStandby', 'activateEmergency', 'triggerAlarm', 'executeScript', 'runProcess', 'startService', 'stopService', 'restartService', 'monitorSystem', 'analyzeLogs', 'generateReport', 'sendEmail', 'sendSMS', 'sendPush', 'connectToDB', 'connectToAPI', 'connectToNetwork', 'connectToDevice', 'disconnectFromDB', 'disconnectFromAPI', 'disconnectFromNetwork', 'disconnectFromDevice'];
+            const errors = ['Error: Invalid input validation', 'Error: Data processing failed', 'Error: Calculation overflow', 'Error: UI rendering error', 'Error: State update failed', 'Error: Event handling failed', 'Error: Network request timeout', 'Error: Response parsing error', 'Error: JSON parsing error', 'Error: Data serialization error', 'Error: Encryption failed', 'Error: Decryption failed', 'Error: Authentication failed', 'Error: Authorization denied', 'Error: Event logging failed', 'Error: Metrics tracking failed', 'Error: Notification delivery failed', 'Error: Payment processing failed', 'Error: Form validation error', 'Error: Data formatting error', 'Error: Data transformation error', 'Error: Data filtering error', 'Error: Data sorting error', 'Error: Data search error', 'Error: Data caching error', 'Error: Data fetching error', 'Error: Data posting error', 'Error: Data updating error', 'Error: Data deleting error', 'Error: Data creating error', 'Error: System initialization failed', 'Error: System shutdown failed', 'Error: Error handling failed', 'Error: Error logging failed', 'Error: Error reporting failed', 'Error: Admin notification failed', 'Error: Operation retry failed', 'Error: Backup fallback failed', 'Error: Standby mode activation failed', 'Error: Emergency mode activation failed', 'Error: Alarm triggering failed', 'Error: Script execution failed', 'Error: Process execution failed', 'Error: Service starting failed', 'Error: Service stopping failed', 'Error: Service restarting failed', 'Error: System monitoring failed', 'Error: Log analysis failed', 'Error: Report generation failed', 'Error: Email sending failed', 'Error: SMS sending failed', 'Error: Push notification failed', 'Error: Database connection failed', 'Error: API connection failed', 'Error: Network connection failed', 'Error: Device connection failed', 'Error: Database disconnection failed', 'Error: API disconnection failed', 'Error: Network disconnection failed', 'Error: Device disconnection failed'];
             
             const trace = [];
             trace.push('Stack trace:');
