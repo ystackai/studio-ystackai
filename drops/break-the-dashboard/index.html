@@ -226,7 +226,7 @@
         const errorMessages = [
             {
                 type: "error",
-                message: "CRITICAL: Component rendering failed - UIElement undefined",
+                message: "FATAL: Component rendering failed - UIElement undefined",
                 stack: [
                     "at UIComponent.update (ui.js:123)",
                     "at Dashboard.render (dashboard.js:45)",
@@ -299,6 +299,52 @@
             {
                 type: "error",
                 message: "FATAL: JSON parsing error - malformed data in config",
+            {
+                type: "error",
+                message: "WARNING: Memory leak detected - unreleased resources",
+                stack: [
+                    "at allocateMemory (memory.js:12)",
+                    "at renderDashboard (dashboard.js:89)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "error",
+                message: "CRITICAL: Uncaught exception in event handler",
+                stack: [
+                    "at handleClick (events.js:45)",
+                    "at processEvent (engine.js:78)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "error",
+                message: "FATAL: Component destroyed before initialization",
+                stack: [
+                    "at initComponent (component.js:23)",
+                    "at loadDashboard (dashboard.js:67)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "warning",
+                message: "WARNING: UI flickering detected - rendering instability",
+                stack: [
+                    "at renderUI (ui.js:45)",
+                    "at updateComponent (component.js:67)",
+                    "at window.onload (index.html:12)"
+                ]
+            },
+            {
+                type: "error",
+                message: "CRITICAL: Invalid state transition in component lifecycle",
+                stack: [
+                    "at setState (state.js:89)",
+                    "at updateUI (ui.js:34)",
+                    "at renderDashboard (dashboard.js:89)",
+                    "at window.onload (index.html:12)"
+                ]
+            }
                 stack: [
                     "at parseJSON (json.js:23)",
                     "at loadConfig (config.js:67)",
