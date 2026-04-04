@@ -203,12 +203,12 @@
         </div>
     </div>
 
-    <button id="fix-button">Fix Button (Trap!)</button>
+    <button id="fix-button">FIX BUTTON</button>
 
     <div id="void-mode">
-        <h1>VOID MODE ACTIVATED</h1>
-        <p>System collapse complete</p>
-        <p>Breaking the UI is the only way to win</p>
+        <h1>VOID MODE</h1>
+        <p>SYSTEM COLLAPSED</p>
+        <p>YOU WIN!</p>
     </div>
 
     <script>
@@ -222,44 +222,65 @@
             voidMode: false,
             timer: null,
             errorSources: [
-                "Network Error",
-                "Memory Leak",
-                "Database Failure",
-                "UI Component Crash",
-                "API Timeout",
-                "Security Breach"
+                'Database connection failed',
+                'API timeout',
+                'Memory leak detected',
+                'Network error',
+                'File system corruption',
+                'Invalid configuration',
+                'Authentication failure',
+                'Process crash',
+                'Resource exhaustion',
+                'Security breach'
+            ],
+            stackTraceTemplates: [
+                'at com.example.dashboard.Component.render() [line 42]',
+                'at com.example.dashboard.ErrorHandler.handle() [line 128]',
+                'at com.example.dashboard.MainController.update() [line 37]',
+                'at com.example.dashboard.Component.init() [line 89]',
+                'at com.example.dashboard.Component.cleanup() [line 156]',
+                'at com.example.dashboard.ErrorHandler.log() [line 201]',
+                'at com.example.dashboard.Component.update() [line 93]',
+                'at com.example.dashboard.MainController.process() [line 245]',
+                'at com.example.dashboard.Component.draw() [line 67]',
+                'at com.example.dashboard.ErrorHandler.report() [line 312]'
             ]
         };
 
-        // Initialize the game
+        // Initialize game
         function initGame() {
-            // Add click handlers to components
-            for (let i = 1; i <= 6; i++) {
-                document.getElementById(`component-${i}`).addEventListener('click', () => {
-                    if (!gameState.voidMode) {
-                        triggerError(i);
-                    }
-                });
-            }
-
-            // Add click handler to fix button
+            // Set up event listeners
             document.getElementById('fix-button').addEventListener('click', triggerFixTrap);
-
-            // Start the timer
+            
+            // Start the game
             startTimer();
+            startErrorGeneration();
         }
 
-        // Generate a fake stack trace
+        // Generate a random stack trace
         function generateStackTrace() {
-            const stackTrace = [
-                "Error: " + gameState.errorSources[Math.floor(Math.random() * gameState.errorSources.length)],
-                "    at " + ["handleClick", "updateComponent", "processRequest", "renderUI", "validateData"][Math.floor(Math.random() * 5)] + " (dashboard.js:" + Math.floor(Math.random() * 1000) + ")",
-                "    at " + ["onLoad", "onError", "onTimeout", "onSuccess"][Math.floor(Math.random() * 4)] + " (utils.js:" + Math.floor(Math.random() * 500) + ")",
-                "    at " + ["callback", "handler", "worker", "process"][Math.floor(Math.random() * 4)] + " (engine.js:" + Math.floor(Math.random() * 2000) + ")",
-                "    at " + ["execute", "run", "start", "init"][Math.floor(Math.random() * 4)] + " (core.js:" + Math.floor(Math.random() * 100) + ")",
-                "    at " + ["main", "loop", "tick", "update"][Math.floor(Math.random() * 4)] + " (game.js:" + Math.floor(Math.random() * 1000) + ")"
-            ];
-            return stackTrace.join('\n');
+            const source = gameState.errorSources[Math.floor(Math.random() * gameState.errorSources.length)];
+            const trace = gameState.stackTraceTemplates[Math.floor(Math.random() * gameState.stackTraceTemplates.length)];
+            const timestamp = new Date().toISOString();
+            
+            return `${timestamp} ${source}\n${trace}`;
+        }
+
+        // Start generating errors
+        function startErrorGeneration() {
+            // Generate errors periodically
+            setInterval(() => {
+                if (!gameState.voidMode) {
+                    triggerError(Math.floor(Math.random() * 6) + 1);
+                }
+            }, 1500);
+            
+            // Also trigger errors randomly
+            setInterval(() => {
+                if (!gameState.voidMode) {
+                    triggerError(Math.floor(Math.random() * 6) + 1);
+                }
+            }, 3000);
         }
 
         // Check for cascading failures
