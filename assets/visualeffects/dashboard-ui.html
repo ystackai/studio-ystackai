@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard UI - Visual Effects</title>
+  <link rel="stylesheet" href="../css/dashboard-visuals.css">
+  <style>
+    body {
+      font-family: "IBM Plex Sans", "Inter", system-ui, sans-serif;
+      padding: 20px;
+      background: #000;
+      color: #fff;
+    }
+    
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .section {
+      margin-bottom: 40px;
+      padding: 20px;
+      border: 1px solid #333;
+      border-radius: 8px;
+    }
+    
+    h1, h2 {
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    
+    .wobbling-demo {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .wobbling-component {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(45deg, #6366f1, #f59e0b);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    .glitch-demo {
+      font-size: 3rem;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    
+    .error-counter-demo {
+      margin: 20px 0;
+    }
+    
+    .void-demo {
+      width: 100%;
+      height: 150px;
+      background: #333;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .stack-trace-demo {
+      margin: 20px 0;
+    }
+    
+    .breaking-demo {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .breaking-element {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(45deg, #ff0000, #ff8800);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .glitch-overlay-demo {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      background: #333;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h1>Dashboard Visual Effects Demo</h1>
+    
+    <div class="section">
+      <h2>Wobbling Components</h2>
+      <div class="wobbling-demo">
+        <div class="wobbling-component">Item 1</div>
+        <div class="wobbling-component">Item 2</div>
+        <div class="wobbling-component">Item 3</div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Glitch Effects</h2>
+      <div class="glitch-demo glitch-effect" data-text="GLITCH EFFECT">GLITCH EFFECT</div>
+    </div>
+    
+    <div class="section">
+      <h2>Error Counter</h2>
+      <div class="error-counter-demo">
+        <div class="error-counter">Errors: 42</div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Void Mode Transition</h2>
+      <div class="void-demo void-mode-transition">VOID MODE</div>
+    </div>
+    
+    <div class="section">
+      <h2>Stack Trace Typography</h2>
+      <div class="stack-trace-demo">
+        <div class="stack-trace">
+          <span class="error-line">Error: Failed to load resource</span>
+          <span class="file-path">/app/components/dashboard.js</span>
+          <span class="line-number">Line 234</span>
+          <span class="error-line">Error: Invalid configuration</span>
+          <span class="file-path">/app/config/settings.json</span>
+          <span class="line-number">Line 42</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Breaking Elements</h2>
+      <div class="breaking-demo">
+        <div class="breaking-element">Break Me!</div>
+        <div class="breaking-element">Break Me Too!</div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Glitch Overlay</h2>
+      <div class="glitch-overlay-demo glitch-overlay">
+        <div>GLITCH OVERLAY DEMO</div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Add click event to breaking elements
+    document.querySelectorAll('.breaking-element').forEach(element => {
+      element.addEventListener('click', function() {
+        this.classList.add('breaking-element');
+        // Remove class after animation completes
+        setTimeout(() => {
+          this.classList.remove('breaking-element');
+        }, 800);
+      });
+    });
+  </script>
+</body>
+</html>
