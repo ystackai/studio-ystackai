@@ -212,54 +212,57 @@
             font-size: 24px;
             text-align: center;
             margin-bottom: 30px;
-            animation: pulse 2s infinite;
         }
         
         #void-timer {
             font-size: 36px;
             margin-bottom: 30px;
-            text-shadow: 0 0 10px #0f0;
+            color: #f00;
+            text-shadow: 0 0 10px #f00;
         }
         
         #void-sound {
-            background: #00f;
-            color: #fff;
+            background: #0f0;
+            color: #000;
             border: none;
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
             border-radius: 5px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 10px #00f;
-            transition: all 0.3s;
+            margin-top: 20px;
         }
         
         #void-sound.playing {
-            background: #00a;
-            box-shadow: 0 0 20px #00a;
+            background: #0f0;
+            box-shadow: 0 0 15px #0f0;
         }
         
         #void-sound.paused {
-            background: #555;
-            box-shadow: 0 0 10px #555;
+            background: #888;
+            box-shadow: 0 0 15px #888;
         }
         
-        .glitch-text {
-            animation: glitch 2s infinite;
+        #void-collapse {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 1s;
         }
         
-        .wobble-text {
-            animation: wobble 0.3s infinite alternate;
-        }
-        
-        .floating {
-            animation: float 2s ease-in-out infinite;
+        #void-collapse.show {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div id="dashboard">
-        <h1 id="header">BREAK THE DASHBOARD</h1>
+        <h1 id="header">CREATE YOUR OWN CREW</h1>
+        <p style="text-align: center; margin-top: 10px;">PUBLIC CREW GALLERY</p>
         
         <div id="stats">
             <div class="stat-box">
@@ -267,16 +270,22 @@
                 <div class="stat-label">ERRORS</div>
             </div>
             <div class="stat-box">
-                <div class="stat-value" id="stack-trace-count">0</div>
+                <div class="stat-value" id="stack-count">0</div>
                 <div class="stat-label">STACK TRACES</div>
             </div>
             <div class="stat-box">
                 <div class="stat-value" id="timer">00:00</div>
                 <div class="stat-label">TIME</div>
             </div>
+            <div class="stat-box">
+                <div class="stat-value" id="component-count">0</div>
+                <div class="stat-label">COMPONENTS</div>
+            </div>
         </div>
         
-        <div id="error-container"></div>
+        <div id="error-container">
+            <!-- Error messages will appear here -->
+        </div>
         
         <div id="components">
             <div class="component">
@@ -284,138 +293,111 @@
                 <div class="component-value" id="system-status">OK</div>
             </div>
             <div class="component">
-                <div class="component-title">MEMORY USAGE</div>
-                <div class="component-value" id="memory-usage">0%</div>
-            </div>
-            <div class="component">
-                <div class="component-title">CPU LOAD</div>
-                <div class="component-value" id="cpu-load">0%</div>
-            </div>
-            <div class="component">
                 <div class="component-title">NETWORK</div>
                 <div class="component-value" id="network">STABLE</div>
             </div>
+            <div class="component">
+                <div class="component-title">MEMORY</div>
+                <div class="component-value" id="memory">87%</div>
+            </div>
+            <div class="component">
+                <div class="component-title">CPU</div>
+                <div class="component-value" id="cpu">42%</div>
+            </div>
+            <div class="component">
+                <div class="component-title">DISK</div>
+                <div class="component-value" id="disk">63%</div>
+            </div>
         </div>
         
-        <button id="fix-button">FIX BUTTON</button>
-        
-        <div id="void-mode">
-            <div id="void-text" class="glitch-text">VOID MODE</div>
-            <div id="void-subtext">SYSTEM IS GOING DARK</div>
-            <div id="void-timer">00:10</div>
-            <button id="void-sound">SOUND: OFF</button>
-        </div>
+        <button id="fix-button" onclick="fixButtonClicked()">FIX BUTTON</button>
     </div>
-
+    
+    <div id="void-mode">
+        <div id="void-text">VOID MODE</div>
+        <div id="void-subtext">THE SYSTEM IS COLLAPSING...</div>
+        <div id="void-timer">00:10</div>
+        <button id="void-sound" onclick="toggleSound()">SOUND: ON</button>
+    </div>
+    
+    <div id="void-collapse"></div>
+    
     <script>
         // Game state
         window.gameState = {
             errorCount: 0,
-            stackTraceCount: 0,
+            stackCount: 0,
+            startTime: Date.now(),
             timer: 0,
+            componentCount: 5,
             voidMode: false,
             soundPlaying: true,
-            stackTraceHistory: [],
-            audioContext: null,
-            soundElement: null
+            stackTraceTimes: [], // Array to track stack trace timestamps
+            audioContext: null
         };
         
         // Initialize the game
         function initGame() {
-            // Set up event listeners
-            document.getElementById('fix-button').addEventListener('click', fixButtonClicked);
-            document.getElementById('void-sound').addEventListener('click', toggleSound);
-            
-            // Initialize components with random values
-            updateComponents();
-            
-            // Start game loop
-            setInterval(updateGame, 1000);
-            setInterval(updateComponents, 2000);
-            setInterval(triggerRandomError, 3000);
-            
-            // Setup audio
             setupSound();
+            setInterval(updateTimer, 1000);
+            setInterval(updateComponents, 1000);
+            setInterval(updateErrorDisplay, 500);
+            setInterval(updateStackCount, 1000);
+            updateTimer();
+            updateComponents();
         }
         
-        // Update game state
-        function updateGame() {
-            if (window.gameState.voidMode) {
-                // Update void timer
-                window.gameState.voidTimer--;
-                updateVoidTimer();
-                
-                if (window.gameState.voidTimer <= 0) {
-                    // Game over - void mode collapsed
-                    document.getElementById('void-text').textContent = "SYSTEM COLLAPSED";
-                    document.getElementById('void-subtext').textContent = "YOU WIN!";
-                    document.getElementById('void-timer').textContent = "00:00";
-                }
-            } else {
-                // Update regular timer
-                window.gameState.timer++;
-                updateTimer();
-                
-                // Randomly trigger errors to build up stack traces
-                if (Math.random() > 0.8) {
-                    triggerError("RANDOM ERROR");
-                }
-            }
-        }
-        
-        // Update timer display
+        // Update the timer
         function updateTimer() {
+            if (window.gameState.voidMode) return;
+            
+            window.gameState.timer = Math.floor((Date.now() - window.gameState.startTime) / 1000);
             const minutes = Math.floor(window.gameState.timer / 60);
             const seconds = window.gameState.timer % 60;
             document.getElementById('timer').textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
         
-        // Trigger a random error
-        function triggerRandomError() {
-            if (window.gameState.voidMode) return;
-            
-            const errorTypes = [
-                "UNHANDLED EXCEPTION",
-                "MEMORY LEAK DETECTED",
-                "SYSTEM OVERLOAD",
-                "CRITICAL FAILURE",
-                "CONNECTION TIMEOUT",
-                "DATA CORRUPTION",
-                "NETWORK DISRUPTION"
-            ];
-            
-            const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
-            triggerError(errorType);
-        }
-        
         // Trigger an error
-        function triggerError(message) {
+        function triggerError(error) {
             if (window.gameState.voidMode) return;
             
             window.gameState.errorCount++;
             document.getElementById('error-count').textContent = window.gameState.errorCount;
             
-            // Add to error container
             const errorContainer = document.getElementById('error-container');
             const errorItem = document.createElement('div');
             errorItem.className = 'error-item';
-            errorItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            errorItem.textContent = `[${new Date().toLocaleTimeString()}] ${error}`;
             errorContainer.appendChild(errorItem);
             errorContainer.scrollTop = errorContainer.scrollHeight;
             
-            // Add stack trace
-            window.gameState.stackTraceCount++;
-            document.getElementById('stack-trace-count').textContent = window.gameState.stackTraceCount;
-            window.gameState.stackTraceHistory.push(Date.now());
+            // Add stack trace sometimes (simulating real errors)
+            if (Math.random() > 0.7) {
+                triggerStackTrace();
+            }
+        }
+        
+        // Trigger a stack trace
+        function triggerStackTrace() {
+            if (window.gameState.voidMode) return;
             
-            // Check if we have 3 consecutive stack traces within 10 seconds
-            if (window.gameState.stackTraceHistory.length >= 3) {
-                const latest = window.gameState.stackTraceHistory[window.gameState.stackTraceHistory.length - 1];
-                const secondLatest = window.gameState.stackTraceHistory[window.gameState.stackTraceHistory.length - 2];
-                const thirdLatest = window.gameState.stackTraceHistory[window.gameState.stackTraceHistory.length - 3];
+            window.gameState.stackCount++;
+            document.getElementById('stack-count').textContent = window.gameState.stackCount;
+            
+            // Add to stack trace times
+            window.gameState.stackTraceTimes.push(Date.now());
+            
+            // Keep only last 3 stack trace times
+            if (window.gameState.stackTraceTimes.length > 3) {
+                window.gameState.stackTraceTimes.shift();
+            }
+            
+            // Check if 3 consecutive stack traces in 10 seconds
+            if (window.gameState.stackTraceTimes.length >= 3) {
+                const latest = window.gameState.stackTraceTimes[window.gameState.stackTraceTimes.length - 1];
+                const thirdLatest = window.gameState.stackTraceTimes[window.gameState.stackTraceTimes.length - 3];
                 
-                // If all 3 traces happened within 10 seconds, activate void mode
                 if (latest - thirdLatest <= 10000) {
                     activateVoidMode();
                 }
@@ -461,20 +443,40 @@
         function activateVoidMode() {
             window.gameState.voidMode = true;
             window.gameState.voidTimer = 10; // 10 seconds to collapse
-            
+        
             document.getElementById('void-mode').classList.add('show');
             document.getElementById('void-timer').textContent = '00:10';
             
             // Play glitch audio
             playGlitchAudio();
+            
+            // Start void timer countdown
+            setInterval(updateVoidTimer, 1000);
         }
         
         // Update void timer display
         function updateVoidTimer() {
+            if (!window.gameState.voidMode) return;
+            
+            window.gameState.voidTimer--;
             const minutes = Math.floor(window.gameState.voidTimer / 60);
             const seconds = window.gameState.voidTimer % 60;
             document.getElementById('void-timer').textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Collapse when timer reaches 0
+            if (window.gameState.voidTimer <= 0) {
+                collapseVoidMode();
+            }
+        }
+        
+        // Collapse void mode
+        function collapseVoidMode() {
+            const collapse = document.getElementById('void-collapse');
+            collapse.classList.add('show');
+            
+            // Hide everything except the collapse overlay
+            document.getElementById('dashboard').style.display = 'none';
         }
         
         // Setup sound
