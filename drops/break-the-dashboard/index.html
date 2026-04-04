@@ -202,13 +202,13 @@
             <div class="stack-trace" id="stack-trace-6"></div>
         </div>
     </div>
-    
-    <button id="fix-button">Fix System</button>
-    
+
+    <button id="fix-button">Fix Button (Trap!)</button>
+
     <div id="void-mode">
         <h1>VOID MODE ACTIVATED</h1>
-        <p>System has collapsed completely</p>
-        <p>Press F5 to restart</p>
+        <p>System collapse complete</p>
+        <p>Breaking the UI is the only way to win</p>
     </div>
 
     <script>
@@ -217,10 +217,18 @@
             timeLeft: 10,
             systemHealth: 100,
             stackTraces: [],
-            cascadeCount: 0,
             cascadeThreshold: 3,
+            cascadeCount: 0,
             voidMode: false,
-            timer: null
+            timer: null,
+            errorSources: [
+                "Network Error",
+                "Memory Leak",
+                "Database Failure",
+                "UI Component Crash",
+                "API Timeout",
+                "Security Breach"
+            ]
         };
 
         // Initialize the game
@@ -228,42 +236,30 @@
             // Add click handlers to components
             for (let i = 1; i <= 6; i++) {
                 document.getElementById(`component-${i}`).addEventListener('click', () => {
-                    triggerError(i);
+                    if (!gameState.voidMode) {
+                        triggerError(i);
+                    }
                 });
             }
 
-            // Add fix button handler
+            // Add click handler to fix button
             document.getElementById('fix-button').addEventListener('click', triggerFixTrap);
 
             // Start the timer
             startTimer();
-
-            // Start triggering random errors
-            setInterval(() => {
-                if (!gameState.voidMode) {
-                    triggerError(Math.floor(Math.random() * 6) + 1);
-                }
-            }, 2000);
         }
 
-        // Generate a stack trace
+        // Generate a fake stack trace
         function generateStackTrace() {
-            const errorMessages = [
-                "ReferenceError: undefinedVariable is not defined",
-                "TypeError: Cannot read property 'foo' of null",
-                "SyntaxError: Unexpected token '}'",
-                "RangeError: Maximum call stack size exceeded",
-                "Error: System overload detected",
-                "Error: Component failure in module 'dashboard'",
-                "Warning: Memory leak detected in component",
-                "Critical: Stack overflow in main thread",
-                "Exception: Unhandled promise rejection",
-                "Fatal: Segmentation fault in UI layer"
+            const stackTrace = [
+                "Error: " + gameState.errorSources[Math.floor(Math.random() * gameState.errorSources.length)],
+                "    at " + ["handleClick", "updateComponent", "processRequest", "renderUI", "validateData"][Math.floor(Math.random() * 5)] + " (dashboard.js:" + Math.floor(Math.random() * 1000) + ")",
+                "    at " + ["onLoad", "onError", "onTimeout", "onSuccess"][Math.floor(Math.random() * 4)] + " (utils.js:" + Math.floor(Math.random() * 500) + ")",
+                "    at " + ["callback", "handler", "worker", "process"][Math.floor(Math.random() * 4)] + " (engine.js:" + Math.floor(Math.random() * 2000) + ")",
+                "    at " + ["execute", "run", "start", "init"][Math.floor(Math.random() * 4)] + " (core.js:" + Math.floor(Math.random() * 100) + ")",
+                "    at " + ["main", "loop", "tick", "update"][Math.floor(Math.random() * 4)] + " (game.js:" + Math.floor(Math.random() * 1000) + ")"
             ];
-
-            const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
-            const stackTrace = `at ${randomError} (line ${Math.floor(Math.random() * 1000) + 1})`;
-            return stackTrace;
+            return stackTrace.join('\n');
         }
 
         // Check for cascading failures
