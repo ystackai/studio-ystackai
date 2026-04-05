@@ -3,6 +3,11 @@
 
 // Game state
 window.gameState = {
+    productionProgress: 0,
+    productionSpeed: 1,
+    lastProductionTime: 0,
+    assemblyLine: [],
+   
     score: 0,
     level: 1,
     lives: 3,
@@ -34,6 +39,10 @@ const config = {
 };
 
 let game;
+let productionProgress = 0;
+let productionSpeed = 1;
+let lastProductionTime = 0;
+let assemblyLine = [];
 let factoryLine;
 let crewMembers;
 let productionItems;

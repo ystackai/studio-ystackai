@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="game-loaded">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,20 +20,21 @@
         <main id="game-main">
             <div id="game-canvas-container">
                 <canvas id="game-canvas"></canvas>
+                <div id="game-overlay"></div>
             </div>
             
             <div id="game-ui">
                 <div id="start-screen" class="game-screen">
                     <h2>Ready to Drop?</h2>
                     <p>Assemble your crew and start the production line</p>
-                    <button id="start-button">Start Production</button>
+                    <button id="start-button" class="game-button">Start Production</button>
                 </div>
                 
                 <div id="game-over-screen" class="game-screen hidden">
                     <h2>Production Complete</h2>
                     <p>Your crew has finished its task</p>
                     <p id="final-score">Score: 0</p>
-                    <button id="restart-button">New Crew</button>
+                    <button id="restart-button" class="game-button">New Crew</button>
                 </div>
                 
                 <div id="game-screen" class="game-screen hidden">
@@ -41,6 +42,10 @@
                         <h3>Crew Status</h3>
                         <div id="crew-members">Crew Members: 0</div>
                         <div id="crew-quality">Quality: 0%</div>
+                        <div id="production-status">
+                            <div id="production-speed">Speed: 1x</div>
+                            <div id="assembly-progress">Progress: 0%</div>
+                        </div>
                     </div>
                 </div>
             </div>
