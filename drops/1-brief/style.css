@@ -1,0 +1,372 @@
+/* 
+ * Next Drop - Crew Factory Visual System
+ * Factory/assembly line metaphor with clean, production-ready UI
+ */
+
+/* Semantic Tokens - Factory Theme */
+:root {
+  /* Colors - Factory palette */
+  --factory-primary: #2c3e50;
+  --factory-secondary: #3498db;
+  --factory-accent: #e74c3c;
+  --factory-success: #27ae60;
+  --factory-warning: #f39c12;
+  --factory-dark: #1a2530;
+  --factory-light: #ecf0f1;
+  --factory-gray: #95a5a6;
+  --factory-darker: #1a1a1a;
+  
+  /* Typography */
+  --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-size-small: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-large: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-xxl: 2rem;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Shadows */
+  --shadow-standard: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.15);
+  --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* Borders */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-width: 2px;
+  
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-primary);
+  background: linear-gradient(135deg, var(--factory-dark), var(--factory-darker));
+  color: var(--factory-light);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.factory-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+
+/* Factory Header */
+.factory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg) 0;
+  border-bottom: var(--border-width) solid var(--factory-secondary);
+  margin-bottom: var(--spacing-xl);
+  background: rgba(44, 62, 80, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-standard);
+}
+
+.factory-title {
+  font-size: var(--font-size-xxl);
+  font-weight: 700;
+  background: linear-gradient(to right, var(--factory-secondary), var(--factory-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.factory-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  background-color: var(--factory-success);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--factory-success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.status-text {
+  font-size: var(--font-size-small);
+  color: var(--factory-light);
+  font-weight: 500;
+}
+
+/* Factory Main Content */
+.factory-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Assembly Line Section */
+.assembly-line {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-standard);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.assembly-line h2 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-lg);
+  color: var(--factory-secondary);
+  text-align: center;
+}
+
+.line-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.crew-assembly {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--border-radius-lg);
+  width: 100%;
+  min-height: 150px;
+  position: relative;
+  overflow: hidden;
+}
+
+.crew-part {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+  box-shadow: var(--shadow-heavy);
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.crew-part::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+  border-radius: 50%;
+}
+
+.part-1 {
+  background: linear-gradient(135deg, var(--factory-primary), var(--factory-secondary));
+  color: var(--factory-light);
+}
+
+.part-2 {
+  background: linear-gradient(135deg, var(--factory-secondary), var(--factory-accent));
+  color: var(--factory-light);
+}
+
+.part-3 {
+  background: linear-gradient(135deg, var(--factory-accent), var(--factory-warning));
+  color: var(--factory-light);
+}
+
+.create-crew-btn {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: linear-gradient(to right, var(--factory-secondary), var(--factory-accent));
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-standard);
+  width: 100%;
+  max-width: 250px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.create-crew-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-heavy);
+  background: linear-gradient(to right, var(--factory-accent), var(--factory-secondary));
+}
+
+.create-crew-btn:active {
+  transform: translateY(0);
+}
+
+/* Crew Gallery Section */
+.crew-gallery {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-standard);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.crew-gallery h2 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-lg);
+  color: var(--factory-warning);
+  text-align: center;
+}
+
+.gallery-placeholder {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 2px dashed var(--factory-gray);
+}
+
+.gallery-placeholder p {
+  font-size: var(--font-size-large);
+  color: var(--factory-gray);
+}
+
+/* Factory Footer */
+.factory-footer {
+  text-align: center;
+  padding: var(--spacing-lg) 0;
+  border-top: var(--border-width) solid var(--factory-secondary);
+  margin-top: var(--spacing-xl);
+  color: var(--factory-gray);
+  font-size: var(--font-size-small);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .factory-container {
+    padding: var(--spacing-sm);
+  }
+  
+  .factory-main {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+  
+  .factory-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: center;
+  }
+  
+  .crew-part {
+    width: 60px;
+    height: 60px;
+    font-size: var(--font-size-lg);
+  }
+  
+  .create-crew-btn {
+    max-width: 100%;
+  }
+}
+
+/* Animation for crew parts */
+@keyframes pulsePart {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.crew-part {
+  animation: pulsePart 3s infinite;
+}
+
+.crew-part:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.crew-part:nth-child(3) {
+  animation-delay: 1s;
+}
+
+/* Factory Line Effect */
+.assembly-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(
+      90deg,
+      transparent 49%,
+      rgba(52, 152, 219, 0.3) 50%,
+      transparent 51%
+    );
+  background-size: 20px 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Production line dots effect */
+.crew-assembly::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 1px, transparent 2px),
+    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 1px, transparent 2px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Highlighted elements */
+.highlight {
+  box-shadow: 0 0 15px var(--factory-secondary);
+  animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 5px var(--factory-secondary); }
+  to { box-shadow: 0 0 20px var(--factory-secondary); }
+}

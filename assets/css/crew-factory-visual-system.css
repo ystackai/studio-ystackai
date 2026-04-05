@@ -1,0 +1,376 @@
+/*
+ * Crew Factory Visual Design System
+ * A comprehensive visual system for the cyberpunk-themed game project
+ */
+
+:root {
+  /* Semantic Color Tokens - Cyberpunk Aesthetic */
+  --color-primary: #0A0A0A;           /* Deep black background */
+  --color-secondary: #00F3FF;        /* Neon blue highlights */
+  --color-accent-primary: #8A2BE2;   /* Electric purple accents */
+  --color-accent-secondary: #FF00FF; /* Neon pink for critical systems */
+  --color-text-primary: #FFFFFF;    /* White text for contrast */
+  --color-text-secondary: #CCCCCC;   /* Light gray for secondary text */
+  --color-ui-panel: rgba(10, 10, 10, 0.8); /* Glass-morphism panel background */
+  --color-ui-border: rgba(0, 243, 255, 0.3); /* Neon blue border with transparency */
+  --color-error: #FF0000;            /* Red for error states */
+  --color-success: #00FF00;           /* Green for success states */
+  --color-warning: #FFFF00;          /* Yellow for warnings */
+  
+  /* Typography */
+  --font-primary: 'Orbitron', sans-serif;
+  --font-secondary: 'Roboto', sans-serif;
+  --font-size-small: 12px;
+  --font-size-medium: 16px;
+  --font-size-large: 20px;
+  --font-size-xlarge: 24px;
+  --font-size-xxlarge: 32px;
+  
+  /* Spacing System */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  
+  /* Shadow System */
+  --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-large: 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-glow-primary: 0 0 8px var(--color-secondary);
+  --shadow-glow-accent: 0 0 12px var(--color-accent-primary);
+  --shadow-glow-error: 0 0 8px var(--color-error);
+  
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 16px;
+  --border-radius-full: 50%;
+  
+  /* Animation Durations */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 600ms;
+  
+  /* Interactive States */
+  --state-hover: 0.8;
+  --state-active: 0.6;
+  --state-disabled: 0.4;
+  
+  /* Glitch Effects */
+  --glitch-color-primary: var(--color-accent-secondary);
+  --glitch-color-secondary: var(--color-secondary);
+  --glitch-animation-duration: 5s;
+  
+  /* Wobble Animation */
+  --wobble-delay: 0.5s;
+  --wobble-duration: 2s;
+  
+  /* Void Transition */
+  --void-transition-duration: 1.5s;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+  background-color: var(--color-primary);
+  color: var(--color-text-primary);
+  height: 100%;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--font-size-xxlarge);
+}
+
+h2 {
+  font-size: var(--font-size-xlarge);
+}
+
+h3 {
+  font-size: var(--font-size-large);
+}
+
+p {
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--color-secondary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent-secondary);
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 2px solid var(--color-secondary);
+  background-color: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-medium);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-glow-primary);
+}
+
+.btn-primary {
+  background-color: var(--color-secondary);
+  color: var(--color-primary);
+  border-color: var(--color-secondary);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent-secondary);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-glow-accent);
+}
+
+.btn-large {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: var(--font-size-large);
+}
+
+.btn-small {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-small);
+}
+
+/* Panels */
+.panel {
+  background-color: var(--color-ui-panel);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-medium);
+}
+
+.panel-glass {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: bold;
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-secondary);
+  font-size: var(--font-size-medium);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: var(--shadow-glow-primary);
+}
+
+/* Animation Utilities */
+.animate-wobble {
+  animation: wobble var(--wobble-duration) ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(2deg) scale(1.02); }
+  50% { transform: rotate(-2deg) scale(0.98); }
+  75% { transform: rotate(1deg) scale(1.01); }
+}
+
+/* Glitch Effect */
+.glitch-effect {
+  position: relative;
+  color: var(--color-text-primary);
+}
+
+.glitch-effect::before,
+.glitch-effect::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-effect::before {
+  left: 2px;
+  text-shadow: -2px 0 var(--glitch-color-primary);
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim var(--glitch-animation-duration) infinite linear alternate-reverse;
+}
+
+.glitch-effect::after {
+  left: -2px;
+  text-shadow: -2px 2px var(--glitch-color-secondary);
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim2 var(--glitch-animation-duration) infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(42px, 9999px, 44px, 0); }
+  5% { clip: rect(12px, 9999px, 59px, 0); }
+  10% { clip: rect(48px, 9999px, 29px, 0); }
+  15% { clip: rect(42px, 9999px, 73px, 0); }
+  20% { clip: rect(63px, 9999px, 100px, 0); }
+  25% { clip: rect(31px, 9999px, 44px, 0); }
+  30% { clip: rect(14px, 9999px, 19px, 0); }
+  35% { clip: rect(60px, 9999px, 100px, 0); }
+  40% { clip: rect(15px, 9999px, 35px, 0); }
+  45% { clip: rect(30px, 9999px, 100px, 0); }
+  50% { clip: rect(35px, 9999px, 100px, 0); }
+  55% { clip: rect(37px, 9999px, 41px, 0); }
+  60% { clip: rect(14px, 9999px, 42px, 0); }
+  65% { clip: rect(59px, 9999px, 44px, 0); }
+  70% { clip: rect(19px, 9999px, 25px, 0); }
+  75% { clip: rect(30px, 9999px, 86px, 0); }
+  80% { clip: rect(57px, 9999px, 33px, 0); }
+  85% { clip: rect(30px, 9999px, 64px, 0); }
+  90% { clip: rect(69px, 9999px, 33px, 0); }
+  95% { clip: rect(49px, 9999px, 100px, 0); }
+  100% { clip: rect(42px, 9999px, 54px, 0); }
+}
+
+@keyframes glitch-anim2 {
+  0% { clip: rect(65px, 9999px, 85px, 0); }
+  5% { clip: rect(100px, 9999px, 100px, 0); }
+  10% { clip: rect(14px, 9999px, 43px, 0); }
+  15% { clip: rect(89px, 9999px, 44px, 0); }
+  20% { clip: rect(63px, 9999px, 35px, 0); }
+  25% { clip: rect(31px, 9999px, 76px, 0); }
+  30% { clip: rect(39px, 9999px, 23px, 0); }
+  35% { clip: rect(13px, 9999px, 21px, 0); }
+  40% { clip: rect(55px, 9999px, 43px, 0); }
+  45% { clip: rect(14px, 9999px, 60px, 0); }
+  50% { clip: rect(89px, 9999px, 74px, 0); }
+  55% { clip: rect(58px, 9999px, 22px, 0); }
+  60% { clip: rect(67px, 9999px, 100px, 0); }
+  65% { clip: rect(13px, 9999px, 40px, 0); }
+  70% { clip: rect(11px, 9999px, 66px, 0); }
+  75% { clip: rect(83px, 9999px, 70px, 0); }
+  80% { clip: rect(70px, 9999px, 36px, 0); }
+  85% { clip: rect(47px, 9999px, 45px, 0); }
+  90% { clip: rect(75px, 9999px, 24px, 0); }
+  95% { clip: rect(23px, 9999px, 50px, 0); }
+  100% { clip: rect(67px, 9999px, 76px, 0); }
+}
+
+/* Void Transition */
+.void-transition {
+  position: relative;
+  overflow: hidden;
+}
+
+.void-transition::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #000, #111, #222, #000);
+  animation: void-transition var(--void-transition-duration) infinite linear;
+  opacity: 0.7;
+  z-index: 1;
+}
+
+@keyframes void-transition {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: var(--font-size-xlarge);
+  }
+
+  h2 {
+    font-size: var(--font-size-large);
+  }
+
+  .btn {
+    padding: var(--spacing-md) var(--spacing-md);
+    font-size: var(--font-size-medium);
+  }
+
+  .panel {
+    padding: var(--spacing-md);
+  }
+}
+
+/* Accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus Styles */
+*:focus {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  * {
+    outline: 2px solid var(--color-text-primary);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
