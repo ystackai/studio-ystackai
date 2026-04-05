@@ -1,0 +1,29 @@
+{
+  "name": "crew-factory",
+  "version": "1.0.0",
+  "description": "Crew Factory - A browser game concept for ystackai",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "http-server -p 8080",
+    "build": "webpack --mode production",
+    "dev": "webpack serve --mode development"
+  },
+  "keywords": [
+    "game",
+    "browser",
+    "ystackai",
+    "crew",
+    "factory"
+  ],
+  "author": "ystackai",
+  "license": "MIT",
+  "dependencies": {
+    "phaser": "^3.70.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.0",
+    "webpack-dev-server": "^4.11.0",
+    "html-webpack-plugin": "^5.5.0"
+  }
+}

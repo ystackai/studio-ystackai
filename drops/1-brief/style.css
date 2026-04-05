@@ -1,0 +1,228 @@
+/* Factory Theme Styles for Next Drop */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #e6e6e6;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.factory-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(25, 25, 35, 0.8);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    border: 1px solid #4a4a8a;
+}
+
+.factory-header {
+    background: linear-gradient(to right, #0f3460, #1a1a2e);
+    padding: 20px;
+    text-align: center;
+    border-bottom: 3px solid #ff6b6b;
+}
+
+.factory-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+.assembly-line {
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    gap: 40px;
+}
+
+.crew-creation {
+    background: rgba(30, 30, 45, 0.7);
+    padding: 25px;
+    border-radius: 10px;
+    border: 1px solid #4a4a8a;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.crew-creation h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ff6b6b;
+    font-size: 1.8rem;
+}
+
+.creation-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.primary-btn {
+    background: linear-gradient(to right, #ff6b6b, #ff8e8e);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+}
+
+.primary-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 107, 107, 0.5);
+}
+
+.secondary-btn {
+    background: linear-gradient(to right, #4a4a8a, #6a6aa0);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(74, 74, 138, 0.3);
+}
+
+.secondary-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(74, 74, 138, 0.5);
+}
+
+.crew-preview {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.crew-member {
+    background: rgba(40, 40, 60, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 120px;
+    transition: all 0.3s ease;
+    border: 1px solid #5a5a9a;
+}
+
+.crew-member:hover {
+    transform: scale(1.05);
+    background: rgba(50, 50, 70, 0.8);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.member-avatar {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.member-name {
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+.gallery-section {
+    background: rgba(30, 30, 45, 0.7);
+    padding: 25px;
+    border-radius: 10px;
+    border: 1px solid #4a4a8a;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.gallery-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #4ecdc4;
+    font-size: 1.8rem;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.gallery-item {
+    background: rgba(40, 40, 60, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid #5a5a9a;
+    cursor: pointer;
+}
+
+.gallery-item:hover {
+    transform: translateY(-5px);
+    background: rgba(50, 50, 70, 0.8);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.gallery-avatar {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.gallery-name {
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+.factory-footer {
+    background: linear-gradient(to right, #1a1a2e, #0f3460);
+    padding: 20px;
+    text-align: center;
+    border-top: 3px solid #4ecdc4;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .assembly-line {
+        padding: 15px;
+        gap: 20px;
+    }
+    
+    .crew-preview {
+        gap: 10px;
+    }
+    
+    .crew-member {
+        width: 100px;
+        padding: 15px;
+    }
+    
+    .member-avatar {
+        font-size: 2rem;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+    }
+    
+    .factory-header h1 {
+        font-size: 2rem;
+    }
+}
