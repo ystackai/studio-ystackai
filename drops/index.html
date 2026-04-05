@@ -46,9 +46,11 @@
     function gameUrl(game) {
       return (game && (game.studio_url || game.play_url)) || '#';
     }
+    var DEPLOY_TS = '20260404a';
     function gameScreenshot(game) {
       var url = gameUrl(game);
-      return url && url !== '#' ? (url.replace(/\/?$/, '/') + 'screenshot.png') : '';
+      if (!url || url === '#') return '';
+      return url.replace(/\/?$/, '/') + 'screenshot.png?v=' + DEPLOY_TS;
     }
     var studioSlug = StudioShell.detectSlug('ystackai');
 
