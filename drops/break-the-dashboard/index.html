@@ -99,33 +99,6 @@
         <p>SYSTEM COLLAPSE IN PROGRESS</p>
     </div>
 
-        // Play ambient sound periodically
-
-        setInterval(() => {
-
-            if (!gameState.voidMode) {
-
-                window.audioSystem.createAmbientSounds();
-
-            }
-
-        }, 2000);
-
-        
-
-        // Play glitch sound occasionally
-
-        setInterval(() => {
-
-            if (!gameState.voidMode) {
-
-                window.audioSystem.playGlitchSound();
-
-            }
-
-        }, 5000);
-
-
     <script src="audio/audio-system.js"></script>
     <script>
         // Game state
@@ -144,9 +117,7 @@
 
         function triggerError(component) {
             // Play wobble sound
-
             window.audioSystem.playWobbleSound();
-
 
             // Add error
             gameState.errors++;
@@ -162,6 +133,9 @@
             setTimeout(() => {
                 component.classList.remove('wobbling');
             }, 100);
+            
+            // Play wobble sound
+            window.audioSystem.playWobbleSound();
             
             // Update error counter
             document.getElementById('error-counter').textContent = `Errors: ${gameState.errors}`;
@@ -268,220 +242,20 @@
         
         // Initialize audio system
         window.audioSystem.init();
-        // Play ambient sound periodically
-
-        setInterval(() => {
-
-            if (!gameState.voidMode) {
-
-                window.audioSystem.createAmbientSounds();
-
-            }
-
-        }, 2000);
-
         
-
-        // Play glitch sound occasionally
-
+        // Play ambient sound periodically
         setInterval(() => {
-
             if (!gameState.voidMode) {
-
-                window.audioSystem.playGlitchSound();
-
+                window.audioSystem.createAmbientSounds();
             }
-
+        }, 2000);
+        
+        // Play glitch sound occasionally
+        setInterval(() => {
+            if (!gameState.voidMode) {
+                window.audioSystem.playGlitchSound();
+            }
         }, 5000);
-
-
     </script>
 </body>
 </html>
-
-    <script>
-        // Game state
-        let gameState = {
-            errors: 0,
-            stackTraces: [],
-            voidMode: false,
-            timer: 600, // 10 minutes in seconds
-            lastTraceTime: 0,
-            consecutiveTraces: 0,
-            traceTimeout: null
-        };
-
-        // Initialize audio system
-        window.audioSystem = new AudioSystem();
-
-        function triggerError(component) {
-            // Play wobble sound
-
-            window.audioSystem.playWobbleSound();
-
-
-            // Add error
-            gameState.errors++;
-            document.getElementById('error-counter').textContent = `Errors: ${gameState.errors}`;
-            
-            // Add stack trace
-            const stackTrace = generateStackTrace();
-            gameState.stackTraces.push(stackTrace);
-            addStackTrace(stackTrace);
-            
-            // Wobble component
-            component.classList.add('wobbling');
-            setTimeout(() => {
-                component.classList.remove('wobbling');
-            }, 100);
-            
-            // Play wobble sound
-            window.audioSystem.playWobbleSound();
-            
-            // Update error counter
-            document.getElementById('error-counter').textContent = `Errors: ${gameState.errors}`;
-            
-            // Check for void mode
-            checkVoidMode();
-            
-            // Play error sound
-            window.audioSystem.playErrorSound();
-        }
-
-        function triggerFix() {
-            // This is a trap - makes things worse!
-            gameState.errors += 3;
-            document.getElementById('error-counter').textContent = `Errors: ${gameState.errors}`;
-            
-            // Add multiple stack traces
-            for (let i = 0; i < 3; i++) {
-                const stackTrace = generateStackTrace();
-                gameState.stackTraces.push(stackTrace);
-                addStackTrace(stackTrace);
-            }
-            
-            // Play trap sound
-            window.audioSystem.playTrapSound();
-            
-            // Check for void mode
-            checkVoidMode();
-        }
-
-        function generateStackTrace() {
-            const errors = [
-                "ReferenceError: Cannot access 'x' before initialization",
-                "TypeError: Cannot read property 'length' of undefined",
-                "SyntaxError: Unexpected token '}'",
-                "RangeError: Maximum call stack size exceeded",
-                "DOMException: Failed to execute 'appendChild' on 'Node'",
-                "Error: Invalid state transition",
-                "Uncaught (in promise) TypeError: Cannot read property 'foo' of null",
-                "Error: Stack overflow detected"
-            ];
-            
-            const randomError = errors[Math.floor(Math.random() * errors.length)];
-            const timestamp = new Date().toISOString();
-            
-            return `${randomError} at ${timestamp}`;
-        }
-
-        function addStackTrace(trace) {
-            const stackTraceElement = document.getElementById('stack-trace');
-            const traceElement = document.createElement('p');
-            traceElement.textContent = trace;
-            stackTraceElement.appendChild(traceElement);
-            
-            // Keep only last 20 traces
-            if (stackTraceElement.children.length > 20) {
-                stackTraceElement.removeChild(stackTraceElement.firstChild);
-            }
-        }
-
-        function checkVoidMode() {
-            const now = Date.now();
-            if (gameState.lastTraceTime && (now - gameState.lastTraceTime) < 10000) {
-                gameState.consecutiveTraces++;
-            } else {
-                gameState.consecutiveTraces = 1;
-            }
-            
-            gameState.lastTraceTime = now;
-            
-            if (gameState.consecutiveTraces >= 3) {
-                activateVoidMode();
-            }
-        }
-
-        function activateVoidMode() {
-            gameState.voidMode = true;
-            document.getElementById('void-mode').style.display = 'block';
-            
-            // Play void sound
-            window.audioSystem.playVoidSound();
-            
-            // Start silence countdown
-            setTimeout(() => {
-                window.audioSystem.silence();
-            }, 3000);
-        }
-
-        function updateTimer() {
-            if (gameState.voidMode) return;
-            
-            gameState.timer--;
-            const minutes = Math.floor(gameState.timer / 60);
-            const seconds = gameState.timer % 60;
-            document.getElementById('timer').textContent = `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            
-            if (gameState.timer <= 0) {
-                activateVoidMode();
-            }
-        }
-
-        // Start timer
-        setInterval(updateTimer, 1000);
-        
-        // Initialize audio system
-        window.audioSystem.init();
-        
-        // Play ambient sound periodically
-        setInterval(() => {
-            if (!gameState.voidMode) {
-                window.audioSystem.createAmbientSounds();
-            }
-        }, 2000);
-        
-        // Play glitch sound occasionally
-        setInterval(() => {
-            if (!gameState.voidMode) {
-                window.audioSystem.playGlitchSound();
-            }
-        }, 5000);
-        // Play ambient sound periodically
-
-        setInterval(() => {
-
-            if (!gameState.voidMode) {
-
-                window.audioSystem.createAmbientSounds();
-
-            }
-
-        }, 2000);
-
-        
-
-        // Play glitch sound occasionally
-
-        setInterval(() => {
-
-            if (!gameState.voidMode) {
-
-                window.audioSystem.playGlitchSound();
-
-            }
-
-        }, 5000);
-
-
-    </script>
