@@ -1,0 +1,129 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+    color: white;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+#game-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+#game-header {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-bottom: 2px solid #ff6b6b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#game-stats span {
+    margin-right: 20px;
+    font-weight: bold;
+}
+
+#game-main {
+    padding: 20px;
+}
+
+#game-canvas-container {
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 2px solid #4ecdc4;
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    height: 400px;
+}
+
+#game-ui {
+    text-align: center;
+}
+
+.game-screen {
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+h1 {
+    color: #ff6b6b;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+h2 {
+    color: #4ecdc4;
+    margin-bottom: 15px;
+}
+
+h3 {
+    color: #ffd166;
+    margin-bottom: 10px;
+}
+
+button {
+    background: linear-gradient(to right, #ff6b6b, #ff8e53);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 10px;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
+}
+
+#crew-status {
+    background: rgba(78, 205, 196, 0.2);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+#crew-members, #crew-quality {
+    margin: 10px 0;
+    font-size: 18px;
+}
+
+#final-score {
+    font-size: 24px;
+    color: #ffd166;
+    margin: 20px 0;
+}
+
+#game-footer {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    text-align: center;
+    border-top: 2px solid #4ecdc4;
+}
