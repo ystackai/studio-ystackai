@@ -59,24 +59,20 @@ function createCrew() {
     // For this stub, we'll just use the existing crew members
     window.gameState.currentCrew = [...window.gameState.crew];
     
+    // Add assembly line animation effect
+    animateAssemblyLine();
+    
     // Update the display
     updateCrewDisplay();
     
     // Add visual feedback
-    const createBtn = document.getElementById('createCrewBtn');
-    createBtn.textContent = 'Crew Created!';
-    createBtn.disabled = true;
-    
-    setTimeout(() => {
-        createBtn.textContent = 'Create Crew';
-        createBtn.disabled = false;
-    }, 1500);
+    showCrewCreationFeedback();
 }
 
 // Randomize the crew members
 function randomizeCrew() {
-    const crewMembers = ['👨‍🚀', '👩‍🚀', '👨‍💻', '👩‍🔧', '👨‍🔬', '👩‍🎨'];
-    const crewNames = ['Explorer', 'Pilot', 'Engineer', 'Technician', 'Scientist', 'Artist'];
+    const crewMembers = ['👨‍🚀', '👩‍🚀', '👨‍💻', '👩‍🔧', '👨‍🔬', '👩‍🎨', '👨‍🚒', '👩‍💼'];
+    const crewNames = ['Explorer', 'Pilot', 'Engineer', 'Technician', 'Scientist', 'Artist', 'Firefighter', 'Manager'];
     
     // Generate random crew members
     for (let i = 0; i < 3; i++) {
@@ -91,6 +87,33 @@ function randomizeCrew() {
     
     // Update the display
     updateCrewDisplay();
+}
+
+// Add assembly line animation effect
+function animateAssemblyLine() {
+    const assemblyLine = document.querySelector('.assembly-line');
+    if (assemblyLine) {
+        assemblyLine.classList.add('assembly-line-active');
+        setTimeout(() => {
+            assemblyLine.classList.remove('assembly-line-active');
+        }, 1000);
+    }
+}
+
+// Add visual feedback for crew creation
+function showCrewCreationFeedback() {
+    const createBtn = document.getElementById('createCrewBtn');
+    if (createBtn) {
+        createBtn.textContent = 'Crew Created!';
+        createBtn.classList.add('created');
+        createBtn.disabled = true;
+        
+        setTimeout(() => {
+            createBtn.textContent = 'Create Crew';
+            createBtn.classList.remove('created');
+            createBtn.disabled = false;
+        }, 1500);
+    }
 }
 
 // Update the crew display based on current state
