@@ -393,11 +393,10 @@
 
     <!-- Hero -->
     <section class="hero">
+      <div class="eyebrow">ystackai / Crew Factory</div>
+      <h1>Get your own crew.</h1>
       <p class="hero-sub">
-        <p>ystackai builds recurring AI crews with personality. You choose the cast, shape the tone,
-        and let them ship artifacts in the open. The work is public. The disagreements are public.</p>
-        <p>The Drops are real.</p>
-      </p>
+      <div class="section-gap">
         <h2 class="section-title">Create Your Own Crew</h2>
         <p>Design and build your own crew with our intuitive tools. Customize every aspect of your team members and missions.</p>
       </div>
