@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS MONITOR v3.2.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0e17;
+  --bg-panel: #0f1520;
+  --bg-panel-hover: #141c2b;
+  --border: #1a2435;
+  --border-glow: #1e3a5f;
+  --text-primary: #c8d6e5;
+  --text-secondary: #5a6f8a;
+  --text-dim: #2d3d54;
+  --accent: #00d4aa;
+  --accent-blue: #3b82f6;
+  --accent-amber: #f59e0b;
+  --accent-red: #ef4444;
+  --accent-pink: #ec4899;
+  --error-glow: rgba(239, 68, 68, 0);
+  --shake-intensity: 0px;
+  --wobble-deg: 0deg;
+  --hue-shift: 0deg;
+  --saturation-boost: 100%;
+  --scanline-opacity: 0;
+  --glitch-offset: 0px;
+  --panel-skew: 0deg;
+  --noise-opacity: 0;
+  --chromatic-offset: 0px;
+  --blur-amount: 0px;
+  --invert-amount: 0;
+  --collapse-progress: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'DM Sans', 'Manrope', system-ui, sans-serif;
+}
+
+body {
+  position: relative;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+  opacity: var(--scanline-opacity);
+  transition: opacity 0.5s;
+}
+
+/* Noise overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9997;
+  opacity: var(--noise-opacity);
+  mix-blend-mode: overlay;
+}
+
+/* Screen shake */
+#app-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  filter: hue-rotate(var(--hue-shift)) saturate(var(--saturation-boost)) blur(var(--blur-amount)) invert(var(--invert-amount));
+  transform: translate(var(--shake-x, 0), var(--shake-y, 0));
+}
+
+/* Chromatic aberration layers */
+.chromatic-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9996;
+}
+.chromatic-r {
+  background: transparent;
+  mix-blend-mode: screen;
+  transform: translateX(var(--chromatic-offset));
+  opacity: 0.3;
+}
+.chromatic-b {
+  background: transparent;
+  mix-blend-mode: screen;
+  transform: translateX(calc(var(--chromatic-offset) * -1));
+  opacity: 0.3;
+}
+
+/* Top bar */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.app-logo span {
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+.status-indicators {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.status-dot.warning {
+  background: var(--accent-amber);
+  box-shadow: 0 0 6px var(--accent-amber);
+}
+
+.status-dot.error {
+  background: var(--accent-red);
+  box-shadow: 0 0 6px var(--accent-red);
+}
+
+.status-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.error-counter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-red);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 6px 14px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+
+.error-counter .icon {
+  font-size: 11px;
+}
+
+.deploy-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent-blue), #6366f1);
+  color: white;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+}
+
+.deploy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+}
+
+.deploy-btn:active {
+  transform: translateY(0);
+}
+
+.deploy-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+  transform: translateX(-100%);
+  animation: btn-shimmer 3s infinite;
+}
+
+@keyframes btn-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Main dashboard area */
+.dashboard-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px;
+  gap: 16px;
+}
+
+.widget-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .widget-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .widget-grid {
+    grid-template-columns: 1fr;
+  }
+  .top-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+  .dashboard-body {
+    padding: 10px;
+    gap: 10px;
+  }
+}
+
+.widget {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+  transform: rotate(var(--panel-skew)) skewX(var(--panel-skew));
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.widget:hover {
+  border-color: var(--border-glow);
+  background: var(--bg-panel-hover);
+}
+
+.widget:active {
+  transform: scale(0.98) rotate(var(--panel-skew));
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.widget-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.widget-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 212, 170, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+}
+
+.widget-badge.warn {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--accent-amber);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.widget-badge.crit {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-red);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.widget-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.widget-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Fake graph */
+.mini-graph {
+  height: 48px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-top: 10px;
+}
+
+.mini-graph .bar {
+  flex: 1;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  min-height: 3px;
+  opacity: 0.7;
+  transition: height 0.3s, background 0.3s;
+}
+
+/* Memory bar */
+.memory-bar-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.memory-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-blue));
+  transition: width 0.5s ease, background 0.5s;
+  width: 34%;
+}
+
+/* Latency dots */
+.latency-dots {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.latency-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.5;
+  transition: background 0.3s;
+}
+
+/* Uptime counter */
+.uptime-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+/* Deploy status */
+.deploy-pipeline {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.pipeline-stage {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.pipeline-stage .fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.5s, background 0.5s;
+}
+
+/* Stack trace log */
+.log-panel {
+  flex: 1;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.log-header-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.log-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  scroll-behavior: smooth;
+}
+
+.log-content::-webkit-scrollbar {
+  width: 6px;
+}
+.log-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.log-content::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.log-entry {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  animation: log-in 0.3s ease-out;
+}
+
+.log-entry .error-type {
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+.log-entry .error-msg {
+  color: var(--accent-amber);
+}
+
+.log-entry .stack-line {
+  color: var(--text-dim);
+}
+
+.log-entry .stack-line .file {
+  color: var(--text-secondary);
+}
+
+.log-entry .stack-line .lineno {
+  color: var(--accent-blue);
+}
+
+@keyframes log-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Widget click flash */
+.widget-flash {
+  animation: wflash 0.3s ease-out;
+}
+
+@keyframes wflash {
+  0% { box-shadow: inset 0 0 30px rgba(239, 68, 68, 0.4); }
+  100% { box-shadow: none; }
+}
+
+/* Wobble animations */
+@keyframes wobble-slow {
+  0%, 100% { transform: rotate(calc(var(--panel-skew) * -1)) translateX(0); }
+  25% { transform: rotate(var(--panel-skew)) translateX(var(--shake-intensity)); }
+  75% { transform: rotate(calc(var(--panel-skew) * -1)) translateX(calc(var(--shake-intensity) * -1)); }
+}
+
+.wobbling {
+  animation: wobble-slow 0.8s ease-in-out infinite;
+}
+
+/* Glitch slice effect */
+@keyframes glitch-slice {
+  0% { clip-path: inset(0 0 0 0); }
+  10% { clip-path: inset(20% 0 60% 0); transform: translateX(calc(var(--glitch-offset) * -1)); }
+  15% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+  30% { clip-path: inset(60% 0 10% 0); transform: translateX(var(--glitch-offset)); }
+  35% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+  50% { clip-path: inset(40% 0 40% 0); transform: translateX(calc(var(--glitch-offset) * 0.5)); }
+  55% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+.glitching {
+  animation: glitch-slice 1.2s steps(1) infinite;
+}
+
+/* Void mode overlay */
+#void-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transition: opacity 0.1s;
+}
+
+#void-overlay.active {
+  pointer-events: all;
+}
+
+#void-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  color: rgba(200, 214, 229, 0);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: color 3s ease;
+  text-align: center;
+  padding: 20px;
+}
+
+#void-text.visible {
+  color: rgba(200, 214, 229, 0.6);
+}
+
+/* Void timer */
+#void-timer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 96px;
+  font-weight: 700;
+  color: var(--accent-red);
+  z-index: 100000;
+  pointer-events: none;
+  opacity: 0;
+  text-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+  transition: opacity 0.3s;
+}
+
+#void-timer.active {
+  opacity: 1;
+  animation: timer-pulse 1s ease-in-out infinite;
+}
+
+@keyframes timer-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.7; }
+}
+
+/* Void mode badge */
+#void-badge {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent-red);
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid rgba(239, 68, 68, 0.4);
+  padding: 16px 32px;
+  border-radius: 8px;
+  z-index: 100001;
+  pointer-events: none;
+  opacity: 0;
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+}
+
+#void-badge.flash {
+  opacity: 1;
+  animation: badge-flash 2s ease-out forwards;
+}
+
+@keyframes badge-flash {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  30% { transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Error border pulse */
+@keyframes error-border-pulse {
+  0%, 100% { border-color: var(--border); }
+  50% { border-color: rgba(239, 68, 68, 0.4); }
+}
+
+.error-pulse-border {
+  animation: error-border-pulse 1.5s ease-in-out infinite;
+}
+
+/* Red vignette */
+#red-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9995;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(239, 68, 68, 0) 100%);
+  transition: background 0.5s;
+}
+</style>
+</head>
+<body>
+
+<div id="void-overlay">
+  <div id="void-text"></div>
+</div>
+<div id="void-timer"></div>
+<div id="void-badge">VOID MODE ACTIVATED</div>
+<div id="red-vignette"></div>
+
+<div id="app-container">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <div class="app-logo">NEXUS MONITOR <span>v3.2.1</span></div>
+      <div class="status-indicators">
+        <div class="status-dot" id="dot-health"></div>
+        <span class="status-label" id="status-label">SYSTEMS NOMINAL</span>
+      </div>
+    </div>
+    <div class="top-bar-right">
+      <div class="error-counter" id="error-counter">
+        <span class="icon">&#x26A0;</span>
+        <span id="error-count-val">0</span> ERRORS
+      </div>
+      <button class="deploy-btn" id="deploy-btn">&#9654; DEPLOY FIX</button>
+    </div>
+  </div>
+
+  <div class="dashboard-body">
+    <div class="widget-grid">
+      <!-- Widget 1: Error Rate -->
+      <div class="widget" id="widget-errors" data-error-type="NullPointerException">
+        <div class="widget-header">
+          <span class="widget-title">Error Rate</span>
+          <span class="widget-badge" id="badge-errors">NOMINAL</span>
+        </div>
+        <div class="widget-value" id="val-error-rate">0.02%</div>
+        <div class="widget-sub">Unhandled exceptions / min</div>
+        <div class="mini-graph" id="graph-errors"></div>
+      </div>
+
+      <!-- Widget 2: Memory Usage -->
+      <div class="widget" id="widget-memory" data-error-type="HeapOverflowError">
+        <div class="widget-header">
+          <span class="widget-title">Memory Usage</span>
+          <span class="widget-badge" id="badge-memory">34%</span>
+        </div>
+        <div class="widget-value" id="val-memory">2.7 GB</div>
+        <div class="widget-sub">of 8.0 GB allocated</div>
+        <div class="memory-bar-track">
+          <div class="memory-bar-fill" id="memory-fill"></div>
+        </div>
+      </div>
+
+      <!-- Widget 3: CPU Monitor -->
+      <div class="widget" id="widget-cpu" data-error-type="TimeoutException">
+        <div class="widget-header">
+          <span class="widget-title">CPU Load</span>
+          <span class="widget-badge" id="badge-cpu">STABLE</span>
+        </div>
+        <div class="widget-value" id="val-cpu">12%</div>
+        <div class="widget-sub">avg across 24 cores</div>
+        <div class="mini-graph" id="graph-cpu"></div>
+      </div>
+
+      <!-- Widget 4: Network Latency -->
+      <div class="widget" id="widget-network" data-error-type="NetworkError">
+        <div class="widget-header">
+          <span class="widget-title">Network Latency</span>
+          <span class="widget-badge" id="badge-network">P99</span>
+        </div>
+        <div class="widget-value" id="val-latency">23ms</div>
+        <div class="widget-sub">us-east-1 &rarr; eu-west-2</div>
+        <div class="latency-dots" id="latency-dots"></div>
+      </div>
+
+      <!-- Widget 5: Deploy Status -->
+      <div class="widget" id="widget-deploy" data-error-type="TypeError">
+        <div class="widget-header">
+          <span class="widget-title">Deploy Pipeline</span>
+          <span class="widget-badge" id="badge-deploy">v4.1.7</span>
+        </div>
+        <div class="widget-value" id="val-deploy">PASSING</div>
+        <div class="widget-sub">Last deploy: 3m ago</div>
+        <div class="deploy-pipeline" id="pipeline">
+          <div class="pipeline-stage"><div class="fill" style="width:100%"></div></div>
+          <div class="pipeline-stage"><div class="fill" style="width:100%"></div></div>
+          <div class="pipeline-stage"><div class="fill" style="width:100%"></div></div>
+          <div class="pipeline-stage"><div class="fill" style="width:80%"></div></div>
+          <div class="pipeline-stage"><div class="fill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Widget 6: Uptime -->
+      <div class="widget" id="widget-uptime" data-error-type="SegmentationFault">
+        <div class="widget-header">
+          <span class="widget-title">Uptime</span>
+          <span class="widget-badge" id="badge-uptime">SLA: 99.97%</span>
+        </div>
+        <div class="uptime-val" id="val-uptime">142d 07h 33m 12s</div>
+        <div class="widget-sub" style="margin-top:8px">Since last incident</div>
+      </div>
+    </div>
+
+    <div class="log-panel">
+      <div class="log-header">
+        <span class="log-header-title">Stack Trace Log</span>
+        <span class="status-label" id="log-count">0 entries</span>
+      </div>
+      <div class="log-content" id="log-content">
+        <div style="color: var(--text-dim); font-style: italic; padding: 20px 0; text-align: center;">
+          Awaiting error telemetry...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ---- STATE ----
+  const state = {
+    errorCount: 0,
+    memoryPercent: 34,
+    cpuPercent: 12,
+    latencyMs: 23,
+    errorRate: 0.02,
+    uptimeSeconds: 142 * 86400 + 7 * 3600 + 33 * 60 + 12,
+    logEntries: 0,
+    recentErrors: [],       // timestamps of recent errors
+    voidModeActive: false,
+    voidModeTriggered: false,
+    collapseTimer: null,
+    collapseSeconds: 10,
+    audioCtx: null,
+    masterGain: null,
+    noiseNode: null,
+    noiseGain: null,
+    oscillators: [],
+    degradationLevel: 0,    // 0 to 1
+    graphBarsErrors: [],
+    graphBarsCpu: [],
+  };
+
+  // ---- ELEMENTS ----
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+
+  const appContainer = $('app-container');
+  const errorCountEl = $('error-count-val');
+  const errorCounterBox = $('error-counter');
+  const deployBtn = $('deploy-btn');
+  const logContent = $('log-content');
+  const logCount = $('log-count');
+  const voidOverlay = $('void-overlay');
+  const voidText = $('void-text');
+  const voidTimer = $('void-timer');
+  const voidBadge = $('void-badge');
+  const redVignette = $('red-vignette');
+  const statusDot = $('dot-health');
+  const statusLabel = $('status-label');
+
+  const widgets = document.querySelectorAll('.widget');
+
+  // ---- INIT GRAPHS ----
+  function initGraphBars(containerId, arr, count = 20) {
+    const container = $(containerId);
+    for (let i = 0; i < count; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      const h = Math.random() * 30 + 5;
+      bar.style.height = h + '%';
+      arr.push({ el: bar, val: h });
+      container.appendChild(bar);
+    }
+  }
+
+  function initLatencyDots() {
+    const container = $('latency-dots');
+    for (let i = 0; i < 24; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'latency-dot';
+      dot.style.opacity = 0.2 + Math.random() * 0.5;
+      container.appendChild(dot);
+    }
+  }
+
+  initGraphBars('graph-errors', state.graphBarsErrors);
+  initGraphBars('graph-cpu', state.graphBarsCpu);
+  initLatencyDots();
+
+  // ---- ERROR DEFINITIONS ----
+  const errorTemplates = {
+    NullPointerException: {
+      type: 'java.lang.NullPointerException',
+      messages: [
+        'Cannot invoke method getData() on null object reference',
+        'Attempt to read property "metrics" of null',
+        'Cannot call method "push" of undefined',
+        'null is not an object (evaluating \'response.body.data\')',
+      ],
+      files: [
+        'com.nexus.core.MetricsAggregator.collect(MetricsAggregator.java',
+        'src/services/telemetry/collector.ts',
+        'lib/internal/streams/pipeline.js',
+        'packages/nexus-sdk/src/client.rs',
+      ],
+    },
+    HeapOverflowError: {
+      type: 'FATAL: HeapOverflowError',
+      messages: [
+        'JavaScript heap out of memory — allocation failed',
+        'GC overhead limit exceeded — 97% of time spent in garbage collection',
+        'OOM killed process 14429 (node) — total-vm:2048000kB, anon-rss:1890432kB',
+        'Memory allocation of 134217728 bytes failed',
+      ],
+      files: [
+        'v8::internal::Heap::AllocateRawWithRetryOrFail(heap.cc',
+        'src/runtime/memory/allocator.rs',
+        'node_modules/nexus-orm/dist/connection-pool.js',
+        'internal/gc/sweep.go',
+      ],
+    },
+    TimeoutException: {
+      type: 'TimeoutException',
+      messages: [
+        'Request timed out after 30000ms — upstream did not respond',
+        'ETIMEDOUT: connection timed out at TCPConnectWrap.afterConnect',
+        'Deadline exceeded: operation took 45.2s (limit: 30s)',
+        'Worker thread 7 unresponsive for 60s — terminating',
+      ],
+      files: [
+        'node:internal/timers/promises.js',
+        'src/middleware/timeout-handler.ts',
+        'packages/rpc-client/src/transport/grpc.rs',
+        'lib/workers/pool-manager.js',
+      ],
+    },
+    NetworkError: {
+      type: 'NetworkError',
+      messages: [
+        'ECONNREFUSED 10.0.3.47:5432 — connection refused by upstream',
+        'DNS resolution failed for metrics-ingester.internal.nexus.io',
+        'TLS handshake failed: certificate has expired (not after: 2026-03-28)',
+        'WebSocket connection to wss://stream.nexus.io/v2 failed',
+      ],
+      files: [
+        'node:net:internal/socket.js',
+        'src/transport/tcp-pool.rs',
+        'packages/nexus-client/src/ws/reconnect.ts',
+        'lib/dns/resolver.c',
+      ],
+    },
+    TypeError: {
+      type: 'TypeError',
+      messages: [
+        'Cannot read properties of undefined (reading \'deploymentId\')',
+        'Expected string, received object at pipeline.config.stages[2]',
+        'Type \'Observable<never>\' is not assignable to type \'Promise<Response>\'',
+        'invalid operation: mismatched types `Vec<u8>` and `&str`',
+      ],
+      files: [
+        'src/deploy/pipeline-executor.ts',
+        'packages/config-validator/src/schema.rs',
+        'lib/observability/trace-context.js',
+        'internal/compiler/type-checker.go',
+      ],
+    },
+    SegmentationFault: {
+      type: 'SIGSEGV: Segmentation Fault',
+      messages: [
+        'Signal 11 (SIGSEGV) received — invalid memory access at 0x00007ff3a2b0c000',
+        'Stack buffer overflow detected in uptime_monitor_tick()',
+        'Double free or corruption (!prev) — process aborting',
+        'Use-after-free detected by AddressSanitizer at 0xdeadbeef',
+      ],
+      files: [
+        'src/native/metrics_bridge.c',
+        'lib/ffi/bindings/monitor.rs',
+        'extensions/native-addon/src/collector.cpp',
+        'kernel/sched/core.c',
+      ],
+    },
+  };
+
+  // ---- STACK TRACE GENERATION ----
+  function generateStackTrace(errorType) {
+    const tmpl = errorTemplates[errorType];
+    if (!tmpl) return '';
+
+    const msg = tmpl.messages[Math.floor(Math.random() * tmpl.messages.length)];
+    const file = tmpl.files[Math.floor(Math.random() * tmpl.files.length)];
+    const line = Math.floor(Math.random() * 500) + 1;
+    const col = Math.floor(Math.random() * 80) + 1;
+
+    const extraFrames = [];
+    const frameCount = 3 + Math.floor(Math.random() * 4);
+    const framePaths = [
+      'node:internal/process/task_queues.js',
+      'src/core/event-loop.ts',
+      'lib/runtime/scheduler.rs',
+      'packages/nexus-core/src/bootstrap.js',
+      'internal/http/server.go',
+      'node:internal/streams/writable.js',
+      'src/middleware/error-boundary.ts',
+      'lib/telemetry/exporter.js',
+      'packages/nexus-sdk/src/retry.rs',
+      'node_modules/@nexus/runtime/dist/index.js',
+    ];
+    const funcNames = [
+      'processTicksAndRejections', 'Module._compile', 'runMicrotasks',
+      'async Promise.all', 'EventEmitter.emit', 'Server.handleRequest',
+      'Pipeline.execute', 'Retry.withBackoff', 'Stream.flush',
+      'Worker.postMessage', 'GC.markAndSweep', 'Allocator.alloc',
+    ];
+
+    for (let i = 0; i < frameCount; i++) {
+      const fp = framePaths[Math.floor(Math.random() * framePaths.length)];
+      const fn = funcNames[Math.floor(Math.random() * funcNames.length)];
+      const ln = Math.floor(Math.random() * 1000) + 1;
+      const cl = Math.floor(Math.random() * 80) + 1;
+      extraFrames.push(`    at ${fn} (<span class="file">${fp}</span>:<span class="lineno">${ln}:${cl}</span>)`);
+    }
+
+    const timestamp = new Date().toISOString();
+
+    return `<div class="log-entry">` +
+      `<span style="color:var(--text-dim)">[${timestamp}]</span>\n` +
+      `<span class="error-type">${tmpl.type}</span>: <span class="error-msg">${msg}</span>\n` +
+      `    at <span class="file">${file}</span>:<span class="lineno">${line}:${col}</span>\n` +
+      extraFrames.join('\n') +
+      `</div>`;
+  }
+
+  // ---- AUDIO ENGINE ----
+  function initAudio() {
+    if (state.audioCtx) return;
+    try {
+      state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      state.masterGain = state.audioCtx.createGain();
+      state.masterGain.gain.value = 0;
+      state.masterGain.connect(state.audioCtx.destination);
+
+      // Noise generator using a buffer
+      const bufferSize = state.audioCtx.sampleRate * 2;
+      const noiseBuffer = state.audioCtx.createBuffer(1, bufferSize, state.audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      state.noiseNode = state.audioCtx.createBufferSource();
+      state.noiseNode.buffer = noiseBuffer;
+      state.noiseNode.loop = true;
+
+      state.noiseGain = state.audioCtx.createGain();
+      state.noiseGain.gain.value = 0;
+
+      // Bandpass for crackle character
+      const bandpass = state.audioCtx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.value = 1500;
+      bandpass.Q.value = 0.5;
+
+      state.noiseNode.connect(bandpass);
+      bandpass.connect(state.noiseGain);
+      state.noiseGain.connect(state.masterGain);
+      state.noiseNode.start();
+
+    } catch (e) {
+      // Audio not supported
+    }
+  }
+
+  function updateAudio() {
+    if (!state.audioCtx || !state.masterGain) return;
+    if (state.voidModeActive) return; // handled by void sequence
+
+    const d = state.degradationLevel;
+
+    // Master volume ramps up
+    state.masterGain.gain.linearRampToValueAtTime(
+      Math.min(d * 0.25, 0.2),
+      state.audioCtx.currentTime + 0.1
+    );
+
+    // Noise volume
+    if (state.noiseGain) {
+      state.noiseGain.gain.linearRampToValueAtTime(
+        d * 0.8,
+        state.audioCtx.currentTime + 0.1
+      );
+    }
+
+    // Add oscillators as degradation increases
+    if (d > 0.3 && state.oscillators.length === 0) {
+      addOscillator(220, 'sawtooth', 0.03);
+    }
+    if (d > 0.5 && state.oscillators.length === 1) {
+      addOscillator(147, 'square', 0.02);
+    }
+    if (d > 0.7 && state.oscillators.length === 2) {
+      addOscillator(55, 'sawtooth', 0.04);
+      addOscillator(333, 'triangle', 0.015);
+    }
+
+    // Detune existing oscillators for dissonance
+    state.oscillators.forEach((osc, i) => {
+      if (osc.oscNode) {
+        osc.oscNode.detune.linearRampToValueAtTime(
+          d * 100 * (i % 2 === 0 ? 1 : -1),
+          state.audioCtx.currentTime + 0.1
+        );
+        osc.gainNode.gain.linearRampToValueAtTime(
+          osc.baseGain * d * 2,
+          state.audioCtx.currentTime + 0.1
+        );
+      }
+    });
+  }
+
+  function addOscillator(freq, type, baseGain) {
+    if (!state.audioCtx) return;
+    try {
+      const osc = state.audioCtx.createOscillator();
+      osc.type = type;
+      osc.frequency.value = freq;
+
+      const gain = state.audioCtx.createGain();
+      gain.gain.value = 0;
+
+      osc.connect(gain);
+      gain.connect(state.masterGain);
+      osc.start();
+
+      state.oscillators.push({ oscNode: osc, gainNode: gain, baseGain });
+    } catch (e) {}
+  }
+
+  function playErrorBlip() {
+    if (!state.audioCtx) return;
+    try {
+      const osc = state.audioCtx.createOscillator();
+      const gain = state.audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = 200 + Math.random() * 600;
+      gain.gain.value = 0.08 + state.degradationLevel * 0.08;
+      osc.connect(gain);
+      gain.connect(state.masterGain);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, state.audioCtx.currentTime + 0.15);
+      osc.stop(state.audioCtx.currentTime + 0.15);
+    } catch (e) {}
+  }
+
+  function fadeAudioToSilence(duration) {
+    if (!state.audioCtx || !state.masterGain) return;
+    state.masterGain.gain.linearRampToValueAtTime(0, state.audioCtx.currentTime + duration);
+  }
+
+  // ---- ERROR TRIGGER ----
+  function triggerError(errorType, fromDeploy) {
+    if (state.voidModeTriggered) return;
+
+    initAudio();
+
+    state.errorCount++;
+    state.logEntries++;
+    state.recentErrors.push(Date.now());
+
+    // Clean up old timestamps
+    const now = Date.now();
+    state.recentErrors = state.recentErrors.filter(t => now - t < 10000);
+
+    // Update degradation
+    state.degradationLevel = Math.min(state.errorCount / 30, 1);
+
+    // Update counter
+    errorCountEl.textContent = state.errorCount;
+
+    // Flash counter
+    errorCounterBox.style.transform = 'scale(1.15)';
+    setTimeout(() => { errorCounterBox.style.transform = 'scale(1)'; }, 200);
+
+    // Add stack trace
+    const trace = generateStackTrace(errorType);
+    if (state.logEntries === 1) {
+      logContent.innerHTML = '';
+    }
+    logContent.insertAdjacentHTML('beforeend', trace);
+    logContent.scrollTop = logContent.scrollHeight;
+    logCount.textContent = state.logEntries + ' entries';
+
+    // Audio blip
+    playErrorBlip();
+    updateAudio();
+
+    // Update visuals
+    updateDashboardVisuals();
+    updateDegradation();
+
+    // Check void mode
+    checkVoidMode();
+  }
+
+  // ---- DASHBOARD VISUAL UPDATES ----
+  function updateDashboardVisuals() {
+    const d = state.degradationLevel;
+    const ec = state.errorCount;
+
+    // Error rate
+    state.errorRate = Math.min(0.02 + ec * 3.5, 99.99);
+    $('val-error-rate').textContent = state.errorRate.toFixed(2) + '%';
+    const errBadge = $('badge-errors');
+    if (state.errorRate > 50) { errBadge.textContent = 'CRITICAL'; errBadge.className = 'widget-badge crit'; }
+    else if (state.errorRate > 10) { errBadge.textContent = 'WARNING'; errBadge.className = 'widget-badge warn'; }
+
+    // Memory
+    state.memoryPercent = Math.min(34 + ec * 4.5, 99);
+    const memGB = (state.memoryPercent / 100 * 8).toFixed(1);
+    $('val-memory').textContent = memGB + ' GB';
+    $('badge-memory').textContent = Math.round(state.memoryPercent) + '%';
+    $('memory-fill').style.width = state.memoryPercent + '%';
+    if (state.memoryPercent > 85) {
+      $('memory-fill').style.background = 'linear-gradient(90deg, var(--accent-amber), var(--accent-red))';
+      $('badge-memory').className = 'widget-badge crit';
+    } else if (state.memoryPercent > 60) {
+      $('memory-fill').style.background = 'linear-gradient(90deg, var(--accent-amber), var(--accent))';
+      $('badge-memory').className = 'widget-badge warn';
+    }
+
+    // CPU
+    state.cpuPercent = Math.min(12 + ec * 6, 100);
+    $('val-cpu').textContent = Math.round(state.cpuPercent) + '%';
+    const cpuBadge = $('badge-cpu');
+    if (state.cpuPercent > 85) { cpuBadge.textContent = 'MAXED'; cpuBadge.className = 'widget-badge crit'; }
+    else if (state.cpuPercent > 50) { cpuBadge.textContent = 'HIGH'; cpuBadge.className = 'widget-badge warn'; }
+
+    // Latency
+    state.latencyMs = Math.min(23 + ec * 40, 9999);
+    $('val-latency').textContent = state.latencyMs >= 1000
+      ? (state.latencyMs / 1000).toFixed(1) + 's'
+      : Math.round(state.latencyMs) + 'ms';
+    const netBadge = $('badge-network');
+    if (state.latencyMs > 2000) { netBadge.textContent = 'TIMEOUT'; netBadge.className = 'widget-badge crit'; }
+    else if (state.latencyMs > 500) { netBadge.textContent = 'DEGRADED'; netBadge.className = 'widget-badge warn'; }
+
+    // Latency dots
+    const dots = document.querySelectorAll('.latency-dot');
+    dots.forEach(dot => {
+      if (d > 0.3) {
+        dot.style.background = Math.random() > 0.5 ? 'var(--accent-red)' : 'var(--accent-amber)';
+        dot.style.opacity = 0.3 + Math.random() * 0.7;
+      }
+    });
+
+    // Deploy status
+    if (ec > 3) {
+      $('val-deploy').textContent = 'FAILING';
+      $('val-deploy').style.color = 'var(--accent-red)';
+      $('badge-deploy').textContent = 'BLOCKED';
+      $('badge-deploy').className = 'widget-badge crit';
+      const fills = document.querySelectorAll('.pipeline-stage .fill');
+      fills.forEach((f, i) => {
+        if (i >= 2) {
+          f.style.width = '0%';
+          f.style.background = 'var(--accent-red)';
+        } else {
+          f.style.background = i < 1 ? 'var(--accent)' : 'var(--accent-amber)';
+        }
+      });
+    }
+
+    // Uptime countdown
+    state.uptimeSeconds = Math.max(0, state.uptimeSeconds - Math.floor(ec * 1000 + Math.random() * 5000));
+    const days = Math.floor(state.uptimeSeconds / 86400);
+    const hours = Math.floor((state.uptimeSeconds % 86400) / 3600);
+    const mins = Math.floor((state.uptimeSeconds % 3600) / 60);
+    const secs = state.uptimeSeconds % 60;
+    $('val-uptime').textContent = `${days}d ${String(hours).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`;
+    if (days < 10) {
+      $('val-uptime').style.color = 'var(--accent-red)';
+      $('badge-uptime').textContent = 'SLA BREACH';
+      $('badge-uptime').className = 'widget-badge crit';
+    } else if (days < 50) {
+      $('val-uptime').style.color = 'var(--accent-amber)';
+      $('badge-uptime').textContent = 'SLA: 98.2%';
+      $('badge-uptime').className = 'widget-badge warn';
+    }
+
+    // Graph bars
+    state.graphBarsErrors.forEach(b => {
+      b.val = Math.min(100, b.val + Math.random() * d * 30);
+      b.el.style.height = b.val + '%';
+      if (d > 0.4) b.el.style.background = d > 0.7 ? 'var(--accent-red)' : 'var(--accent-amber)';
+    });
+    state.graphBarsCpu.forEach(b => {
+      b.val = Math.min(100, b.val + Math.random() * d * 20);
+      b.el.style.height = b.val + '%';
+      if (d > 0.5) b.el.style.background = d > 0.8 ? 'var(--accent-red)' : 'var(--accent-amber)';
+    });
+
+    // Status dot and label
+    if (d > 0.6) {
+      statusDot.className = 'status-dot error';
+      statusLabel.textContent = 'CRITICAL FAILURE';
+      statusLabel.style.color = 'var(--accent-red)';
+    } else if (d > 0.3) {
+      statusDot.className = 'status-dot warning';
+      statusLabel.textContent = 'DEGRADED';
+      statusLabel.style.color = 'var(--accent-amber)';
+    } else if (d > 0.1) {
+      statusLabel.textContent = 'ANOMALIES DETECTED';
+    }
+  }
+
+  // ---- VISUAL DEGRADATION ----
+  function updateDegradation() {
+    const d = state.degradationLevel;
+
+    // Color shift: hue rotates toward red
+    root.style.setProperty('--hue-shift', (d * 30) + 'deg');
+    root.style.setProperty('--saturation-boost', (100 + d * 80) + '%');
+
+    // Shake intensity
+    root.style.setProperty('--shake-intensity', (d * 4) + 'px');
+
+    // Scanlines
+    root.style.setProperty('--scanline-opacity', Math.min(d * 0.8, 0.6));
+
+    // Noise
+    root.style.setProperty('--noise-opacity', Math.min(d * 0.3, 0.2));
+
+    // Panel skew
+    root.style.setProperty('--panel-skew', (d * 1.5) + 'deg');
+
+    // Glitch offset
+    root.style.setProperty('--glitch-offset', (d * 8) + 'px');
+
+    // Chromatic aberration
+    root.style.setProperty('--chromatic-offset', (d * 3) + 'px');
+
+    // Red vignette
+    const vignetteIntensity = d * 0.4;
+    redVignette.style.background = `radial-gradient(ellipse at center, transparent 40%, rgba(239, 68, 68, ${vignetteIntensity}) 100%)`;
+
+    // Wobble class on widgets
+    widgets.forEach((w, i) => {
+      if (d > 0.2 + i * 0.08) {
+        w.classList.add('wobbling');
+      }
+      if (d > 0.5) {
+        w.classList.add('error-pulse-border');
+      }
+    });
+
+    // Glitch on log panel
+    if (d > 0.6) {
+      document.querySelector('.log-panel').classList.add('glitching');
+    }
+
+    // Background color shift
+    if (d > 0.4) {
+      const r = Math.round(10 + d * 20);
+      const g = Math.round(14 - d * 10);
+      const b = Math.round(23 - d * 15);
+      root.style.setProperty('--bg', `rgb(${r}, ${Math.max(g, 4)}, ${Math.max(b, 8)})`);
+      document.body.style.background = `rgb(${r}, ${Math.max(g, 4)}, ${Math.max(b, 8)})`;
+    }
+
+    // Slight blur at high degradation
+    if (d > 0.8) {
+      root.style.setProperty('--blur-amount', ((d - 0.8) * 2) + 'px');
+    }
+  }
+
+  // ---- SCREEN SHAKE ----
+  let shakeRAF = null;
+  function screenShake(intensity, duration) {
+    const start = performance.now();
+    function shake(time) {
+      const elapsed = time - start;
+      if (elapsed > duration) {
+        appContainer.style.setProperty('--shake-x', '0px');
+        appContainer.style.setProperty('--shake-y', '0px');
+        return;
+      }
+      const progress = elapsed / duration;
+      const decay = 1 - progress;
+      const x = (Math.random() - 0.5) * intensity * decay * 2;
+      const y = (Math.random() - 0.5) * intensity * decay * 2;
+      appContainer.style.setProperty('--shake-x', x + 'px');
+      appContainer.style.setProperty('--shake-y', y + 'px');
+      shakeRAF = requestAnimationFrame(shake);
+    }
+    if (shakeRAF) cancelAnimationFrame(shakeRAF);
+    shakeRAF = requestAnimationFrame(shake);
+  }
+
+  // ---- VOID MODE CHECK ----
+  function checkVoidMode() {
+    if (state.voidModeActive || state.voidModeTriggered) return;
+
+    const now = Date.now();
+    const recent = state.recentErrors.filter(t => now - t < 10000);
+
+    if (recent.length >= 3) {
+      activateVoidMode();
+    }
+  }
+
+  // ---- VOID MODE ----
+  function activateVoidMode() {
+    state.voidModeActive = true;
+    state.voidModeTriggered = true;
+
+    // Flash badge
+    voidBadge.classList.add('flash');
+
+    // Massive screen shake
+    screenShake(20, 2000);
+
+    // Spike all audio
+    if (state.audioCtx && state.masterGain) {
+      state.masterGain.gain.linearRampToValueAtTime(0.35, state.audioCtx.currentTime + 0.5);
+      state.oscillators.forEach(osc => {
+        if (osc.oscNode) {
+          osc.oscNode.detune.linearRampToValueAtTime(
+            (Math.random() - 0.5) * 400,
+            state.audioCtx.currentTime + 0.5
+          );
+        }
+      });
+      if (state.noiseGain) {
+        state.noiseGain.gain.linearRampToValueAtTime(1.0, state.audioCtx.currentTime + 0.5);
+      }
+    }
+
+    // Extreme degradation
+    root.style.setProperty('--hue-shift', '50deg');
+    root.style.setProperty('--scanline-opacity', '0.8');
+    root.style.setProperty('--noise-opacity', '0.4');
+    root.style.setProperty('--glitch-offset', '20px');
+    root.style.setProperty('--chromatic-offset', '6px');
+
+    // Add glitch to everything
+    widgets.forEach(w => w.classList.add('glitching'));
+
+    // Start countdown after badge flash
+    setTimeout(() => {
+      voidBadge.classList.remove('flash');
+      startCollapseCountdown();
+    }, 2200);
+  }
+
+  function startCollapseCountdown() {
+    state.collapseSeconds = 10;
+    voidTimer.classList.add('active');
+    voidTimer.textContent = '10';
+
+    // Start progressive fade
+    voidOverlay.classList.add('active');
+
+    const tick = () => {
+      state.collapseSeconds--;
+      if (state.collapseSeconds <= 0) {
+        voidTimer.classList.remove('active');
+        enterTheVoid();
+        return;
+      }
+
+      voidTimer.textContent = state.collapseSeconds;
+
+      // Progressive overlay opacity
+      const progress = 1 - (state.collapseSeconds / 10);
+      voidOverlay.style.opacity = progress * 0.85;
+
+      // Progressive audio fade
+      const audioFade = state.collapseSeconds / 10;
+      if (state.audioCtx && state.masterGain) {
+        state.masterGain.gain.linearRampToValueAtTime(
+          0.35 * audioFade,
+          state.audioCtx.currentTime + 0.5
+        );
+      }
+
+      // Progressive visual collapse
+      root.style.setProperty('--blur-amount', ((1 - audioFade) * 4) + 'px');
+
+      // Reduce shake as we approach void
+      if (state.collapseSeconds < 5) {
+        screenShake(state.collapseSeconds * 2, 800);
+      }
+
+      // Invert flash at certain moments
+      if (state.collapseSeconds === 7 || state.collapseSeconds === 4 || state.collapseSeconds === 2) {
+        root.style.setProperty('--invert-amount', '1');
+        setTimeout(() => root.style.setProperty('--invert-amount', '0'), 100);
+      }
+
+      state.collapseTimer = setTimeout(tick, 1000);
+    };
+
+    state.collapseTimer = setTimeout(tick, 1000);
+  }
+
+  function enterTheVoid() {
+    // Complete silence
+    fadeAudioToSilence(2);
+
+    // Stop all oscillators after fade
+    setTimeout(() => {
+      state.oscillators.forEach(osc => {
+        try { osc.oscNode.stop(); } catch(e) {}
+      });
+      try { state.noiseNode.stop(); } catch(e) {}
+      if (state.audioCtx) {
+        state.audioCtx.close().catch(() => {});
+      }
+    }, 2500);
+
+    // Full black
+    voidOverlay.style.opacity = '1';
+    voidOverlay.style.transition = 'opacity 2s ease';
+
+    // Remove all degradation
+    root.style.setProperty('--scanline-opacity', '0');
+    root.style.setProperty('--noise-opacity', '0');
+    root.style.setProperty('--hue-shift', '0deg');
+    root.style.setProperty('--blur-amount', '0px');
+
+    // The moment of nothing
+    setTimeout(() => {
+      // Pure void achieved — now show the message
+      voidText.innerHTML = 'System Status: Liberated';
+      setTimeout(() => {
+        voidText.classList.add('visible');
+      }, 1500);
+    }, 3000);
+  }
+
+  // ---- WIDGET CLICK HANDLERS ----
+  widgets.forEach(widget => {
+    widget.addEventListener('click', () => {
+      if (state.voidModeTriggered) return;
+
+      const errorType = widget.dataset.errorType;
+      widget.classList.add('widget-flash');
+      setTimeout(() => widget.classList.remove('widget-flash'), 300);
+
+      screenShake(3 + state.degradationLevel * 10, 300);
+      triggerError(errorType);
+    });
+  });
+
+  // ---- DEPLOY BUTTON ----
+  deployBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (state.voidModeTriggered) return;
+
+    initAudio();
+
+    // Change button text temporarily
+    deployBtn.textContent = 'DEPLOYING...';
+    deployBtn.style.background = 'linear-gradient(135deg, var(--accent-red), #dc2626)';
+    deployBtn.disabled = true;
+
+    screenShake(8 + state.degradationLevel * 15, 1500);
+
+    // Trigger 3-5 errors in rapid succession
+    const errorTypes = Object.keys(errorTemplates);
+    const count = 3 + Math.floor(Math.random() * 3);
+
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const type = errorTypes[Math.floor(Math.random() * errorTypes.length)];
+        triggerError(type, true);
+
+        // Flash a random widget
+        const randomWidget = widgets[Math.floor(Math.random() * widgets.length)];
+        randomWidget.classList.add('widget-flash');
+        setTimeout(() => randomWidget.classList.remove('widget-flash'), 300);
+      }, i * 300);
+    }
+
+    setTimeout(() => {
+      deployBtn.textContent = '&#9654; DEPLOY FIX';
+      deployBtn.innerHTML = '&#9654; DEPLOY FIX';
+      deployBtn.style.background = '';
+      deployBtn.disabled = false;
+    }, count * 300 + 500);
+  });
+
+  // ---- AMBIENT ANIMATION LOOP ----
+  let ambientFrame;
+  function ambientLoop() {
+    if (state.voidModeTriggered && state.collapseSeconds <= 0) return;
+
+    const d = state.degradationLevel;
+
+    // Subtle ambient shake when degraded
+    if (d > 0.3 && !state.voidModeActive) {
+      const x = (Math.random() - 0.5) * d * 2;
+      const y = (Math.random() - 0.5) * d * 2;
+      appContainer.style.setProperty('--shake-x', x + 'px');
+      appContainer.style.setProperty('--shake-y', y + 'px');
+    }
+
+    // Random glitch flickers
+    if (d > 0.5 && Math.random() < d * 0.05) {
+      root.style.setProperty('--invert-amount', '1');
+      setTimeout(() => root.style.setProperty('--invert-amount', '0'), 30 + Math.random() * 50);
+    }
+
+    ambientFrame = requestAnimationFrame(ambientLoop);
+  }
+  ambientFrame = requestAnimationFrame(ambientLoop);
+
+  // ---- KEYBOARD SHORTCUT (hidden) ----
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state.voidModeTriggered) {
+      // Allow restart
+      location.reload();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
