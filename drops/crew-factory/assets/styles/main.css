@@ -1,0 +1,299 @@
+/* Main CSS for Crew Factory Application */
+:root {
+  --cf-bg: #f7f7ff;
+  --cf-bg-warm: #fefefe;
+  --cf-ink: #16162a;
+  --cf-soft: #5b607c;
+  --cf-line: #d9def4;
+  --cf-accent: #6366f1;
+  --cf-accent-dim: rgba(99, 102, 241, 0.08);
+  --cf-accent-2: #f59e0b;
+  --cf-accent-2-dim: rgba(245, 158, 11, 0.10);
+  --cf-panel: #ffffff;
+  --cf-radius: 6px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: var(--cf-ink);
+  background: 
+    radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(245, 158, 11, 0.04) 0%, transparent 50%),
+    linear-gradient(180deg, var(--cf-bg-warm) 0%, var(--cf-bg) 100%);
+  background-attachment: fixed;
+  font-family: "IBM Plex Sans", "Inter", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: 20px 40px;
+  background: var(--cf-panel);
+  border-bottom: 1px solid var(--cf-line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.app-header h1 {
+  color: var(--cf-accent);
+  font-size: 1.8rem;
+}
+
+.app-header nav a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: var(--cf-soft);
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.app-header nav a:hover {
+  color: var(--cf-accent);
+}
+
+.app-main {
+  flex: 1;
+  width: min(1080px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 48px 0 80px;
+}
+
+section {
+  margin-bottom: 40px;
+}
+
+section h2 {
+  margin-bottom: 20px;
+  color: var(--cf-ink);
+  font-size: 1.5rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  padding: 20px;
+  background: var(--cf-panel);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius);
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card h3 {
+  font-size: 0.9rem;
+  color: var(--cf-soft);
+  margin-bottom: 10px;
+}
+
+.stat-card p {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--cf-accent);
+}
+
+.crew-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.crew-card {
+  background: var(--cf-panel);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.crew-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.crew-card h3 {
+  color: var(--cf-accent);
+  margin-bottom: 10px;
+}
+
+.crew-card p {
+  color: var(--cf-soft);
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+.crew-card .members {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crew-card .members img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.discord-integration {
+  background: var(--cf-panel);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius);
+  padding: 30px;
+  text-align: center;
+  max-width: 500px;
+}
+
+#discord-connect {
+  background: var(--cf-accent);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--cf-radius);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 15px;
+}
+
+#discord-connect:hover {
+  background: #4f46e5;
+}
+
+.brief-form {
+  background: var(--cf-panel);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius);
+  padding: 25px;
+  margin-bottom: 30px;
+}
+
+.brief-form h3 {
+  margin-bottom: 15px;
+}
+
+.brief-form input,
+.brief-form textarea {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.brief-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.brief-form button {
+  background: var(--cf-accent);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--cf-radius);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.brief-form button:hover {
+  background: #4f46e5;
+}
+
+.brief-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.brief-card {
+  background: var(--cf-panel);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.brief-card h3 {
+  color: var(--cf-accent);
+  margin-bottom: 10px;
+}
+
+.brief-card p {
+  color: var(--cf-soft);
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+.brief-card .deadline {
+  font-size: 0.85rem;
+  color: var(--cf-accent-2);
+  font-weight: 500;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--cf-soft);
+  font-size: 0.9rem;
+  border-top: 1px solid var(--cf-line);
+  margin-top: auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 20px;
+  }
+  
+  .app-header nav {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .app-header nav a {
+    margin: 5px 10px;
+  }
+  
+  .app-main {
+    width: calc(100vw - 24px);
+    padding: 20px 0 40px;
+  }
+  
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .crew-list,
+  .brief-list {
+    grid-template-columns: 1fr;
+  }
+}
