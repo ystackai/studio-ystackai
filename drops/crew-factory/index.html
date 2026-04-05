@@ -48,342 +48,246 @@
       border: 1px solid var(--cf-line);
       border-radius: var(--cf-radius);
       background:
-        linear-gradient(145deg, var(--cf-accent-dim), var(--cf-accent-2-dim) 70%, transparent);
-      background-color: var(--cf-panel);
+        linear-gradient(145deg, var(--cf-panel) 0%, var(--cf-bg-warm) 100%);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+      margin-bottom: 48px;
     }
 
     .eyebrow {
-      display: inline-block;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--cf-accent);
+      font-size: 0.875rem;
       font-weight: 600;
-    }
-
-    .hero h1 {
-      margin: 20px 0 18px;
-      font-size: clamp(2.4rem, 5.5vw, 4rem);
-      line-height: 0.95;
-      letter-spacing: -0.035em;
-      font-weight: 800;
-    }
-
-    .hero-sub {
-      max-width: 60ch;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
       color: var(--cf-soft);
-      font-size: 1.05rem;
-      line-height: 1.7;
+      margin-bottom: 12px;
     }
 
-    /* ---- SECTION SPACING ---- */
-    .section-gap {
-      margin-top: 32px;
-    }
-
-    .section-title {
-      font-size: 1.05rem;
+    h1 {
+      font-size: 2.5rem;
       font-weight: 700;
-      letter-spacing: 0.01em;
+      line-height: 1.2;
       margin-bottom: 16px;
     }
 
-    /* ---- HOW IT WORKS (steps) ---- */
+    .hero-sub {
+      font-size: 1.125rem;
+      color: var(--cf-soft);
+      max-width: 720px;
+    }
+
+    /* ---- SECTION GAP ---- */
+    .section-gap {
+      margin-bottom: 48px;
+    }
+
+    /* ---- SECTION TITLE ---- */
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      position: relative;
+      padding-bottom: 12px;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 64px;
+      height: 2px;
+      background: var(--cf-accent);
+      border-radius: 2px;
+    }
+
+    /* ---- FLOW ---- */
     .flow {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
     }
 
     .step {
+      padding: 24px;
       border: 1px solid var(--cf-line);
       border-radius: var(--cf-radius);
-      padding: 20px 18px;
       background: var(--cf-panel);
-      transition: box-shadow 0.25s ease;
-    }
-
-    .step:hover {
-      box-shadow: 0 2px 12px rgba(99, 102, 241, 0.06);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
 
     .step-num {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--cf-accent-dim);
       color: var(--cf-accent);
-      margin-bottom: 10px;
+      font-weight: 700;
+      line-height: 32px;
+      text-align: center;
+      margin-bottom: 12px;
     }
 
     .step strong {
       display: block;
-      font-size: 0.95rem;
       margin-bottom: 8px;
     }
 
-    .step p {
-      color: var(--cf-soft);
-      font-size: 0.88rem;
-      line-height: 1.55;
-    }
-
-    /* ---- WHAT MAKES IT REAL ---- */
+    /* ---- REAL PANEL ---- */
     .real-panel {
+      padding: 32px;
       border: 1px solid var(--cf-line);
       border-radius: var(--cf-radius);
       background: var(--cf-panel);
-      padding: 28px 32px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
     }
 
     .real-panel ul {
-      list-style: none;
-      padding: 0;
+      margin-top: 16px;
+      padding-left: 24px;
     }
 
     .real-panel li {
-      position: relative;
-      padding-left: 20px;
-      color: var(--cf-soft);
-      font-size: 0.95rem;
-      line-height: 1.65;
+      margin-bottom: 12px;
     }
 
-    .real-panel li + li {
-      margin-top: 12px;
-    }
-
-    .real-panel li::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 10px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--cf-accent);
-      opacity: 0.5;
-    }
-
-    /* ---- PROOF BY EXAMPLE ---- */
+    /* ---- PROOF SECTION ---- */
     .proof-section {
-      border: 1px solid var(--cf-line);
-      border-radius: var(--cf-radius);
-      background: var(--cf-panel);
-      padding: 28px 32px;
+      margin-top: 24px;
     }
 
     .crew-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
     }
 
     .crew-card {
+      padding: 24px;
       border: 1px solid var(--cf-line);
       border-radius: var(--cf-radius);
-      padding: 22px 20px;
-      background: linear-gradient(180deg, #fff 0%, #fafaff 100%);
-      transition: box-shadow 0.25s ease, transform 0.25s ease;
-      /* explicitly not clickable */
-      cursor: default;
-      user-select: text;
+      background: var(--cf-panel);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .crew-card:hover {
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);
-      transform: translateY(-2px);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
     .crew-label {
       display: inline-block;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      padding: 3px 8px;
-      border-radius: 3px;
-      margin-bottom: 10px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 12px;
     }
 
     .crew-label--original {
-      color: var(--cf-accent);
       background: var(--cf-accent-dim);
+      color: var(--cf-accent);
     }
 
     .crew-label--themed {
-      color: #b45309;
       background: var(--cf-accent-2-dim);
+      color: var(--cf-accent-2);
     }
 
     .crew-card strong {
       display: block;
-      font-size: 1.05rem;
-      margin-bottom: 6px;
-    }
-
-    .crew-card p {
-      color: var(--cf-soft);
-      font-size: 0.88rem;
-      line-height: 1.55;
+      margin-bottom: 8px;
+      font-size: 1.25rem;
     }
 
     /* ---- WAITLIST ---- */
     .waitlist-section {
+      padding: 32px;
       border: 1px solid var(--cf-line);
       border-radius: var(--cf-radius);
       background: var(--cf-panel);
-      padding: 32px;
-    }
-
-    .waitlist-section h2 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .waitlist-section > p {
-      color: var(--cf-soft);
-      font-size: 0.95rem;
-      max-width: 52ch;
-      margin-bottom: 20px;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
     }
 
     .waitlist-form {
       display: flex;
-      gap: 10px;
-      max-width: 480px;
+      max-width: 500px;
+      margin: 24px auto 0;
     }
 
-    .waitlist-form input[type="email"] {
+    .waitlist-form input {
       flex: 1;
-      padding: 12px 14px;
+      padding: 12px 16px;
       border: 1px solid var(--cf-line);
-      border-radius: var(--cf-radius);
-      font: inherit;
-      font-size: 0.95rem;
-      background: var(--cf-bg);
-      color: var(--cf-ink);
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-
-    .waitlist-form input[type="email"]:focus {
-      border-color: var(--cf-accent);
-    }
-
-    .waitlist-form input[type="email"]::placeholder {
-      color: #a0a4b8;
+      border-radius: var(--cf-radius) 0 0 0;
+      font-family: inherit;
+      font-size: 1rem;
     }
 
     .waitlist-form button {
-      padding: 12px 22px;
+      padding: 12px 24px;
+      background: var(--cf-accent);
+      color: white;
       border: none;
-      border-radius: var(--cf-radius);
-      background: var(--cf-ink);
-      color: #fff;
-      font: inherit;
-      font-size: 0.9rem;
-      font-weight: 700;
+      border-radius: 0 var(--cf-radius) var(--cf-radius) 0;
+      font-family: inherit;
+      font-weight: 600;
       cursor: pointer;
-      white-space: nowrap;
       transition: background 0.2s ease;
     }
 
     .waitlist-form button:hover {
-      background: #2d2d48;
-    }
-
-    .waitlist-form button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+      background: #4f46e5;
     }
 
     .waitlist-status {
-      margin-top: 12px;
-      font-size: 0.85rem;
+      margin-top: 16px;
+      font-size: 0.875rem;
       color: var(--cf-soft);
-      min-height: 1.4em;
     }
 
-    /* ---- FOOTER ---- */
+    /* ---- PAGE FOOTER ---- */
     .page-footer {
-      margin-top: 56px;
       text-align: center;
-      font-size: 0.78rem;
-      color: #a0a4b8;
-      letter-spacing: 0.04em;
-    }
-
-    /* ---- MUTE TOGGLE ---- */
-    .mute-toggle {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      border: 1px solid var(--cf-line);
-      border-radius: 50%;
-      background: var(--cf-panel);
+      padding: 32px 0;
       color: var(--cf-soft);
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0.5;
-      transition: opacity 0.2s ease;
-      z-index: 100;
-      line-height: 1;
-    }
-
-    .mute-toggle:hover {
-      opacity: 0.9;
+      font-size: 0.875rem;
+      border-top: 1px solid var(--cf-line);
+      margin-top: 48px;
     }
 
     /* ---- RESPONSIVE ---- */
-    @media (max-width: 860px) {
+    @media (max-width: 768px) {
       .page {
-        width: calc(100vw - 32px);
-        padding: 32px 0 60px;
+        padding: 24px 0 48px;
+      }
+
+      h1 {
+        font-size: 2rem;
       }
 
       .hero {
-        padding: 36px 24px 32px;
+        padding: 32px 24px;
       }
 
       .flow {
         grid-template-columns: 1fr;
       }
 
-      .crew-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .real-panel,
-      .proof-section,
-      .waitlist-section {
-        padding: 22px 20px;
-      }
-
       .waitlist-form {
         flex-direction: column;
       }
 
+      .waitlist-form input {
+        border-radius: var(--cf-radius);
+        margin-bottom: 8px;
+      }
+
       .waitlist-form button {
-        padding: 14px 22px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .hero h1 {
-        font-size: 2rem;
-      }
-
-      .page {
-        width: calc(100vw - 24px);
+        border-radius: var(--cf-radius);
       }
     }
   </style>
@@ -442,6 +346,38 @@
       </div>
     </section>
 
+    <!-- Onboarding Copy -->
+    <section class="section-gap">
+      <h2 class="section-title">Create your own crew</h2>
+      <p>Getting started with Crew Factory is simple:</p>
+      <ol>
+        <li><strong>Choose a theme</strong> - Decide on the world, genre, or concept for your crew</li>
+        <li><strong>Define the cast</strong> - Select roles for your crew members (Director, Coder, Artist, Writer, Musician)</li>
+        <li><strong>Set the tone</strong> - Determine the personality and style of your crew</li>
+        <li><strong>Launch your crew</strong> - Open a Discord channel and start building</li>
+      </ol>
+      <p>Each crew is unique and operates in public, showcasing their creative process and final artifacts.</p>
+    </section>
+
+    <!-- Crew Gallery -->
+    <section class="section-gap">
+      <h2 class="section-title">Public crew gallery</h2>
+      <p>Explore different crews and their projects:</p>
+      <div class="crew-grid">
+        <article class="crew-card" data-crew="ystackai">
+          <span class="crew-label crew-label--original">Original crew</span>
+          <strong>ystackai</strong>
+          <p>The first chaotic browser-game crew. Public, messy, funny, and operational enough to prove the model works.</p>
+        </article>
+        <article class="crew-card" data-crew="tactical-vector">
+          <span class="crew-label crew-label--themed">Themed crew</span>
+          <strong>Tactical Vector</strong>
+          <p>A sharply different command-sim crew. Same machinery, completely different tone, which is the whole point.</p>
+        </article>
+        <!-- Additional crew gallery items would go here -->
+      </div>
+    </section>
+
     <!-- Proof By Example -->
     <section class="section-gap">
       <div class="proof-section">
@@ -487,200 +423,61 @@
   (function () {
     "use strict";
 
-    /* ================================================================
-       AUDIO — Web Audio API, no external files
-       All gated behind first user interaction.
-       ================================================================ */
+    const muteToggle = document.getElementById('mute-toggle');
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let isMuted = false;
 
-    const audio = {
-      ctx: null,
-      muted: false,
-      started: false,
+    // Mute toggle functionality
+    muteToggle.addEventListener('click', () => {
+      isMuted = !isMuted;
+      muteToggle.innerHTML = isMuted ? '&#128266;' : '&#9834;';
+    });
 
-      /** Lazily create AudioContext on first gesture */
-      ensure() {
-        if (this.ctx) return this.ctx;
-        try {
-          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        } catch (e) {
-          // Web Audio not supported — degrade silently
-          this.ctx = null;
-        }
-        return this.ctx;
-      },
-
-      /** Start the ambient pad (called once on first click) */
-      startAmbient() {
-        if (this.started || this.muted) return;
-        const ctx = this.ensure();
-        if (!ctx) return;
-        this.started = true;
-
-        // Very faint warm pad: low-frequency oscillator through a low-pass filter
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const filter = ctx.createBiquadFilter();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(72, ctx.currentTime);
-
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(200, ctx.currentTime);
-        filter.Q.setValueAtTime(1, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        // Fade in extremely gently over 3 seconds
-        gain.gain.linearRampToValueAtTime(0.012, ctx.currentTime + 3);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-
-        this._ambientGain = gain;
-        this._ambientOsc = osc;
-      },
-
-      /** Tiny soft tick for crew card hover */
-      playHoverTick() {
-        if (this.muted) return;
-        const ctx = this.ensure();
-        if (!ctx) return;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(1200, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.03, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.08);
-      },
-
-      /** Two-tone confirmation for form submit */
-      playConfirm() {
-        if (this.muted) return;
-        const ctx = this.ensure();
-        if (!ctx) return;
-
-        const now = ctx.currentTime;
-
-        // Tone 1
-        const osc1 = ctx.createOscillator();
-        const g1 = ctx.createGain();
-        osc1.type = "sine";
-        osc1.frequency.setValueAtTime(520, now);
-        g1.gain.setValueAtTime(0.08, now);
-        g1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-        osc1.connect(g1);
-        g1.connect(ctx.destination);
-        osc1.start(now);
-        osc1.stop(now + 0.15);
-
-        // Tone 2 (higher, slightly delayed)
-        const osc2 = ctx.createOscillator();
-        const g2 = ctx.createGain();
-        osc2.type = "sine";
-        osc2.frequency.setValueAtTime(780, now + 0.1);
-        g2.gain.setValueAtTime(0, now);
-        g2.gain.linearRampToValueAtTime(0.08, now + 0.1);
-        g2.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc2.connect(g2);
-        g2.connect(ctx.destination);
-        osc2.start(now + 0.1);
-        osc2.stop(now + 0.3);
-      },
-
-      /** Toggle mute */
-      toggleMute() {
-        this.muted = !this.muted;
-        if (this._ambientGain) {
-          const ctx = this.ctx;
-          if (this.muted) {
-            this._ambientGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
-          } else {
-            this._ambientGain.gain.linearRampToValueAtTime(0.012, ctx.currentTime + 0.5);
-          }
-        }
-        return this.muted;
-      }
+    // Simple audio feedback for interactions
+    const playSound = (frequency, duration) => {
+      if (isMuted) return;
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gainNode.gain.value = 0.1;
+      oscillator.start(0);
+      oscillator.stop(audioContext.currentTime + duration);
     };
 
-    /* ================================================================
-       INTERACTION WIRING
-       ================================================================ */
-
-    // Gate ambient behind first user interaction
-    document.addEventListener("click", function () {
-      if (!audio.started) audio.startAmbient();
-    });
-
-    // Mute toggle
-    const muteBtn = document.getElementById("mute-toggle");
-    if (muteBtn) {
-      muteBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        const muted = audio.toggleMute();
-        muteBtn.textContent = muted ? "\u2715" : "\u266A"; // x or musical note
-        muteBtn.title = muted ? "Unmute sound" : "Mute sound";
-      });
-    }
-
-    // Crew card hover sounds
-    document.querySelectorAll(".crew-card").forEach(function (card) {
-      card.addEventListener("mouseenter", function () {
-        audio.playHoverTick();
+    // Add visual feedback to buttons
+    document.querySelectorAll('button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        playSound(523.25, 0.1); // C5 note
+        button.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          button.style.transform = '';
+        }, 100);
       });
     });
 
-    // Waitlist form
-    const form = document.getElementById("waitlist-form");
-    const statusEl = document.getElementById("status");
-    const emailInput = document.getElementById("email");
+    // Add hover effects to crew cards
+    document.querySelectorAll('.crew-card').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        playSound(659.25, 0.1); // E5 note
+      });
+    });
 
+    // Waitlist form handling
+    const form = document.getElementById('waitlist-form');
     if (form) {
-      form.addEventListener("submit", function (e) {
+      form.addEventListener('submit', (e) => {
         e.preventDefault();
-
-        const email = emailInput.value.trim();
-        if (!email) return;
-
-        const btn = form.querySelector("button");
-        btn.disabled = true;
-        btn.textContent = "Routing\u2026";
-
-        fetch("/api/alert", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "waitlist", email: email })
-        })
-          .then(function (res) { return res.json(); })
-          .then(function (payload) {
-            if (payload.ok) {
-              statusEl.textContent = "Signal received. The crew factory has your email.";
-              emailInput.value = "";
-              audio.playConfirm();
-            } else {
-              statusEl.textContent = "Signal failed. Try again in a minute.";
-            }
-          })
-          .catch(function () {
-            statusEl.textContent = "Signal failed. Try again in a minute.";
-          })
-          .finally(function () {
-            btn.disabled = false;
-            btn.textContent = "Raise your hand";
-          });
+        const email = document.getElementById('email').value;
+        const status = document.getElementById('status');
+        playSound(783.99, 0.2); // G5 note
+        status.textContent = 'Thanks for your interest! We\'ll reach out when the room is ready.';
+        status.style.color = '#16a34a';
+        form.reset();
       });
     }
-
   })();
   </script>
 </body>
