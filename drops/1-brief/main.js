@@ -56,7 +56,24 @@ function setupEventListeners() {
 // Create a new crew
 function createCrew() {
     // In a real implementation, this would generate a new crew
-    // For this stub, we'll just use the existing crew members
+    // For this stub, we'll generate a new crew with random members
+    const crewMembers = ['👨‍🚀', '👩‍🚀', '👨‍💻', '👩‍🔧', '👨‍🔬', '👩‍🎨', '👨‍🚒', '👩‍💼'];
+    const crewNames = ['Explorer', 'Pilot', 'Engineer', 'Technician', 'Scientist', 'Artist', 'Firefighter', 'Manager'];
+    
+    // Generate a new crew with random members
+    const newCrew = [];
+    for (let i = 0; i < 3; i++) {
+        const randomAvatar = crewMembers[Math.floor(Math.random() * crewMembers.length)];
+        const randomName = crewNames[Math.floor(Math.random() * crewNames.length)];
+        newCrew.push({
+            id: i + 1,
+            avatar: randomAvatar,
+            name: randomName
+        });
+    }
+    
+    window.gameState.crew = newCrew;
+    
     window.gameState.currentCrew = [...window.gameState.crew];
     
     // Add assembly line animation effect
@@ -71,6 +88,7 @@ function createCrew() {
 
 // Randomize the crew members
 function randomizeCrew() {
+    // Generate random crew members
     const crewMembers = ['👨‍🚀', '👩‍🚀', '👨‍💻', '👩‍🔧', '👨‍🔬', '👩‍🎨', '👨‍🚒', '👩‍💼'];
     const crewNames = ['Explorer', 'Pilot', 'Engineer', 'Technician', 'Scientist', 'Artist', 'Firefighter', 'Manager'];
     
@@ -97,6 +115,9 @@ function animateAssemblyLine() {
         setTimeout(() => {
             assemblyLine.classList.remove('assembly-line-active');
         }, 1000);
+        
+        // Add a subtle sound effect for assembly line
+        playAssemblySound();
     }
 }
 
@@ -148,6 +169,14 @@ if (typeof module !== 'undefined' && module.exports) {
         randomizeCrew,
         updateCrewDisplay,
         updateGalleryDisplay,
-        setupEventListeners
+        setupEventListeners,
+        playAssemblySound
     };
+}
+
+// Play a sound effect for the assembly line
+function playAssemblySound() {
+    // In a real implementation, this would play an actual sound
+    // For now, we'll just log to console
+    console.log("Assembly line sound played");
 }
