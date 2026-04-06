@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crew Factory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            animation: pulse 2s infinite;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff00cc, #3333ff);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 0, 204, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 25px rgba(255, 0, 204, 0.7);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(30deg);
+            transition: all 0.5s;
+        }
+
+        .btn:hover::after {
+            transform: rotate(30deg) translate(20%, 20%);
+        }
+
+        .factory-floor {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to top, #2c2c2c, #1a1a1a);
+            border-top: 2px solid #ff00cc;
+            z-index: 5;
+        }
+
+        .assembly-line {
+            position: absolute;
+            bottom: 20%;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, transparent, #ff00cc, transparent);
+            animation: moveLine 4s linear infinite;
+        }
+
+        .crew-member {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #333;
+            border-radius: 50%;
+            border: 2px solid #ff00cc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 0 15px rgba(255, 0, 204, 0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .crew-member:nth-child(1) { top: 30%; left: 10%; animation-delay: 0s; }
+        .crew-member:nth-child(2) { top: 40%; left: 20%; animation-delay: 0.5s; }
+        .crew-member:nth-child(3) { top: 35%; left: 30%; animation-delay: 1s; }
+        .crew-member:nth-child(4) { top: 45%; left: 40%; animation-delay: 1.5s; }
+        .crew-member:nth-child(5) { top: 30%; left: 50%; animation-delay: 2s; }
+        .crew-member:nth-child(6) { top: 40%; left: 60%; animation-delay: 2.5s; }
+        .crew-member:nth-child(7) { top: 35%; left: 70%; animation-delay: 3s; }
+        .crew-member:nth-child(8) { top: 45%; left: 80%; animation-delay: 3.5s; }
+        .crew-member:nth-child(9) { top: 30%; left: 90%; animation-delay: 4s; }
+
+        @keyframes pulse {
+            0% { text-shadow: 0 0 10px rgba(0, 255, 255, 0.7); }
+            50% { text-shadow: 0 0 20px rgba(0, 255, 255, 0.9), 0 0 30px rgba(0, 255, 255, 0.6); }
+            100% { text-shadow: 0 0 10px rgba(0, 255, 255, 0.7); }
+        }
+
+        @keyframes moveLine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .crew-creation-screen {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(255, 0, 204, 0.5);
+            border: 2px solid #ff00cc;
+        }
+
+        .crew-creation-screen h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #ff00cc;
+        }
+
+        .crew-members {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .member-card {
+            background: rgba(50, 50, 50, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            width: 120px;
+            text-align: center;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .member-card:hover {
+            transform: scale(1.05);
+            border-color: #ff00cc;
+            box-shadow: 0 0 15px rgba(255, 0, 204, 0.7);
+        }
+
+        .member-card .member-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .member-card .member-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .gallery-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .gallery-header {
+            margin-bottom: 30px;
+        }
+
+        .gallery-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            color: #ff00cc;
+            margin-bottom: 10px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .crew-gallery-item {
+            background: rgba(50, 50, 50, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .crew-gallery-item:hover {
+            transform: translateY(-5px);
+            border-color: #ff00cc;
+            box-shadow: 0 5px 25px rgba(255, 0, 204, 0.7);
+        }
+
+        .crew-gallery-item .crew-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .crew-gallery-item .crew-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .crew-gallery-item .crew-members {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .crew-gallery-item .crew-id {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-top: 10px;
+        }
+
+        .audio-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .audio-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(50, 50, 50, 0.8);
+            border: 2px solid #ff00cc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 0, 204, 0.3);
+        }
+
+        .audio-btn.muted {
+            background: rgba(255, 0, 0, 0.3);
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff00cc, #3333ff);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .transition-in {
+            animation: transitionIn 0.8s ease;
+        }
+
+        .transition-out {
+            animation: transitionOut 0.8s ease;
+        }
+
+        @keyframes transitionIn {
+            0% { opacity: 0; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes transitionOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.8); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Factory Floor Background -->
+    <div class="factory-floor"></div>
+    <div class="assembly-line"></div>
+    
+    <!-- Crew Members Animation -->
+    <div class="crew-member">1</div>
+    <div class="crew-member">2</div>
+    <div class="crew-member">3</div>
+    <div class="crew-member">4</div>
+    <div class="crew-member">5</div>
+    <div class="crew-member">6</div>
+    <div class="crew-member">7</div>
+    <div class="crew-member">8</div>
+    <div class="crew-member">9</div>
+
+    <!-- Landing Screen -->
+    <div id="landingScreen" class="screen">
+        <div class="container">
+            <h1>Crew Factory</h1>
+            <p class="subtitle">
+                You walk into a factory floor. You press one button. Your crew assembles. You own it.
+            </p>
+            <button id="createCrewBtn" class="btn">Create Your Crew</button>
+            <button id="viewGalleryBtn" class="btn">View Gallery</button>
+        </div>
+    </div>
+
+    <!-- Crew Creation Screen -->
+    <div id="creationScreen" class="screen hidden">
+        <div class="crew-creation-screen">
+            <h2>Assemble Your Crew</h2>
+            <p>Click the button below to create your crew in seconds</p>
+            <button id="oneClickBtn" class="btn">One-Click Crew Creation</button>
+            <div class="crew-members">
+                <div class="member-card">
+                    <div class="member-icon">🚀</div>
+                    <div class="member-name">Navigator</div>
+                </div>
+                <div class="member-card">
+                    <div class="member-icon">🤖</div>
+                    <div class="member-name">Engineer</div>
+                </div>
+                <div class="member-card">
+                    <div class="member-icon">🧠</div>
+                    <div class="member-name">Scientist</div>
+                </div>
+                <div class="member-card">
+                    <div class="member-icon">🛡️</div>
+                    <div class="member-name">Guardian</div>
+                </div>
+            </div>
+            <button id="backToLandingBtn" class="btn">Back to Home</button>
+        </div>
+    </div>
+
+    <!-- Gallery Screen -->
+    <div id="galleryScreen" class="screen hidden">
+        <div class="gallery-screen">
+            <div class="gallery-header">
+                <h2>Public Crew Gallery</h2>
+                <p>Explore crews created by others</p>
+            </div>
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Gallery items will be populated by JavaScript -->
+            </div>
+            <button id="backToLandingFromGalleryBtn" class="btn">Back to Home</button>
+        </div>
+    </div>
+
+    <!-- Audio Controls -->
+    <div class="audio-controls">
+        <div id="audioToggle" class="audio-btn">🔊</div>
+    </div>
+
+    <!-- Transition Overlay -->
+    <div class="transition-overlay" id="transitionOverlay"></div>
+
+    <script>
+        // Audio system
+        let audioContext;
+        let isAudioEnabled = true;
+
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.warn('Web Audio API is not supported in this browser');
+            }
+        }
+
+        function playSound(frequency, duration = 0.1) {
+            if (!audioContext || !isAudioEnabled) return;
+
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (e) {
+                console.warn('Error playing sound:', e);
+            }
+        }
+
+        // Screen transitions
+        function showScreen(screenId) {
+            // Add transition effect
+            const overlay = document.getElementById('transitionOverlay');
+            overlay.classList.add('transition-in');
+
+            setTimeout(() => {
+                // Hide all screens
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.classList.add('hidden');
+                });
+
+                // Show the target screen
+                document.getElementById(screenId).classList.remove('hidden');
+
+                // Remove transition effect
+                overlay.classList.remove('transition-in');
+                overlay.classList.add('transition-out');
+
+                setTimeout(() => {
+                    overlay.classList.remove('transition-out');
+                }, 800);
+            }, 300);
+        }
+
+        // Crew data
+        const crewMembers = [
+            { id: 'navigator', name: 'Navigator', icon: '🚀' },
+            { id: 'engineer', name: 'Engineer', icon: '🤖' },
+            { id: 'scientist', name: 'Scientist', icon: '🧠' },
+            { id: 'guardian', name: 'Guardian', icon: '🛡️' }
+        ];
+
+        const crews = [
+            { id: 'crew-001', name: 'Alpha Squadron', members: ['navigator', 'engineer'], timestamp: '2026-04-01' },
+            { id: 'crew-002', name: 'Beta Team', members: ['scientist', 'guardian'], timestamp: '2026-04-02' },
+            { id: 'crew-003', name: 'Gamma Group', members: ['navigator', 'scientist'], timestamp: '2026-04-03' },
+            { id: 'crew-004', name: 'Delta Force', members: ['engineer', 'guardian'], timestamp: '2026-04-04' },
+            { id: 'crew-005', name: 'Epsilon Unit', members: ['navigator', 'engineer', 'scientist'], timestamp: '2026-04-05' },
+            { id: 'crew-006', name: 'Zeta Crew', members: ['guardian', 'navigator'], timestamp: '2026-04-06' }
+        ];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initAudio();
+
+            // Set up event listeners
+            document.getElementById('createCrewBtn').addEventListener('click', function() {
+                playSound(523.25, 0.2); // C5 note
+                showScreen('creationScreen');
+            });
+
+            document.getElementById('viewGalleryBtn').addEventListener('click', function() {
+                playSound(587.33, 0.2); // D5 note
+                showScreen('galleryScreen');
+                populateGallery();
+            });
+
+            document.getElementById('oneClickBtn').addEventListener('click', function() {
+                playSound(659.25, 0.3); // E5 note
+                createCrew();
+            });
+
+            document.getElementById('backToLandingBtn').addEventListener('click', function() {
+                playSound(440, 0.2); // A4 note
+                showScreen('landingScreen');
+            });
+
+            document.getElementById('backToLandingFromGalleryBtn').addEventListener('click', function() {
+                playSound(440, 0.2); // A4 note
+                showScreen('landingScreen');
+            });
+
+            document.getElementById('audioToggle').addEventListener('click', function() {
+                isAudioEnabled = !isAudioEnabled;
+                this.textContent = isAudioEnabled ? '🔊' : '🔇';
+                this.classList.toggle('muted', !isAudioEnabled);
+                playSound(392, 0.1); // G4 note
+            });
+        });
+
+        // Create a new crew
+        function createCrew() {
+            // In a real app, this would create the actual crew
+            const crewName = 'Crew ' + Math.floor(Math.random() * 1000);
+            const selectedMembers = ['navigator', 'engineer', 'scientist', 'guardian'].sort(() => 0.5 - Math.random()).slice(0, 3);
+            
+            // Show visual feedback
+            const crewCreationScreen = document.getElementById('creationScreen');
+            const oneClickBtn = document.getElementById('oneClickBtn');
+            
+            oneClickBtn.textContent = 'Creating.。。';
+            oneClickBtn.disabled = true;
+            
+            // Simulate processing time
+            setTimeout(() => {
+                // Reset button
+                oneClickBtn.textContent = 'One-Click Crew Creation';
+                oneClickBtn.disabled = false;
+                
+                // Show success
+                playSound(698.46, 0.4); // F5 note
+                
+                // Show gallery with new crew
+                showScreen('galleryScreen');
+                populateGallery();
+            }, 1500);
+        }
+
+        // Populate gallery with crews
+        function populateGallery() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            galleryGrid.innerHTML = '';
+
+            crews.forEach(crew => {
+                const crewCard = document.createElement('div');
+                crewCard.className = 'crew-gallery-item';
+                
+                const memberNames = crew.members.map(memberId => {
+                    const member = crewMembers.find(m => m.id === memberId);
+                    return member ? member.name : 'Unknown';
+                }).join(', ');
+
+                crewCard.innerHTML = `
+                    <div class="crew-icon">👨‍🚀</div>
+                    <div class="crew-name">${crew.name}</div>
+                    <div class="crew-members">${memberNames}</div>
+                    <div class="crew-id">${crew.id}</div>
+                `;
+
+                galleryGrid.appendChild(crewCard);
+            });
+        }
+    </script>
+</body>
+</html>
