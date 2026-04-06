@@ -37,6 +37,9 @@ function handleCreateCrew() {
   createButton.classList.add('highlight');
   crewAssembly.classList.add('highlight');
   
+  // Add visual effects during creation
+  addCreationEffects();
+  
   // Simulate creation process
   setTimeout(() => {
     factoryState.crewCount++;
@@ -45,6 +48,9 @@ function handleCreateCrew() {
     // Visual feedback for successful creation
     createButton.classList.remove('highlight');
     createButton.classList.add('success');
+    
+    // Add visual celebration effects
+    addCelebrationEffects();
     
     // Reset after delay
     setTimeout(() => {
@@ -58,6 +64,62 @@ function handleCreateCrew() {
     // Update status
     updateFactoryStatus();
   }, 1500);
+}
+
+// Add visual effects during crew creation
+function addCreationEffects() {
+  // Add some sparks effect to the crew parts
+  const parts = document.querySelectorAll('.crew-part');
+  parts.forEach(part => {
+    part.style.boxShadow = '0 0 15px var(--factory-accent)';
+    setTimeout(() => {
+      part.style.boxShadow = '0 0 20px var(--factory-secondary)';
+    }, 500);
+  });
+}
+
+// Add celebration effects after crew creation
+function addCelebrationEffects() {
+  // Add a temporary glow to the entire assembly
+  crewAssembly.style.boxShadow = '0 0 30px var(--factory-success)';
+  
+  // Add some particle effects
+  for (let i = 0; i < 15; i++) {
+    createParticle();
+  }
+  
+  // Reset after animation
+  setTimeout(() => {
+    crewAssembly.style.boxShadow = '0 0 20px rgba(52, 152, 219, 0.2)';
+  }, 1000);
+}
+
+// Create a particle effect
+function createParticle() {
+  const particle = document.createElement('div');
+  particle.style.position = 'absolute';
+  particle.style.width = '4px';
+  particle.style.height = '4px';
+  particle.style.backgroundColor = '#f39c12';
+  particle.style.borderRadius = '50%';
+  particle.style.boxShadow = '0 0 8px #f39c12';
+  particle.style.left = `${Math.random() * 100}%`;
+  particle.style.top = `${Math.random() * 100}%`;
+  particle.style.zIndex = '10';
+  
+  document.querySelector('.crew-assembly').appendChild(particle);
+  
+  // Animate particle
+  const animation = particle.animate([
+    { transform: 'translate(0, 0)', opacity: 1 },
+    { transform: `translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px)`, opacity: 0 }
+  ], {
+    duration: 1000,
+    easing: 'ease-out'
+  });
+  
+  // Remove particle after animation
+  animation.onfinish = () => particle.remove();
 }
 
 // Update factory status display

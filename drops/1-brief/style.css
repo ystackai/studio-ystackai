@@ -1,3 +1,10 @@
+/* Sprite Definitions - Factory Crew Parts */
+:root {
+  --crew-part-1: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%233498db"/><circle cx="35" cy="35" r="8" fill="%23ffffff"/><circle cx="65" cy="35" r="8" fill="%23ffffff"/><path d="M35 65 Q50 80 65 65" stroke="%23ffffff" stroke-width="4" fill="none"/></svg>');
+  --crew-part-2: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23e74c3c"/><circle cx="35" cy="35" r="8" fill="%23ffffff"/><circle cx="65" cy="35" r="8" fill="%23ffffff"/><path d="M35 65 Q50 80 65 65" stroke="%23ffffff" stroke-width="4" fill="none"/></svg>');
+  --crew-part-3: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23f39c12"/><circle cx="35" cy="35" r="8" fill="%23ffffff"/><circle cx="65" cy="35" r="8" fill="%23ffffff"/><path d="M35 65 Q50 80 65 65" stroke="%23ffffff" stroke-width="4" fill="none"/></svg>');
+}
+
 /* 
  * Next Drop - Crew Factory Visual System
  * Factory/assembly line metaphor with clean, production-ready UI
@@ -5,6 +12,17 @@
 
 /* Semantic Tokens - Factory Theme */
 :root {
+  /* Factory Backgrounds */
+  --factory-bg-1: linear-gradient(135deg, #1a2530, #1a1a1a);
+  --factory-bg-2: linear-gradient(135deg, #2c3e50, #1a2530);
+  --factory-bg-3: linear-gradient(135deg, #3498db, #2c3e50);
+  
+  /* Factory Materials */
+  --factory-metal: #4a5568;
+  --factory-steel: #718096;
+  --factory-concrete: #2d3748;
+  --factory-steel-dark: #2a3a4c;
+  
   /* Colors - Factory palette */
   --factory-primary: #2c3e50;
   --factory-secondary: #3498db;
@@ -48,6 +66,36 @@
   --transition-slow: 0.5s ease;
 }
 
+/* Factory Background Elements */
+:root {
+  --factory-grid-pattern: 
+    linear-gradient(rgba(52, 152, 219, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(52, 152, 219, 0.05) 1px, transparent 1px);
+  --factory-grid-size: 30px 30px;
+  --factory-metal-pattern: 
+    repeating-linear-gradient(
+      45deg,
+      rgba(74, 85, 104, 0.2),
+      rgba(74, 85, 104, 0.2) 10px,
+      rgba(113, 128, 150, 0.2) 10px,
+      rgba(113, 128, 150, 0.2) 20px
+    );
+  --factory-concrete-pattern: 
+    repeating-linear-gradient(
+      0deg,
+      rgba(45, 55, 72, 0.4),
+      rgba(45, 55, 72, 0.4) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  --factory-metal-gradient: 
+    linear-gradient(
+      to bottom,
+      rgba(74, 85, 104, 0.3),
+      rgba(113, 128, 150, 0.3)
+    );
+}
+
 /* Base Styles */
 * {
   margin: 0;
@@ -57,7 +105,7 @@
 
 body {
   font-family: var(--font-primary);
-  background: linear-gradient(135deg, var(--factory-dark), var(--factory-darker));
+  background: var(--factory-bg-1);
   color: var(--factory-light);
   min-height: 100vh;
   line-height: 1.6;
@@ -77,10 +125,13 @@ body {
   padding: var(--spacing-lg) 0;
   border-bottom: var(--border-width) solid var(--factory-secondary);
   margin-bottom: var(--spacing-xl);
-  background: rgba(44, 62, 80, 0.7);
+  background: var(--factory-bg-1);
   backdrop-filter: blur(10px);
   border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-standard);
+  box-shadow: 
+    0 0 15px rgba(52, 152, 219, 0.2),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--factory-steel);
 }
 
 .factory-title {
@@ -133,9 +184,16 @@ body {
   background: rgba(255, 255, 255, 0.05);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-lg);
-  box-shadow: var(--shadow-standard);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 0 20px rgba(52, 152, 219, 0.2),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--factory-steel);
+  border-radius: 12px;
+  box-shadow: 
+    0 0 20px rgba(52, 152, 219, 0.2),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+  background-image: var(--factory-grid-pattern);
+  background-size: var(--factory-grid-size);
 }
 
 .assembly-line h2 {
@@ -158,12 +216,18 @@ body {
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-lg);
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: var(--border-radius-lg);
+  background: var(--factory-bg-2);
+  border: 1px solid var(--factory-steel);
+  border-radius: 12px;
   width: 100%;
   min-height: 150px;
   position: relative;
   overflow: hidden;
+  box-shadow: 
+    0 0 20px rgba(52, 152, 219, 0.2),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+  background-image: var(--factory-grid-pattern);
+  background-size: var(--factory-grid-size);
 }
 
 .crew-part {
@@ -175,21 +239,25 @@ body {
   justify-content: center;
   font-size: var(--font-size-xl);
   font-weight: bold;
-  box-shadow: var(--shadow-heavy);
-  transition: var(--transition-normal);
   position: relative;
-  overflow: hidden;
+  box-shadow: 
+    0 0 10px rgba(52, 152, 219, 0.3),
+    inset 0 0 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.crew-part::before {
+.crew-part::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
+  box-shadow: 
+    inset 0 0 20px rgba(255, 255, 255, 0.2),
+    inset 0 0 30px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
 }
 
 .part-1 {
@@ -222,12 +290,35 @@ body {
   max-width: 250px;
   text-transform: uppercase;
   letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.create-crew-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.create-crew-btn:hover::before {
+  left: 100%;
 }
 
 .create-crew-btn:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-heavy);
   background: linear-gradient(to right, var(--factory-accent), var(--factory-secondary));
+  animation: factoryGlow 1.5s infinite;
 }
 
 .create-crew-btn:active {
@@ -242,6 +333,13 @@ body {
   box-shadow: var(--shadow-standard);
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--factory-steel);
+  box-shadow: 
+    0 0 15px rgba(52, 152, 219, 0.1),
+    inset 0 0 10px rgba(0, 0, 0, 0.3);
+  background-image: 
+    var(--factory-grid-pattern);
+  background-size: var(--factory-grid-size);
 }
 
 .crew-gallery h2 {
@@ -255,6 +353,13 @@ body {
   background: rgba(0, 0, 0, 0.2);
   border-radius: var(--border-radius-md);
   padding: var(--spacing-lg);
+  border: 1px solid var(--factory-steel);
+  box-shadow: 
+    0 0 15px rgba(52, 152, 219, 0.1),
+    inset 0 0 10px rgba(0, 0, 0, 0.3);
+  background-image: 
+    var(--factory-grid-pattern);
+  background-size: var(--factory-grid-size);
   min-height: 300px;
   display: flex;
   align-items: center;
@@ -306,15 +411,35 @@ body {
   }
 }
 
-/* Animation for crew parts */
-@keyframes pulsePart {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+/* Factory Animations */
+@keyframes factoryPulse {
+  0% { box-shadow: 0 0 5px var(--factory-secondary); }
+  50% { box-shadow: 0 0 20px var(--factory-secondary); }
+  100% { box-shadow: 0 0 5px var(--factory-secondary); }
+}
+
+@keyframes factoryGlow {
+  0% { 
+    box-shadow: 0 0 5px var(--factory-secondary);
+    filter: brightness(1);
+  }
+  50% { 
+    box-shadow: 0 0 25px var(--factory-secondary);
+    filter: brightness(1.2);
+  }
+  100% { 
+    box-shadow: 0 0 5px var(--factory-secondary);
+    filter: brightness(1);
+  }
+}
+
+/* Apply animations to key elements */
+.create-crew-btn:hover {
+  animation: factoryGlow 1.5s infinite;
 }
 
 .crew-part {
-  animation: pulsePart 3s infinite;
+  animation: factoryPulse 2s infinite;
 }
 
 .crew-part:nth-child(2) {
@@ -325,29 +450,165 @@ body {
   animation-delay: 1s;
 }
 
+/* Factory Background Pattern */
+.factory-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: var(--factory-metal-pattern);
+  background-size: 40px 40px;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: -1;
+}
 
-/* Production line dots effect */
-.crew-assembly::after {
+/* Factory Line Elements */
+.assembly-line::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 1px, transparent 2px),
-    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 1px, transparent 2px);
+  background: var(--factory-grid-pattern);
+  background-size: var(--factory-grid-size);
   pointer-events: none;
-  z-index: 0;
+  border-radius: var(--border-radius-lg);
 }
 
-/* Highlighted elements */
-.highlight {
-  box-shadow: 0 0 15px var(--factory-secondary);
-  animation: glow 2s infinite alternate;
+/* Factory Decorative Elements */
+.crew-part::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--factory-metal-gradient);
+  border-radius: 50%;
+  opacity: 0.2;
+  pointer-events: none;
 }
 
-@keyframes glow {
-  from { box-shadow: 0 0 5px var(--factory-secondary); }
-  to { box-shadow: 0 0 20px var(--factory-secondary); }
+/* Factory Highlight Effects */
+.assembly-line,
+.crew-gallery {
+  position: relative;
+  overflow: hidden;
+}
+
+.assembly-line::after,
+.crew-gallery::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(
+      to bottom,
+      rgba(52, 152, 219, 0.05),
+      transparent,
+      rgba(52, 152, 219, 0.05)
+    );
+  pointer-events: none;
+}
+
+/* Enhanced Factory Elements */
+.crew-part {
+  position: relative;
+  box-shadow: 
+    0 0 10px rgba(52, 152, 219, 0.3),
+    inset 0 0 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.crew-part::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 
+    inset 0 0 20px rgba(255, 255, 255, 0.2),
+    inset 0 0 30px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.create-crew-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.create-crew-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.create-crew-btn:hover::before {
+  left: 100%;
+}
+
+.assembly-line,
+.crew-gallery {
+  border: 1px solid var(--factory-steel);
+  border-radius: var(--border-radius-lg);
+  background: var(--factory-bg-2);
+  box-shadow: 
+    0 0 20px rgba(52, 152, 219, 0.2),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+  background-image: var(--factory-grid-pattern);
+  background-size: var(--factory-grid-size);
+}
+
+/* Factory Header Enhancements */
+.factory-header {
+  position: relative;
+  overflow: hidden;
+}
+
+.factory-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--factory-metal-gradient);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.factory-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.05),
+      transparent,
+      rgba(255, 255, 255, 0.05)
+    );
+  pointer-events: none;
 }
