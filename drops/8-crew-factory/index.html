@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crew Factory</title>
+    <style>
+        /* Factory floor styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(to bottom, #2c3e50, #1a1a2e);
+            color: #ecf0f1;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #factory-floor {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: 
+                linear-gradient(90deg, #34495e 1px, transparent 1px),
+                linear-gradient(#34495e 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #3498db, 0 0 20px #3498db;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #f1c40f;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .crew-card {
+            background: rgba(44, 62, 80, 0.8);
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px;
+            width: 250px;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+        }
+
+        .crew-name {
+            font-size: 1.4rem;
+            color: #f1c40f;
+            margin-bottom: 10px;
+        }
+
+        .crew-description {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .crew-image {
+            width: 100%;
+            height: 150px;
+            background: #34495e;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        #crew-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            max-width: 1200px;
+        }
+
+        #crew-creation {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #3498db;
+        }
+
+        #crew-creation input {
+            width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            background: rgba(44, 62, 80, 0.8);
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        .assembly-line {
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background: #e74c3c;
+            top: 50%;
+            left: 0;
+            box-shadow: 0 0 10px #e74c3c;
+        }
+
+        .assembly-line::before {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #f1c40f;
+            border-radius: 50%;
+            top: -7.5px;
+            left: 0;
+            box-shadow: 0 0 10px #f1c40f;
+        }
+
+        .assembly-line::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 50%;
+            top: -7.5px;
+            right: 0;
+            box-shadow: 0 0 10px #3498db;
+        }
+
+        .assembly-line-item {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 10px #3498db;
+        }
+
+        .assembly-line-item:nth-child(1) {
+            left: 20%;
+        }
+
+        .assembly-line-item:nth-child(2) {
+            left: 40%;
+        }
+
+        .assembly-line-item:nth-child(3) {
+            left: 60%;
+        }
+
+        .assembly-line-item:nth-child(4) {
+            left: 80%;
+        }
+
+        .assembly-line-item:nth-child(5) {
+            left: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="factory-floor">
+        <!-- Landing Screen -->
+        <div id="landing-screen" class="screen">
+            <h1>CREW FACTORY</h1>
+            <h2>YOUR CREW ASSEMBLES IN SECONDS</h2>
+            <p>Press the button below to create your own crew</p>
+            <button id="create-crew-btn" class="btn">CREATE YOUR CREW</button>
+            <button id="gallery-btn" class="btn">VIEW GALLERY</button>
+        </div>
+
+        <!-- Crew Creation Screen -->
+        <div id="creation-screen" class="screen hidden">
+            <h2>CREATE YOUR CREW</h2>
+            <div id="crew-creation">
+                <input type="text" id="crew-name" placeholder="Enter crew name">
+                <input type="text" id="crew-description" placeholder="Enter crew description">
+                <button id="assemble-btn" class="btn">ASSEMBLE CREW</button>
+                <button id="back-btn" class="btn">BACK</button>
+            </div>
+        </div>
+
+        <!-- Gallery Screen -->
+        <div id="gallery-screen" class="screen hidden">
+            <h2>CREW GALLERY</h2>
+            <div id="crew-gallery">
+                <!-- Crew cards will be dynamically added here -->
+            </div>
+            <button id="back-to-landing-btn" class="btn">BACK TO FACTORY</button>
+        </div>
+
+        <!-- Assembly line effect -->
+        <div class="assembly-line">
+            <div class="assembly-line-item"></div>
+            <div class="assembly-line-item"></div>
+            <div class="assembly-line-item"></div>
+            <div class="assembly-line-item"></div>
+            <div class="assembly-line-item"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game state management
+        window.gameState = {
+            crews: [],
+            currentScreen: 'landing'
+        };
+
+        // DOM elements
+        const landingScreen = document.getElementById('landing-screen');
+        const creationScreen = document.getElementById('creation-screen');
+        const galleryScreen = document.getElementById('gallery-screen');
+        const createCrewBtn = document.getElementById('create-crew-btn');
+        const galleryBtn = document.getElementById('gallery-btn');
+        const backBtn = document.getElementById('back-btn');
+        const backToLandingBtn = document.getElementById('back-to-landing-btn');
+        const assembleBtn = document.getElementById('assemble-btn');
+        const crewNameInput = document.getElementById('crew-name');
+        const crewDescriptionInput = document.getElementById('crew-description');
+        const crewGallery = document.getElementById('crew-gallery');
+
+        // Show screen function
+        function showScreen(screenName) {
+            landingScreen.classList.add('hidden');
+            creationScreen.classList.add('hidden');
+            galleryScreen.classList.add('hidden');
+
+            switch(screenName) {
+                case 'landing':
+                    landingScreen.classList.remove('hidden');
+                    break;
+                case 'creation':
+                    creationScreen.classList.remove('hidden');
+                    break;
+                case 'gallery':
+                    galleryScreen.classList.remove('hidden');
+                    displayGallery();
+                    break;
+            }
+
+            window.gameState.currentScreen = screenName;
+        }
+
+        // Display gallery function
+        function displayGallery() {
+            crewGallery.innerHTML = '';
+
+            if (window.gameState.crews.length === 0) {
+                crewGallery.innerHTML = '<p>No crews created yet. Be the first!</p>';
+                return;
+            }
+
+            window.gameState.crews.forEach((crew, index) => {
+                const crewCard = document.createElement('div');
+                crewCard.className = 'crew-card';
+                crewCard.innerHTML = `
+                    <div class="crew-image">🏭</div>
+                    <div class="crew-name">${crew.name}</div>
+                    <div class="crew-description">${crew.description}</div>
+                    <div>Crew ID: ${index + 1}</div>
+                `;
+                crewGallery.appendChild(crewCard);
+            });
+        }
+
+        // Create crew function
+        function createCrew() {
+            const name = crewNameInput.value.trim();
+            const description = crewDescriptionInput.value.trim();
+
+            if (!name) {
+                alert('Please enter a crew name');
+                return;
+            }
+
+            const newCrew = {
+                name: name,
+                description: description || 'A crew created in the factory',
+                id: window.gameState.crews.length + 1
+            };
+
+            window.gameState.crews.push(newCrew);
+            crewNameInput.value = '';
+            crewDescriptionInput.value = '';
+
+            // Show confirmation and return to landing
+            alert(`Crew "${name}" created successfully!`);
+            showScreen('landing');
+        }
+
+        // Event listeners
+        createCrewBtn.addEventListener('click', () => showScreen('creation'));
+        galleryBtn.addEventListener('click', () => showScreen('gallery'));
+        backBtn.addEventListener('click', () => showScreen('landing'));
+        backToLandingBtn.addEventListener('click', () => showScreen('landing'));
+        assembleBtn.addEventListener('click', createCrew);
+
+        // Initialize the app
+        showScreen('landing');
+
+        // Add some sample crews for demo
+        window.gameState.crews = [
+            { name: "Alpha Crew", description: "The first crew in the factory", id: 1 },
+            { name: "Beta Crew", description: "The second crew created", id: 2 },
+            { name: "Gamma Crew", description: "A crew with unique abilities", id: 3 }
+        ];
+    </script>
+</body>
+</html>
