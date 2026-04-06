@@ -197,30 +197,34 @@
         }
 
         /* Factory lighting */
-        .factory-light {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: var(--factory-highlight);
-            border-radius: 50%;
-            box-shadow: 0 0 20px var(--factory-highlight);
-            z-index: 1;
-        }
-
-        /* Landing screen */
-        .landing-screen {
+        .factory-lighting {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.7) 100%);
+            z-index: 2;
+        }
+
+        /* Landing screen */
+        .landing-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: var(--factory-padding);
+            background: rgba(26, 37, 48, 0.9);
+            border: 2px solid var(--factory-highlight);
+            border-radius: var(--factory-border-radius);
+            box-shadow: var(--factory-shadow);
+            z-index: 5;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            z-index: 5;
-            padding: var(--factory-padding);
+            max-width: 80%;
         }
 
         .landing-screen h1 {
@@ -254,6 +258,47 @@
         .btn:hover {
             background: #c0392b;
             transform: scale(1.05);
+        }
+
+        /* Gallery */
+        .gallery {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1000px;
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            z-index: 5;
+        }
+
+        .gallery-item {
+            background: var(--factory-secondary);
+            border: 2px solid var(--factory-highlight);
+            border-radius: var(--factory-border-radius);
+            padding: 10px;
+            text-align: center;
+            box-shadow: var(--factory-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .gallery-item h3 {
+            font-family: var(--font-primary);
+            font-size: 1rem;
+            color: var(--factory-highlight);
+            margin-bottom: 5px;
+        }
+
+        .gallery-item p {
+            font-size: 0.8rem;
+            color: var(--factory-text);
         }
 
         /* Animation classes */
@@ -292,6 +337,11 @@
             .landing-screen h1 {
                 font-size: 2rem;
             }
+
+            .gallery {
+                bottom: 10px;
+                width: 95%;
+            }
         }
     </style>
 </head>
@@ -313,6 +363,7 @@
         <div class="control-buttons">
             <button class="control-btn" id="assembleBtn">ASSEMBLE CREW</button>
             <button class="control-btn" id="resetBtn">RESET</button>
+            <button class="control-btn" id="galleryBtn">GALLERY</button>
         </div>
     </div>
 
@@ -326,6 +377,10 @@
         <button class="btn pulse" id="startBtn">BEGIN ASSEMBLY</button>
     </div>
 
+    <div class="gallery" id="gallery">
+        <!-- Gallery items will be added here dynamically -->
+    </div>
+
     <script>
         // Factory Assembly Implementation
         document.addEventListener('DOMContentLoaded', function() {
@@ -333,7 +388,9 @@
             const startBtn = document.getElementById('startBtn');
             const assembleBtn = document.getElementById('assembleBtn');
             const resetBtn = document.getElementById('resetBtn');
+            const galleryBtn = document.getElementById('galleryBtn');
             const crewAssembly = document.getElementById('crewAssembly');
+            const gallery = document.getElementById('gallery');
             
             // Crew members data
             const crewMembers = [
@@ -343,6 +400,78 @@
                 { name: 'D', color: '#9b59b6' },
                 { name: 'E', color: '#f1c40f' }
             ];
+            
+            // Gallery data (mock data)
+            const galleryData = [
+                { id: 1, name: 'Alpha Crew', description: 'The first crew assembled' },
+                { id: 2, name: 'Beta Crew', description: 'A stronger team' },
+                { id: 3, name: 'Gamma Crew', description: 'Advanced assembly' },
+                { id: 4, name: 'Delta Crew', description: 'Next generation' },
+                { id: 5, name: 'Epsilon Crew', description: 'Elite team' },
+                { id: 6, name: 'Zeta Crew', description: 'Zero to hero' }
+            ];
+            
+            // Audio environment
+            let audioContext;
+            let oscillators = [];
+            let isPlaying = false;
+            
+            // Initialize audio
+            function initAudio() {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.error('Web Audio API is not supported in this browser');
+                    return;
+                }
+                
+                // Create some factory sounds
+                createFactorySound();
+            }
+            
+            // Create factory ambient sounds
+            function createFactorySound() {
+                if (!audioContext) return;
+                
+                // Create a low-frequency oscillator for the base sound
+                const oscillator = audioContext.createOscillator();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
+                oscillator.connect(audioContext.destination);
+                oscillator.start();
+                oscillators.push(oscillator);
+                
+                // Create a higher frequency for mechanical sounds
+                const oscillator2 = audioContext.createOscillator();
+                oscillator2.type = 'square';
+                oscillator2.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator2.connect(audioContext.destination);
+                oscillator2.start();
+                oscillators.push(oscillator2);
+                
+                // Create a click sound for button presses
+                const clickOscillator = audioContext.createOscillator();
+                clickOscillator.type = 'sine';
+                clickOscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                clickOscillator.connect(audioContext.destination);
+                clickOscillator.start();
+                clickOscillator.stop(audioContext.currentTime + 0.1);
+                
+                isPlaying = true;
+            }
+            
+            // Stop all sounds
+            function stopAllSounds() {
+                oscillators.forEach(osc => {
+                    try {
+                        osc.stop();
+                    } catch (e) {
+                        // Ignore errors
+                    }
+                });
+                oscillators = [];
+                isPlaying = false;
+            }
             
             // Initialize crew members
             function initializeCrew() {
@@ -360,6 +489,7 @@
             
             // Animate crew assembly
             function assembleCrew() {
+                createFactorySound();
                 const crewMembers = document.querySelectorAll('.crew-member');
                 crewMembers.forEach((member, index) => {
                     setTimeout(() => {
@@ -372,6 +502,7 @@
             
             // Reset crew assembly
             function resetCrew() {
+                createFactorySound();
                 const crewMembers = document.querySelectorAll('.crew-member');
                 crewMembers.forEach(member => {
                     member.classList.remove('visible');
@@ -379,8 +510,38 @@
                 });
             }
             
+            // Show gallery
+            function showGallery() {
+                createFactorySound();
+                // Hide landing screen and crew assembly
+                landingScreen.style.display = 'none';
+                crewAssembly.style.display = 'none';
+                gallery.style.display = 'grid';
+                
+                // Populate gallery with mock data
+                gallery.innerHTML = '';
+                galleryData.forEach(item => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.innerHTML = `
+                        <h3>${item.name}</h3>
+                        <p>${item.description}</p>
+                    `;
+                    gallery.appendChild(galleryItem);
+                });
+            }
+            
+            // Hide gallery and show landing screen
+            function hideGallery() {
+                createFactorySound();
+                gallery.style.display = 'none';
+                crewAssembly.style.display = 'block';
+                landingScreen.style.display = 'flex';
+            }
+            
             // Start button click handler
             startBtn.addEventListener('click', function() {
+                createFactorySound();
                 landingScreen.style.display = 'none';
                 initializeCrew();
             });
@@ -395,9 +556,24 @@
                 resetCrew();
             });
             
+            // Gallery button click handler
+            galleryBtn.addEventListener('click', function() {
+                showGallery();
+            });
+            
             // Initialize the page
             initializeCrew();
+            
+            // Initialize audio when the page loads
+            initAudio();
         });
     </script>
 </body>
 </html>
+<script>
+// Expose gameState for automated testing
+window.gameState = {
+    isAssembled: false,
+    currentView: 'landing'
+};
+</script>
