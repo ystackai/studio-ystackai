@@ -34,21 +34,14 @@
   "discord": {
     "guild_id": "1483989123516596225",
     "custom_channels": [
-      "engineering",
-      "feedback",
-      "general"
+      "general",
+      "feedback"
     ],
     "channel_map": {
-      "#announcements": "#feedback",
-      "#engineering": "#engineering",
-      "#feedback": "#feedback",
       "#general": "#general",
-      "#happy-hour": "#general",
-      "#investors": "#feedback",
-      "#random": "#general",
-      "#sales": "#feedback",
-      "#standup": "#engineering",
-      "#talk-to-the-team": "#feedback"
+      "#engineering": "#general",
+      "#feedback": "#feedback",
+      "#announcements": "#feedback"
     }
   },
   "compute": {
