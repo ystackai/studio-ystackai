@@ -210,6 +210,77 @@
     </style>
 </head>
 <body>
+    <script>
+        // Factory audio implementation using Web Audio API
+        class FactoryAudio {
+            constructor() {
+                this.audioContext = null;
+                this.isInitialized = false;
+                this.masterGain = null;
+            }
+
+            init() {
+                if (this.isInitialized) return;
+
+                try {
+                    // Create audio context
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.masterGain = this.audioContext.createGain();
+                    this.masterGain.connect(this.audioContext.destination);
+                    this.isInitialized = true;
+                } catch (error) {
+                    console.error('Audio initialization failed:', error);
+                }
+            }
+
+            // Play a factory sound effect
+            playSound(frequency, duration, type = 'sine', volume = 0.3) {
+                if (!this.isInitialized || !this.audioContext) return;
+
+                try {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.masterGain);
+
+                    oscillator.type = type;
+                    oscillator.frequency.value = frequency;
+                    gainNode.gain.value = volume;
+
+                    oscillator.start();
+                    oscillator.stop(this.audioContext.currentTime + duration);
+                } catch (error) {
+                    console.error('Sound playback failed:', error);
+                }
+            }
+
+            // Play factory assembly sound
+            playAssemblySound() {
+                this.playSound(150, 0.1, 'square', 0.5);
+                setTimeout(() => this.playSound(200, 0.1, 'square', 0.5), 50);
+                setTimeout(() => this.playSound(250, 0.1, 'square', 0.5), 100);
+            }
+
+            // Play crew creation sound
+            playCrewCreationSound() {
+                this.playSound(400, 0.2, 'sine', 0.4);
+                setTimeout(() => this.playSound(500, 0.2, 'sine', 0.4), 100);
+                setTimeout(() => this.playSound(600, 0.2, 'sine', 0.4), 200);
+            }
+
+            // Play gallery sound
+            playGallerySound() {
+                this.playSound(300, 0.15, 'triangle', 0.3);
+                setTimeout(() => this.playSound(350, 0.15, 'triangle', 0.3), 75);
+                setTimeout(() => this.playSound(400, 0.15, 'triangle', 0.3), 150);
+            }
+        }
+
+        // Initialize factory audio
+        const factoryAudio = new FactoryAudio();
+        factoryAudio.init();
+    </script>
     <div id="factory-floor">
         <!-- Landing Screen -->
         <div id="landing-screen" class="screen">
@@ -317,6 +388,10 @@
         // Create crew function
         function createCrew() {
             const name = crewNameInput.value.trim();
+            
+            // Play creation sound
+            factoryAudio.playCrewCreationSound();
+
             const description = crewDescriptionInput.value.trim();
 
             if (!name) {
@@ -340,14 +415,29 @@
         }
 
         // Event listeners
-        createCrewBtn.addEventListener('click', () => showScreen('creation'));
-        galleryBtn.addEventListener('click', () => showScreen('gallery'));
-        backBtn.addEventListener('click', () => showScreen('landing'));
-        backToLandingBtn.addEventListener('click', () => showScreen('landing'));
+        createCrewBtn.addEventListener('click', () => {
+            showScreen('creation');
+            factoryAudio.playGallerySound();
+        });
+        galleryBtn.addEventListener('click', () => {
+            showScreen('gallery');
+            factoryAudio.playGallerySound();
+        });
+        backBtn.addEventListener('click', () => {
+            showScreen('landing');
+            factoryAudio.playGallerySound();
+        });
+        backToLandingBtn.addEventListener('click', () => {
+            showScreen('landing');
+            factoryAudio.playGallerySound();
+        });
         assembleBtn.addEventListener('click', createCrew);
 
         // Initialize the app
         showScreen('landing');
+
+        // Play assembly sound when landing screen appears
+        factoryAudio.playAssemblySound();
 
         // Add some sample crews for demo
         window.gameState.crews = [
