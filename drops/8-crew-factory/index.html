@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crew Factory</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #factory-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%);
+        }
+
+        #factory-floor {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 400px;
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #button-container {
+            margin-top: 20px;
+        }
+
+        .factory-button {
+            background: linear-gradient(to bottom, #ff6b35, #c0392b);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+
+        .factory-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .factory-button:active {
+            transform: scale(0.95);
+        }
+
+        #sound-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            color: white;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        #status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 14px;
+        }
+
+        #assembly-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: repeating-linear-gradient(
+                90deg,
+                #555,
+                #555 10px,
+                #333 10px,
+                #333 20px
+            );
+            animation: moveLine 10s linear infinite;
+        }
+
+        @keyframes moveLine {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 0; }
+        }
+
+        #crew-assembling {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            display: none;
+        }
+
+        .assembly-part {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #ff6b35;
+            border-radius: 50%;
+            animation: assemble 1s infinite;
+        }
+
+        @keyframes assemble {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="factory-container">
+        <div id="status">Factory Status: <span id="status-text">Ready</span></div>
+        
+        <div id="assembly-line"></div>
+        
+        <div id="factory-floor">
+            <h1>Crew Factory</h1>
+            <p>Press the button to assemble your crew</p>
+            <div id="button-container">
+                <button id="assemble-button" class="factory-button">ASSEMBLE CREW</button>
+            </div>
+        </div>
+        
+        <div id="sound-controls">
+            <button id="sound-toggle" class="control-button">Sound: ON</button>
+            <button id="ambient-toggle" class="control-button">Ambient: ON</button>
+        </div>
+        
+        <div id="crew-assembling"></div>
+    </div>
+
+    <script>
+        // Audio context and master variables
+        let audioContext;
+        let isSoundEnabled = true;
+        let isAmbientEnabled = true;
+        let ambientSource;
+        let factorySoundGain;
+        
+        // Factory sound parameters
+        const factoryParams = {
+            baseFrequency: 80,
+            modulationFrequency: 0.5,
+            volume: 0.3,
+            attack: 0.1,
+            decay: 0.5,
+            sustain: 0.7,
+            release: 0.3
+        };
+        
+        // Initialize audio when user interacts
+        function initAudio() {
+            if (audioContext) return;
+            
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            factorySoundGain = audioContext.createGain();
+            factorySoundGain.connect(audioContext.destination);
+            factorySoundGain.gain.value = 0;
+            
+            document.getElementById('status-text').textContent = 'Audio initialized';
+        }
+        
+        // Create oscillator with envelope
+        function createOscillatorWithEnvelope(type = 'sawtooth') {
+            const oscillator = audioContext.createOscillator();
+            const envelope = audioContext.createGain();
+            
+            oscillator.type = type;
+            oscillator.frequency.value = factoryParams.baseFrequency;
+            
+            // Connect oscillator to envelope
+            oscillator.connect(envelope);
+            envelope.connect(factorySoundGain);
+            
+            // Apply envelope
+            envelope.gain.setValueAtTime(0, audioContext.currentTime);
+            envelope.gain.linearRampToValueAtTime(factoryParams.volume, audioContext.currentTime + factoryParams.attack);
+            envelope.gain.linearRampToValueAtTime(factoryParams.volume * factoryParams.sustain, audioContext.currentTime + factoryParams.attack + factoryParams.decay);
+            
+            return { oscillator, envelope };
+        }
+        
+        // Play button press sound
+        function playButtonPress() {
+            if (!isSoundEnabled || !audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const envelope = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 300;
+            
+            envelope.gain.setValueAtTime(0, audioContext.currentTime);
+            envelope.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+            envelope.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
+            
+            oscillator.connect(envelope);
+            envelope.connect(audioContext.destination);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Play factory ambient sound
+        function playFactoryAmbient() {
+            if (!isAmbientEnabled || !audioContext) return;
+            
+            // Stop any existing ambient sound
+            if (ambientSource) {
+                ambientSource.stop();
+            }
+            
+            // Create new ambient sound with modulation
+            ambientSource = audioContext.createOscillator();
+            const filter = audioContext.createBiquadFilter();
+            const envelope = audioContext.createGain();
+            
+            ambientSource.type = 'sawtooth';
+            ambientSource.frequency.value = factoryParams.baseFrequency;
+            
+            // Apply modulation
+            const modulation = audioContext.createOscillator();
+            modulation.type = 'sine';
+            modulation.frequency.value = factoryParams.modulationFrequency;
+            
+            const modulationGain = audioContext.createGain();
+            modulationGain.gain.value = 20;
+            
+            modulation.connect(modulationGain);
+            modulationGain.connect(ambientSource.frequency);
+            
+            // Set up filter
+            filter.type = 'lowpass';
+            filter.frequency.value = 1000;
+            
+            // Apply envelope
+            envelope.gain.setValueAtTime(0, audioContext.currentTime);
+            envelope.gain.linearRampToValueAtTime(factoryParams.volume * 0.5, audioContext.currentTime + 1);
+            envelope.gain.linearRampToValueAtTime(factoryParams.volume * 0.5 * factoryParams.sustain, audioContext.currentTime + 1 + factoryParams.decay);
+            
+            ambientSource.connect(filter);
+            filter.connect(envelope);
+            envelope.connect(factorySoundGain);
+            
+            ambientSource.start(audioContext.currentTime);
+            modulation.start(audioContext.currentTime);
+            
+            // Set gain to start playing
+            factorySoundGain.gain.value = factoryParams.volume;
+        }
+        
+        // Play crew assembly sound
+        function playCrewAssembly() {
+            if (!isSoundEnabled || !audioContext) return;
+            
+            // Create multiple oscillators for assembly sound
+            const oscillators = [];
+            const envelope = audioContext.createGain();
+            
+            // Create 3 oscillators with slightly different frequencies
+            for (let i = 0; i < 3; i++) {
+                const osc = audioContext.createOscillator();
+                osc.type = 'square';
+                osc.frequency.value = factoryParams.baseFrequency + i * 10;
+                
+                const oscEnvelope = audioContext.createGain();
+                oscEnvelope.gain.setValueAtTime(0, audioContext.currentTime);
+                oscEnvelope.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.05);
+                oscEnvelope.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.15);
+                
+                osc.connect(oscEnvelope);
+                oscEnvelope.connect(factorySoundGain);
+                
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 0.15);
+                
+                oscillators.push(osc);
+            }
+            
+            // Play a more complex sound
+            const complexOsc = audioContext.createOscillator();
+            complexOsc.type = 'sawtooth';
+            complexOsc.frequency.value = factoryParams.baseFrequency * 2;
+            
+            const complexEnvelope = audioContext.createGain();
+            complexEnvelope.gain.setValueAtTime(0, audioContext.currentTime);
+            complexEnvelope.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.05);
+            complexEnvelope.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+            
+            complexOsc.connect(complexEnvelope);
+            complexEnvelope.connect(factorySoundGain);
+            
+            complexOsc.start(audioContext.currentTime);
+            complexOsc.stop(audioContext.currentTime + 0.3);
+        }
+        
+        // Create visual assembly effect
+        function createAssemblyEffect() {
+            const container = document.getElementById('crew-assembling');
+            container.style.display = 'block';
+            container.innerHTML = '';
+            
+            // Create 8 assembly parts
+            for (let i = 0; i < 8; i++) {
+                const part = document.createElement('div');
+                part.className = 'assembly-part';
+                part.style.left = `${Math.random() * 100}%`;
+                part.style.top = `${Math.random() * 100}%`;
+                part.style.animationDelay = `${Math.random() * 0.5}s`;
+                container.appendChild(part);
+            }
+            
+            // Hide after animation
+            setTimeout(() => {
+                container.style.display = 'none';
+            }, 2000);
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners
+            const assembleButton = document.getElementById('assemble-button');
+            const soundToggle = document.getElementById('sound-toggle');
+            const ambientToggle = document.getElementById('ambient-toggle');
+            
+            // Button press handler
+            assembleButton.addEventListener('click', function() {
+                // Initialize audio if needed
+                initAudio();
+                
+                // Play sounds
+                playButtonPress();
+                playCrewAssembly();
+                
+                // Create visual effect
+                createAssemblyEffect();
+                
+                // Update status
+                document.getElementById('status-text').textContent = 'Crew assembling.。。';
+                
+                // Reset status after delay
+                setTimeout(() => {
+                    document.getElementById('status-text').textContent = 'Ready';
+                }, 2000);
+            });
+            
+            // Sound toggle
+            soundToggle.addEventListener('click', function() {
+                isSoundEnabled = !isSoundEnabled;
+                this.textContent = `Sound: ${isSoundEnabled ? 'ON' : 'OFF'}`;
+                
+                if (isSoundEnabled) {
+                    playFactoryAmbient();
+                } else {
+                    factorySoundGain.gain.value = 0;
+                }
+            });
+            
+            // Ambient toggle
+            ambientToggle.addEventListener('click', function() {
+                isAmbientEnabled = !isAmbientEnabled;
+                this.textContent = `Ambient: ${isAmbientEnabled ? 'ON' : 'OFF'}`;
+                
+                if (isAmbientEnabled) {
+                    playFactoryAmbient();
+                } else {
+                    if (ambientSource) {
+                        ambientSource.stop();
+                    }
+                    factorySoundGain.gain.value = 0;
+                }
+            });
+            
+            // Initialize ambient sound
+            initAudio();
+            playFactoryAmbient();
+        });
+    </script>
+</body>
+</html>
