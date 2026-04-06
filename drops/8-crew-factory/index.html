@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crew Factory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Factory Floor Visual Assets */
+        :root {
+            /* Factory color palette */
+            --factory-primary: #2c3e50;
+            --factory-secondary: #34495e;
+            --factory-accent: #e74c3c;
+            --factory-highlight: #f39c12;
+            --factory-text: #ecf0f1;
+            --factory-dark: #1a2530;
+            --factory-light: #34495e;
+            
+            /* Factory typography */
+            --font-primary: 'Orbitron', sans-serif;
+            --font-secondary: 'Roboto', sans-serif;
+            
+            /* Factory metrics */
+            --factory-padding: 20px;
+            --factory-border-radius: 8px;
+            --factory-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background: linear-gradient(135deg, var(--factory-dark) 0%, var(--factory-primary) 100%);
+            color: var(--factory-text);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Factory floor background */
+        .factory-floor {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(44, 62, 80, 0.8), rgba(44, 62, 80, 0.8)),
+                repeating-linear-gradient(
+                    0deg,
+                    var(--factory-dark),
+                    var(--factory-dark) 10px,
+                    var(--factory-primary) 10px,
+                    var(--factory-primary) 20px
+                );
+            background-size: 100% 100%, 200px 200px;
+            z-index: 0;
+        }
+
+        /* Factory assembly line */
+        .assembly-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: var(--factory-secondary);
+            border-top: 3px solid var(--factory-accent);
+            border-bottom: 3px solid var(--factory-accent);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        /* Factory machinery */
+        .machinery {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+
+        .machine {
+            position: absolute;
+            bottom: 0;
+            width: 80px;
+            height: 120px;
+            background: var(--factory-dark);
+            border: 2px solid var(--factory-highlight);
+            border-radius: 50% 50% 0 0;
+            box-shadow: var(--factory-shadow);
+        }
+
+        .machine::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            background: var(--factory-secondary);
+            border-radius: 50%;
+        }
+
+        .machine::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            background: var(--factory-dark);
+            border-radius: 50%;
+        }
+
+        /* Factory control panel */
+        .control-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 250px;
+            height: 150px;
+            background: var(--factory-dark);
+            border: 2px solid var(--factory-accent);
+            border-radius: var(--factory-border-radius);
+            box-shadow: var(--factory-shadow);
+            z-index: 3;
+        }
+
+        .control-panel h2 {
+            font-family: var(--font-primary);
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 10px;
+            color: var(--factory-highlight);
+        }
+
+        .control-buttons {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+        }
+
+        .control-btn {
+            background: var(--factory-secondary);
+            border: 1px solid var(--factory-accent);
+            color: var(--factory-text);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: var(--factory-accent);
+            transform: scale(1.05);
+        }
+
+        /* Crew assembly area */
+        .crew-assembly {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 200px;
+            z-index: 4;
+        }
+
+        .crew-member {
+            position: absolute;
+            width: 60px;
+            height: 80px;
+            background: var(--factory-accent);
+            border-radius: 50% 50% 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-family: var(--font-primary);
+            box-shadow: var(--factory-shadow);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .crew-member.visible {
+            opacity: 1;
+        }
+
+        /* Factory lighting */
+        .factory-light {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--factory-highlight);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--factory-highlight);
+            z-index: 1;
+        }
+
+        /* Landing screen */
+        .landing-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 5;
+            padding: var(--factory-padding);
+        }
+
+        .landing-screen h1 {
+            font-family: var(--font-primary);
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--factory-highlight);
+            text-shadow: 0 0 10px rgba(243, 156, 18, 0.7);
+        }
+
+        .landing-screen p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: var(--factory-accent);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: var(--font-primary);
+            border-radius: var(--factory-border-radius);
+            cursor: pointer;
+            box-shadow: var(--factory-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        /* Animation classes */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spin {
+            animation: spin 4s linear infinite;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .crew-assembly {
+                width: 300px;
+                height: 150px;
+            }
+
+            .crew-member {
+                width: 45px;
+                height: 60px;
+                font-size: 0.8rem;
+            }
+
+            .landing-screen h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="factory-floor"></div>
+    
+    <div class="assembly-line"></div>
+    
+    <div class="machinery">
+        <div class="machine" style="left: 10%;"></div>
+        <div class="machine" style="left: 30%;"></div>
+        <div class="machine" style="left: 50%;"></div>
+        <div class="machine" style="left: 70%;"></div>
+        <div class="machine" style="left: 90%;"></div>
+    </div>
+
+    <div class="control-panel">
+        <h2>FACTORY CONTROL PANEL</h2>
+        <div class="control-buttons">
+            <button class="control-btn" id="assembleBtn">ASSEMBLE CREW</button>
+            <button class="control-btn" id="resetBtn">RESET</button>
+        </div>
+    </div>
+
+    <div class="crew-assembly" id="crewAssembly">
+        <!-- Crew members will be added here dynamically -->
+    </div>
+
+    <div class="landing-screen" id="landingScreen">
+        <h1>CREW FACTORY</h1>
+        <p>You walk into a factory floor. You press one button. Your crew assembles. You own it.</p>
+        <button class="btn pulse" id="startBtn">BEGIN ASSEMBLY</button>
+    </div>
+
+    <script>
+        // Factory Assembly Implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            const landingScreen = document.getElementById('landingScreen');
+            const startBtn = document.getElementById('startBtn');
+            const assembleBtn = document.getElementById('assembleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const crewAssembly = document.getElementById('crewAssembly');
+            
+            // Crew members data
+            const crewMembers = [
+                { name: 'A', color: '#e74c3c' },
+                { name: 'B', color: '#3498db' },
+                { name: 'C', color: '#2ecc71' },
+                { name: 'D', color: '#9b59b6' },
+                { name: 'E', color: '#f1c40f' }
+            ];
+            
+            // Initialize crew members
+            function initializeCrew() {
+                crewAssembly.innerHTML = '';
+                crewMembers.forEach((member, index) => {
+                    const crewMember = document.createElement('div');
+                    crewMember.className = 'crew-member';
+                    crewMember.textContent = member.name;
+                    crewMember.style.backgroundColor = member.color;
+                    crewMember.style.left = `${(index * 80) + 50}px`;
+                    crewMember.style.top = '60px';
+                    crewAssembly.appendChild(crewMember);
+                });
+            }
+            
+            // Animate crew assembly
+            function assembleCrew() {
+                const crewMembers = document.querySelectorAll('.crew-member');
+                crewMembers.forEach((member, index) => {
+                    setTimeout(() => {
+                        member.classList.add('visible');
+                        member.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                        member.style.transform = 'translateY(-50px)';
+                    }, index * 200);
+                });
+            }
+            
+            // Reset crew assembly
+            function resetCrew() {
+                const crewMembers = document.querySelectorAll('.crew-member');
+                crewMembers.forEach(member => {
+                    member.classList.remove('visible');
+                    member.style.transform = 'translateY(0)';
+                });
+            }
+            
+            // Start button click handler
+            startBtn.addEventListener('click', function() {
+                landingScreen.style.display = 'none';
+                initializeCrew();
+            });
+            
+            // Assemble button click handler
+            assembleBtn.addEventListener('click', function() {
+                assembleCrew();
+            });
+            
+            // Reset button click handler
+            resetBtn.addEventListener('click', function() {
+                resetCrew();
+            });
+            
+            // Initialize the page
+            initializeCrew();
+        });
+    </script>
+</body>
+</html>
