@@ -157,7 +157,7 @@
             bottom: 0;
             width: 100%;
             height: 150px;
-+            background: linear-gradient(to top, #333 0%, #1a1a1a 100%);
+            background: linear-gradient(to top, #333 0%, #1a1a1a 100%);
             border-top: 2px solid #444;
             display: flex;
             align-items: center;
@@ -213,8 +213,10 @@
             border-radius: 15px;
             padding: 30px;
             text-align: center;
-            z-index: 20;
+            z-index: 10;
             display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
         }
 
         .crew-assembly h2 {
@@ -227,7 +229,7 @@
             color: #ccc;
         }
 
-        .crew-assembly button {
+        .finish-assembly {
             background: linear-gradient(45deg, #00c9ff, #92fe9d);
             border: none;
             padding: 12px 30px;
@@ -235,19 +237,24 @@
             color: white;
             border-radius: 50px;
             cursor: pointer;
+            margin-top: 10px;
             transition: all 0.3s ease;
+            font-weight: bold;
         }
 
-        .crew-assembly button:hover {
-            transform: scale(1.05);
-        }
-
-        .crew-assembly button:active {
-            transform: scale(0.95);
+        .finish-assembly:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 201, 255, 0.4);
         }
 
         .hidden {
             display: none !important;
+        }
+
+        .factory-floor-content {
+            position: relative;
+            z-index: 5;
+            max-width: 800px;
         }
     </style>
 </head>
@@ -255,36 +262,42 @@
     <div class="factory-floor">
         <div class="factory-header">
             <div class="logo">CREW FACTORY</div>
-            <div class="status-bar">Ready to assemble</div>
+            <div class="status-bar">ONLINE</div>
         </div>
 
-        <div class="landing-screen" id="landingScreen">
-            <h1>You are a crew</h1>
-            <p>Press the button below to create your own crew. It's that simple. Walk into the factory floor, press one button, and your crew assembles. You own it.</p>
-            <button class="crew-button" id="createCrewButton">CREATE YOUR CREW</button>
-
-            <div class="gallery-placeholder">
-                <h2>Public Crew Gallery</h2>
-                <p>View crews created by others in the community. Your crew will appear here once created.</p>
-                <p class="gallery-placeholder-text">Gallery placeholder (will be implemented in future iterations)</p>
+        <div id="landingScreen" class="factory-floor-content">
+            <div class="landing-screen">
+                <h1>WELCOME TO THE CREW FACTORY</h1>
+                <p>Walk into the factory floor. Press one button. Your crew assembles. You own it.</p>
+                <button id="createCrewButton" class="crew-button">CREATE YOUR CREW</button>
+                <div class="gallery-placeholder">
+                    <h2>PUBLIC CREW GALLERY</h2>
+                    <p>Explore crews created by others. Find inspiration and connect with fellow creators.</p>
+                    <div class="gallery-placeholder-text">Gallery placeholder - coming soon</div>
+                </div>
             </div>
         </div>
 
-        <div class="crew-assembly" id="crewAssembly">
-            <h2>Crew Assembly</h2>
+        <div id="crewAssembly" class="crew-assembly">
+            <h2>CREW ASSEMBLY</h2>
             <p>Your crew is being assembled on the production line...</p>
-            <p>Creating a unique team with specialized skills</p>
-            <button id="finishAssembly">Finish Assembly</button>
+            <div class="assembly-progress">
+                <div class="assembly-bar" style="width: 0%; height: 10px; background: linear-gradient(to right, #ff8a00, #e52e71); border-radius: 5px; margin: 20px 0;"></div>
+                <div class="assembly-status">Initializing assembly line...</div>
+            </div>
+            <button id="finishAssembly" class="finish-assembly">FINISH ASSEMBLY</button>
         </div>
 
         <div class="assembly-line">
             <div class="assembly-line-content">
-                <div class="assembly-progress"></div>
+                <div class="assembly-line-item" style="width: 80px; height: 80px; background: linear-gradient(45deg, #ff8a00, #e52e71); border-radius: 50%; margin: 0 10px; box-shadow: 0 0 15px rgba(229, 46, 113, 0.5);"></div>
+                <div class="assembly-line-item" style="width: 80px; height: 80px; background: linear-gradient(45deg, #00c9ff, #92fe9d); border-radius: 50%; margin: 0 10px; box-shadow: 0 0 15px rgba(0, 201, 255, 0.5);"></div>
+                <div class="assembly-line-item" style="width: 80px; height: 80px; background: linear-gradient(45deg, #92fe9d, #00c9ff); border-radius: 50%; margin: 0 10px; box-shadow: 0 0 15px rgba(146, 254, 157, 0.5);"></div>
             </div>
         </div>
 
         <div class="factory-sound-controls">
-            <button class="sound-toggle" id="soundToggle">🔊 SOUND ON</button>
+            <button id="soundToggle" class="sound-toggle">🔊 SOUND ON</button>
         </div>
     </div>
 
