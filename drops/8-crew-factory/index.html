@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crew Factory</title>
+    <style>
+        /* Factory theme styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #2c3e50, #1a1a2e);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .factory-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: #1a1a2e;
+            border: 4px solid #4a4a8a;
+            box-shadow: 0 0 20px rgba(74, 74, 138, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .factory-header {
+            background: #34495e;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 3px solid #4a4a8a;
+        }
+
+        .factory-title {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .factory-subtitle {
+            font-size: 1.2em;
+            margin: 5px 0 0;
+            color: #bdc3c7;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: calc(100% - 60px);
+            padding: 20px;
+            box-sizing: border-box;
+            position: absolute;
+            top: 60px;
+            left: 0;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .crew-creation-screen {
+            text-align: center;
+        }
+
+        .crew-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            border: 3px solid #2980b9;
+        }
+
+        .crew-button:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .crew-button:active {
+            transform: scale(0.98);
+        }
+
+        .gallery-screen {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .crew-card {
+            background: #2c3e50;
+            border: 2px solid #4a4a8a;
+            border-radius: 10px;
+            padding: 15px;
+            width: 200px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .crew-card:hover {
+            transform: translateY(-5px);
+            border-color: #3498db;
+        }
+
+        .crew-image {
+            width: 100px;
+            height: 100px;
+            background: #34495e;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+
+        .crew-name {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        .crew-description {
+            font-size: 0.9em;
+            color: #bdc3c7;
+            margin: 5px 0;
+        }
+
+        .factory-floor {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20px;
+            background: #34495e;
+            border-top: 2px solid #4a4a8a;
+        }
+
+        .assembly-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #4a4a8a;
+        }
+
+        .assembly-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                #4a4a8a,
+                #4a4a8a 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            animation: moveLine 2s linear infinite;
+        }
+
+        @keyframes moveLine {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 0; }
+        }
+
+        .factory-logo {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .factory-logo span {
+            color: #3498db;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .back-button:hover {
+            background: #c0392b;
+        }
+
+        .factory-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="factory-container">
+        <div class="factory-header">
+            <h1 class="factory-title">CREW FACTORY</h1>
+            <p class="factory-subtitle">Assemble your crew in seconds</p>
+        </div>
+
+        <div id="landing-screen" class="screen active">
+            <div class="factory-logo">
+                <span>🏭</span> CREW FACTORY <span>🏭</span>
+            </div>
+            <div class="crew-creation-screen">
+                <p>Walk into the factory floor. Press one button. Your crew assembles.</p>
+                <p>You own it.</p>
+                <button id="create-crew-button" class="crew-button">CREATE CREW</button>
+                <p>or</p>
+                <button id="view-gallery-button" class="crew-button">VIEW PUBLIC GALLERY</button>
+            </div>
+        </div>
+
+        <div id="creation-screen" class="screen">
+            <div class="factory-logo">
+                <span>⚙️</span> CREW ASSEMBLY LINE <span>⚙️</span>
+            </div>
+            <div class="crew-creation-screen">
+                <p>Your crew is being assembled...</p>
+                <p>This will only take a moment.</p>
+                <div class="assembly-line"></div>
+                <button id="continue-button" class="crew-button">CONTINUE</button>
+            </div>
+        </div>
+
+        <div id="gallery-screen" class="screen">
+            <div class="factory-logo">
+                <span>📊</span> PUBLIC CREW GALLERY <span>📊</span>
+            </div>
+            <div class="gallery-screen">
+                <div class="crew-card">
+                    <div class="crew-image">🤖</div>
+                    <div class="crew-name">Alpha Squad</div>
+                    <div class="crew-description">The first crew created</div>
+                </div>
+                <div class="crew-card">
+                    <div class="crew-image">🚀</div>
+                    <div class="crew-name">Beta Team</div>
+                    <div class="crew-description">Fast-moving explorers</div>
+                </div>
+                <div class="crew-card">
+                    <div class="crew-image">🛡️</div>
+                    <div class="crew-name">Gamma Guard</div>
+                    <div class="crew-description">Defensive specialists</div>
+                </div>
+                <div class="crew-card">
+                    <div class="crew-image">🎨</div>
+                    <div class="crew-name">Delta Designers</div>
+                    <div class="crew-description">Creative problem solvers</div>
+                </div>
+                <div class="crew-card">
+                    <div class="crew-image">💻</div>
+                    <div class="crew-name">Epsilon Engineers</div>
+                    <div class="crew-description">Tech experts</div>
+                </div>
+                <div class="crew-card">
+                    <div class="crew-image">⚔️</div>
+                    <div class="crew-name">Zeta Warriors</div>
+                    <div class="crew-description">Combat specialists</div>
+                </div>
+            </div>
+            <button id="back-to-landing" class="back-button">BACK TO FACTORY</button>
+        </div>
+
+        <div class="factory-floor"></div>
+        <div class="factory-status">Status: Ready</div>
+    </div>
+
+    <script>
+        // Game state
+        window.gameState = {
+            currentScreen: 'landing',
+            crewCreated: false
+        };
+
+        // Navigation functions
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            window.gameState.currentScreen = screenId;
+        }
+
+        // Button event handlers
+        document.getElementById('create-crew-button').addEventListener('click', function() {
+            showScreen('creation-screen');
+        });
+
+        document.getElementById('view-gallery-button').addEventListener('click', function() {
+            showScreen('gallery-screen');
+        });
+
+        document.getElementById('continue-button').addEventListener('click', function() {
+            window.gameState.crewCreated = true;
+            showScreen('gallery-screen');
+        });
+
+        document.getElementById('back-to-landing').addEventListener('click', function() {
+            showScreen('landing-screen');
+        });
+
+        // Initialize the game
+        showScreen('landing-screen');
+    </script>
+</body>
+</html>
