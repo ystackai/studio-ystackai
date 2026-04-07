@@ -1,0 +1,103 @@
+/* CSS Variables for semantic tokens */
+:root {
+  /* Background colors */
+  --bg-dark: #0a0a0a;
+  --bg-grid: #1a1a1a;
+  
+  /* Pad colors */
+  --pad-default: #2a2a2a;
+  --pad-active: #00ff9d;
+  --pad-highlight: #ff00c8;
+  
+  /* Text colors */
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+}
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Arial', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Game container */
+.game-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.game-container h1 {
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+  text-shadow: 0 0 10px var(--pad-active);
+  letter-spacing: 2px;
+}
+
+/* Grid container */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--bg-grid);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+}
+
+/* Pad styles */
+.pad {
+  aspect-ratio: 1;
+  background-color: var(--pad-default);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 
+    0 0 5px rgba(0, 0, 0, 0.5),
+    inset 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.pad:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    0 0 10px var(--pad-active),
+    inset 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.pad.active {
+  background-color: var(--pad-active);
+  box-shadow: 
+    0 0 15px var(--pad-active),
+    inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.pad.highlight {
+  background-color: var(--pad-highlight);
+  box-shadow: 
+    0 0 15px var(--pad-highlight),
+    inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 500px) {
+  .grid-container {
+    gap: 5px;
+    padding: 10px;
+  }
+  
+  .game-container h1 {
+    font-size: 2rem;
+  }
+}
