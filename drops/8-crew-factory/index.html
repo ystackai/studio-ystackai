@@ -227,14 +227,14 @@
         <div class="landing-screen" id="landingScreen">
             <div class="landing-content">
                 <h2 class="landing-title">Welcome to the Factory Floor</h2>
-                <p class="landing-text">Press the button below to create your crew instantly. No account needed. No setup required. Just press and go.</p>
+                <p class="landing-text">You are a crew. Create your own crew. No account needed. No setup required. Just press and go.</p>
                 <button class="create-crew-btn" id="createCrewBtn">Create My Crew</button>
             </div>
         </div>
 
         <div class="gallery-placeholder" id="galleryPlaceholder">
             <h2 class="gallery-title">Public Crew Gallery</h2>
-            <p>Explore crews created by other players</p>
+            <p>Explore crews created by other players. Click any crew to join it.</p>
             <div class="gallery-grid" id="galleryGrid">
                 <!-- Gallery items will be populated by JavaScript -->
             </div>
@@ -359,6 +359,15 @@
 
             // Populate gallery with sample items
             populateGallery();
+        // Add click event to gallery items
+        document.querySelectorAll(".gallery-item").forEach(item => {
+            item.addEventListener("click", function() {
+                factoryAudio.playSound("click");
+                // In a real implementation, this would join the crew
+                // For now, we just show a message
+                alert("You joined " + this.querySelector(".gallery-item-name").textContent);
+            });
+        });
         }
 
         // Populate gallery with sample items
@@ -392,8 +401,19 @@
 
         // Initialize gallery with sample data
         populateGallery();
+        // Add click event to gallery items
+        document.querySelectorAll(".gallery-item").forEach(item => {
+            item.addEventListener("click", function() {
+                factoryAudio.playSound("click");
+                // In a real implementation, this would join the crew
+                // For now, we just show a message
+                alert("You joined " + this.querySelector(".gallery-item-name").textContent);
+            });
+        });
 
         // Expose gameState for automated testing
+        // Update game state when crew is created
+        window.gameState.crewCreated = true;
         window.gameState = {
             screen: 'landing',
             crewCreated: false
