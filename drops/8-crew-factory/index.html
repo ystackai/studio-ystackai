@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="factory-theme">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +9,8 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(to bottom, #2c3e50, #1a1a2e);
+            background: linear-gradient(to bottom, #1a1a2e, #121220);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
             overflow: hidden;
             height: 100vh;
@@ -18,6 +18,22 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
+        }
+
+        .factory-theme::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(52, 152, 219, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(52, 152, 219, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: -1;
         }
 
         .factory-container {
@@ -94,6 +110,12 @@
         }
 
         .gallery-screen {
+            background: linear-gradient(to bottom, #1a1a2e, #0d0d1a);
+            padding: 15px;
+            border: 2px solid #4a4a8a;
+            border-radius: 8px;
+            margin: 10px;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -104,6 +126,13 @@
         }
 
         .crew-card {
+            background: linear-gradient(to bottom, #2c3e50, #1a1a2e);
+            border: 2px solid #4a4a8a;
+            border-radius: 12px;
+            padding: 15px;
+            width: 180px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
             background: #2c3e50;
             border: 2px solid #4a4a8a;
             border-radius: 10px;
@@ -120,15 +149,36 @@
         }
 
         .crew-image {
-            width: 100px;
-            height: 100px;
-            background: #34495e;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(to bottom, #34495e, #2c3e50);
             border-radius: 50%;
-            margin: 0 auto 10px;
+            margin: 0 auto 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3em;
+            font-size: 3.5em;
+            border: 2px solid #4a4a8a;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .crew-image::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
         }
 
         .crew-name {
@@ -137,6 +187,13 @@
         }
 
         .crew-description {
+            font-size: 0.95em;
+            color: #bdc3c7;
+            margin: 8px 0;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 0.9em;
             color: #bdc3c7;
             margin: 5px 0;
@@ -210,6 +267,11 @@
         }
 
         .factory-status {
+            background: rgba(0, 0, 0, 0.7);
+            color: #3498db;
+            border: 1px solid #4a4a8a;
+            padding: 8px 12px;
+            border-radius: 4px;
             position: absolute;
             top: 10px;
             right: 10px;
@@ -217,6 +279,61 @@
             padding: 5px 10px;
             border-radius: 5px;
             font-size: 0.9em;
+        }
+
+        .factory-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .gallery-button {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            border: 2px solid #2980b9;
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+        .gallery-button:hover {
+            background: linear-gradient(to bottom, #2980b9, #2573a7);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .gallery-button:active {
+            transform: translateY(0);
+        }
+
+        .empty-gallery {
+            width: 100%;
+            text-align: center;
+            padding: 30px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .crew-stats {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.8em;
+        }
+
+        .stat {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -257,38 +374,14 @@
                 <span>📊</span> PUBLIC CREW GALLERY <span>📊</span>
             </div>
             <div class="gallery-screen">
-                <div class="crew-card">
-                    <div class="crew-image">🤖</div>
-                    <div class="crew-name">Alpha Squad</div>
-                    <div class="crew-description">The first crew created</div>
-                </div>
-                <div class="crew-card">
-                    <div class="crew-image">🚀</div>
-                    <div class="crew-name">Beta Team</div>
-                    <div class="crew-description">Fast-moving explorers</div>
-                </div>
-                <div class="crew-card">
-                    <div class="crew-image">🛡️</div>
-                    <div class="crew-name">Gamma Guard</div>
-                    <div class="crew-description">Defensive specialists</div>
-                </div>
-                <div class="crew-card">
-                    <div class="crew-image">🎨</div>
-                    <div class="crew-name">Delta Designers</div>
-                    <div class="crew-description">Creative problem solvers</div>
-                </div>
-                <div class="crew-card">
-                    <div class="crew-image">💻</div>
-                    <div class="crew-name">Epsilon Engineers</div>
-                    <div class="crew-description">Tech experts</div>
-                </div>
-                <div class="crew-card">
-                    <div class="crew-image">⚔️</div>
-                    <div class="crew-name">Zeta Warriors</div>
-                    <div class="crew-description">Combat specialists</div>
+                <div id="crew-gallery-container">
+                    <div class="empty-gallery">No crews created yet. Be the first to create one!</div>
                 </div>
             </div>
-            <button id="back-to-landing" class="back-button">BACK TO FACTORY</button>
+            <div class="factory-controls">
+                <button id="back-to-landing" class="gallery-button">BACK TO FACTORY</button>
+                <button id="create-crew-from-gallery" class="gallery-button">CREATE YOUR CREW</button>
+            </div>
         </div>
 
         <div class="factory-floor"></div>
@@ -299,7 +392,8 @@
         // Game state
         window.gameState = {
             currentScreen: 'landing',
-            crewCreated: false
+            crewCreated: false,
+            crews: []
         };
 
         // Navigation functions
@@ -329,8 +423,80 @@
             showScreen('landing-screen');
         });
 
+        document.getElementById('create-crew-from-gallery').addEventListener('click', function() {
+            showScreen('creation-screen');
+        });
+
         // Initialize the game
         showScreen('landing-screen');
+
+        // Create a sample crew when entering gallery for demo purposes
+        document.getElementById('gallery-screen').addEventListener('click', function() {
+            if (window.gameState.crews.length === 0 && window.gameState.currentScreen === 'gallery-screen') {
+                createSampleCrew();
+            }
+        });
+
+        function createSampleCrew() {
+            const sampleCrews = [
+                {
+                    name: "Alpha Squad",
+                    description: "The first crew created",
+                    emoji: "🤖",
+                    stats: { members: 5, experience: "Beginner" }
+                },
+                {
+                    name: "Beta Team",
+                    description: "Fast-moving explorers",
+                    emoji: "🚀",
+                    stats: { members: 7, experience: "Intermediate" }
+                },
+                {
+                    name: "Gamma Guard",
+                    description: "Defensive specialists",
+                    emoji: "🛡️",
+                    stats: { members: 4, experience: "Advanced" }
+                },
+                {
+                    name: "Delta Designers",
+                    description: "Creative problem solvers",
+                    emoji: "🎨",
+                    stats: { members: 6, experience: "Expert" }
+                },
+                {
+                    name: "Epsilon Engineers",
+                    description: "Tech experts",
+                    emoji: "💻",
+                    stats: { members: 8, experience: "Master" }
+                },
+                {
+                    name: "Zeta Warriors",
+                    description: "Combat specialists",
+                    emoji: "⚔️",
+                    stats: { members: 3, experience: "Elite" }
+                }
+            ];
+
+            const container = document.getElementById('crew-gallery-container');
+            container.innerHTML = '';
+
+            sampleCrews.forEach(crew => {
+                const crewCard = document.createElement('div');
+                crewCard.className = 'crew-card';
+                crewCard.innerHTML = `
+                    <div class="crew-image">${crew.emoji}</div>
+                    <div class="crew-name">${crew.name}</div>
+                    <div class="crew-description">${crew.description}</div>
+                    <div class="crew-stats">
+                        <div class="stat">👥 ${crew.stats.members}</div>
+                        <div class="stat">${crew.stats.experience}</div>
+                    </div>
+                `;
+                container.appendChild(crewCard);
+            });
+
+            window.gameState.crews = sampleCrews;
+        }
     </script>
 </body>
 </html>
