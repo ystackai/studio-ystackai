@@ -1,9 +1,0 @@
-{
-  "buttonClick": "assets/sounds/button-click.mp3",
-  "crewAssemble": "assets/sounds/crew-assemble.mp3",
-  "galleryHover": "assets/sounds/gallery-hover.mp3",
-  "transition": "assets/sounds/transition.mp3",
-  "factoryAmbience": "assets/sounds/factory-ambience.mp3",
-  "crewCreationMusic": "assets/sounds/crew-creation-music.mp3",
-  "galleryMusic": "assets/sounds/gallery-music.mp3"
-}
