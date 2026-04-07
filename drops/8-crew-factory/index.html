@@ -98,6 +98,16 @@
         #assembly-line {
             position: absolute;
             top: 50%;
+        <div id="crew-gallery">
+            <h2 class="gallery-title">PUBLIC CREW GALLERY</h2>
+            <div class="gallery-container" id="gallery-container">
+                <!-- Crew cards will be generated here -->
+            </div>
+            <div class="gallery-controls">
+                <button id="back-to-factory" class="gallery-button">BACK TO FACTORY</button>
+            <button id="gallery-button" class="factory-button">PUBLIC GALLERY</button>
+            </div>
+        </div>
             left: 0;
             width: 100%;
             height: 40px;
@@ -142,6 +152,100 @@
         }
     </style>
 </head>
+        /* Gallery styles */
+        #crew-gallery {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 26, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        .gallery-title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #ff6b35;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+        }
+
+        .gallery-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            margin-bottom: 30px;
+        }
+
+        .crew-card {
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 8px;
+            width: 150px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .crew-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            border-color: #ff6b35;
+        }
+
+        .crew-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #ff6b35, #c0392b);
+            border-radius: 50%;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        .crew-name {
+            font-size: 1em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .gallery-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .gallery-button {
+            background: linear-gradient(to bottom, #ff6b35, #c0392b);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+
+        .gallery-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
 <body>
     <div id="factory-container">
         <div id="status">Factory Status: <span id="status-text">Ready</span></div>
@@ -154,6 +258,17 @@
             <div id="button-container">
                 <button id="assemble-button" class="factory-button">ASSEMBLE CREW</button>
             </div>
+        // Show gallery
+        function showGallery() {
+            if (!isSoundEnabled || !audioContext) {
+                initAudio();
+            }
+            
+            // Play gallery sound effect
+            playButtonPress();
+            
+            // Update status
+            document.getElementById(status-text).textContent = Gallery
         </div>
         
         <div id="sound-controls">
@@ -413,3 +528,78 @@
     </script>
 </body>
 </html>
+        // Show gallery
+        function showGallery() {
+            if (!isSoundEnabled || !audioContext) {
+                initAudio();
+            }
+            
+            // Play gallery sound effect
+            playButtonPress();
+            
+            // Update status
+            document.getElementById('status-text').textContent = 'Gallery mode';
+            
+            // Hide factory floor and show gallery
+            document.getElementById('factory-floor').style.display = 'none';
+            document.getElementById('crew-gallery').style.display = 'flex';
+            
+            // Generate sample crew cards
+            generateCrewGallery();
+        }
+        
+        // Hide gallery
+        function hideGallery() {
+            // Play gallery sound effect
+            playButtonPress();
+            
+            // Update status
+            document.getElementById('status-text').textContent = 'Ready';
+            
+            // Show factory floor and hide gallery
+            document.getElementById('factory-floor').style.display = 'flex';
+            document.getElementById('crew-gallery').style.display = 'none';
+        }
+        
+        // Generate sample crew gallery
+        function generateCrewGallery() {
+            const container = document.getElementById('gallery-container');
+            container.innerHTML = '';
+            
+            // Sample crew data
+            const crews = [
+                { name: "Alpha Crew", color: "#ff6b35" },
+                { name: "Beta Team", color: "#3498db" },
+                { name: "Gamma Squad", color: "#2ecc71" },
+                { name: "Delta Force", color: "#9b59b6" },
+                { name: "Epsilon Unit", color: "#e67e22" },
+                { name: "Zeta Group", color: "#1abc9c" },
+                { name: "Eta Crew", color: "#34495e" },
+                { name: "Theta Team", color: "#d35400" }
+            ];
+            
+            crews.forEach(crew => {
+                const card = document.createElement('div');
+                card.className = 'crew-card';
+                card.innerHTML = `
+                    <div class="crew-icon" style="background: ${crew.color};">
+                        ${crew.name.charAt(0)}
+                    </div>
+                    <div class="crew-name">${crew.name}</div>
+                `;
+                
+                card.addEventListener('click', function() {
+                    // Play sound when crew is selected
+                    if (isSoundEnabled && audioContext) {
+                        playCrewAssembly();
+                    }
+                    // In a real implementation, this would show crew details
+                    document.getElementById('status-text').textContent = `Selected: ${crew.name}`;
+                    setTimeout(() => {
+                        document.getElementById('status-text').textContent = 'Gallery mode';
+                    }, 1500);
+                });
+                
+                container.appendChild(card);
+            });
+        }
