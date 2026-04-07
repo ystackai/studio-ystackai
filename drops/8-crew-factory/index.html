@@ -389,6 +389,11 @@
         document.getElementById("continue-button").addEventListener("click", function() {
             window.gameState.crewCreated = true;
             createCrew();
+            updateGallery();
+            showScreen("gallery-screen");
+        });
+            window.gameState.crewCreated = true;
+            createCrew();
             showScreen("gallery-screen");
         });
             </div>
@@ -407,6 +412,10 @@
                 <button id="back-to-landing" class="gallery-button">BACK TO FACTORY</button>
                 <button id="create-crew-from-gallery" class="gallery-button">CREATE YOUR CREW</button>
         document.getElementById("create-crew-from-gallery").addEventListener("click", function() {
+            createCrew();
+            updateGallery();
+            showScreen("gallery-screen");
+        });
             createCrew();
             showScreen("gallery-screen");
         });
@@ -447,6 +456,11 @@
         document.getElementById("continue-button").addEventListener("click", function() {
             window.gameState.crewCreated = true;
             createCrew();
+            updateGallery();
+            showScreen("gallery-screen");
+        });
+            window.gameState.crewCreated = true;
+            createCrew();
             showScreen("gallery-screen");
         });
             window.gameState.crewCreated = true;
@@ -460,6 +474,10 @@
         document.getElementById('create-crew-from-gallery').addEventListener('click', function() {
         document.getElementById("create-crew-from-gallery").addEventListener("click", function() {
             createCrew();
+            updateGallery();
+            showScreen("gallery-screen");
+        });
+            createCrew();
             showScreen("gallery-screen");
         });
             showScreen('creation-screen');
@@ -467,149 +485,3 @@
 
         // Initialize the game
         showScreen('landing-screen');
-
-        // Create a sample crew when entering gallery for demo purposes
-        document.getElementById('gallery-screen').addEventListener('click', function() {
-            if (window.gameState.crews.length === 0 && window.gameState.currentScreen === 'gallery-screen') {
-                createSampleCrew();
-            }
-        });
-
-        function createSampleCrew() {
-            const sampleCrews = [
-                {
-                    name: "Alpha Squad",
-                    description: "The first crew created",
-                    emoji: "🤖",
-                    stats: { members: 5, experience: "Beginner" }
-                },
-                {
-                    name: "Beta Team",
-                    description: "Fast-moving explorers",
-                    emoji: "🚀",
-                    stats: { members: 7, experience: "Intermediate" }
-                },
-                {
-                    name: "Gamma Guard",
-                    description: "Defensive specialists",
-                    emoji: "🛡️",
-                    stats: { members: 4, experience: "Advanced" }
-                },
-                {
-                    name: "Delta Designers",
-                    description: "Creative problem solvers",
-                    emoji: "🎨",
-                    stats: { members: 6, experience: "Expert" }
-                },
-                {
-                    name: "Epsilon Engineers",
-                    description: "Tech experts",
-                    emoji: "💻",
-                    stats: { members: 8, experience: "Master" }
-                },
-                {
-                    name: "Zeta Warriors",
-                    description: "Combat specialists",
-                    emoji: "⚔️",
-                    stats: { members: 3, experience: "Elite" }
-                }
-            ];
-
-            const container = document.getElementById('crew-gallery-container');
-            container.innerHTML = '';
-
-            sampleCrews.forEach(crew => {
-                const crewCard = document.createElement('div');
-                crewCard.className = 'crew-card';
-                crewCard.innerHTML = `
-                    <div class="crew-image">${crew.emoji}</div>
-                    <div class="crew-name">${crew.name}</div>
-                    <div class="crew-description">${crew.description}</div>
-                    <div class="crew-stats">
-                        <div class="stat">👥 ${crew.stats.members}</div>
-                        <div class="stat">${crew.stats.experience}</div>
-                    </div>
-                `;
-                container.appendChild(crewCard);
-            });
-
-            window.gameState.crews = sampleCrews;
-        }
-    </script>
-</body>
-</html>
-function createCrew() {
-    const crewName = "Crew " + (window.gameState.crews.length + 1);
-    const crewDescription = "Created by you";
-    const crewEmoji = "👨‍🚀";
-    
-    const newCrew = {
-        name: crewName,
-        description: crewDescription,
-        emoji: crewEmoji,
-        stats: { members: Math.floor(Math.random() * 5) + 3, experience: ["Beginner", "Intermediate", "Advanced", "Expert"][Math.floor(Math.random() * 4)] }
-    };
-    
-    window.gameState.crews.push(newCrew);
-    
-    updateGallery();
-}
-// Create a sample crew when entering gallery for demo purposes
-        }
-    </script>
-</body>
-</html>
-    // Create a sample crew when entering gallery for demo purposes
-    document.getElementById("gallery-screen").addEventListener("click", function() {
-        if (window.gameState.crews.length === 0 && window.gameState.currentScreen === "gallery-screen") {
-            createSampleCrew();
-        }
-    });
-    function updateGallery() {
-        const container = document.getElementById("crew-gallery-container");
-        container.innerHTML = "";
-        
-        if (window.gameState.crews.length === 0) {
-            container.innerHTML = "<div class=\"empty-gallery\">No crews created yet. Be the first to create one!</div>";
-            return;
-        }
-        
-        window.gameState.crews.forEach(crew => {
-            const crewCard = document.createElement("div");
-            crewCard.className = "crew-card";
-            crewCard.innerHTML = \`
-                <div class="crew-image">\${crew.emoji}</div>
-                <div class="crew-name">\${crew.name}</div>
-                <div class="crew-description">\${crew.description}</div>
-                <div class="crew-stats">
-                    <div class="stat">👥 \${crew.stats.members}</div>
-                    <div class="stat">\${crew.stats.experience}</div>
-                </div>
-            \`;
-            container.appendChild(crewCard);
-        });
-    }
-    function updateGallery() {
-        const container = document.getElementById("crew-gallery-container");
-        container.innerHTML = "";
-        
-        if (window.gameState.crews.length === 0) {
-            container.innerHTML = "<div class=\"empty-gallery\">No crews created yet. Be the first to create one!</div>";
-            return;
-        }
-        
-        window.gameState.crews.forEach(crew => {
-            const crewCard = document.createElement("div");
-            crewCard.className = "crew-card";
-            crewCard.innerHTML = \`
-                <div class="crew-image">\${crew.emoji}</div>
-                <div class="crew-name">\${crew.name}</div>
-                <div class="crew-description">\${crew.description}</div>
-                <div class="crew-stats">
-                    <div class="stat">👥 \${crew.stats.members}</div>
-                    <div class="stat">\${crew.stats.experience}</div>
-                </div>
-            \`;
-            container.appendChild(crewCard);
-        });
-    }
