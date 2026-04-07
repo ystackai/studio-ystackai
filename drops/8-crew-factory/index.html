@@ -382,3 +382,37 @@
                 <span>⚙️</span> CREW ASSEMBLY LINE <span>⚙️</span>
             </div>
             <div class="crew-creation-screen">
+        <div id="gallery-screen" class="screen">
+            <div class="factory-logo">
+                <span>🏭</span> PUBLIC GALLERY <span>🏭</span>
+            </div>
+            <div class="gallery-screen">
+                <div class="empty-gallery" id="gallery-empty">
+                    <p>No crews created yet. Be the first to create one!</p>
+                </div>
+                <div id="crew-cards-container" class="crew-cards-container">
+                    <!-- Crew cards will be dynamically inserted here -->
+                </div>
+            </div>
+            <button id="gallery-back-button" class="back-button">BACK</button>
+        </div>
+</div>
+    </body>
+<script>
+    // Navigation between screens
+    document.getElementById("view-gallery-button").addEventListener("click", function() {
+        document.getElementById("landing-screen").classList.remove("active");
+        document.getElementById("gallery-screen").classList.add("active");
+    });
+
+    document.getElementById("gallery-back-button").addEventListener("click", function() {
+        document.getElementById("gallery-screen").classList.remove("active");
+        document.getElementById("landing-screen").classList.add("active");
+    });
+
+    // Create crew button navigation (for demo purposes)
+    document.getElementById("create-crew-button").addEventListener("click", function() {
+        document.getElementById("landing-screen").classList.remove("active");
+        document.getElementById("creation-screen").classList.add("active");
+    });
+</script>
