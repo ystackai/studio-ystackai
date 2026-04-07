@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Golden Ticket</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a0a00;overflow:hidden;font-family:Georgia,serif;height:100vh;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:pointer}
+canvas{position:absolute;top:0;left:0;pointer-events:none}
+#ticket{position:relative;z-index:1;width:min(420px,85vw);aspect-ratio:1.8;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;transform:scale(0.9);opacity:0;transition:transform 0.8s cubic-bezier(0.34,1.56,0.64,1),opacity 0.6s;cursor:pointer}
+#ticket.revealed{transform:scale(1);opacity:1}
+#ticket-bg{position:absolute;inset:0;background:linear-gradient(135deg,#f5d060 0%,#e8a812 25%,#f5d060 50%,#d4960a 75%,#f5d060 100%);background-size:400% 400%;animation:shimmer 4s ease infinite}
+@keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+#ticket-inner{position:relative;z-index:1;text-align:center;padding:24px}
+#ticket-inner h1{font-size:clamp(18px,4vw,28px);color:#5a3000;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;text-shadow:0 1px 0 #f5d06088}
+#ticket-inner .divider{width:60px;height:1px;background:#8b6914;margin:8px auto}
+#ticket-inner p{font-size:clamp(11px,2.2vw,15px);color:#6b4400;font-style:italic;line-height:1.6;letter-spacing:0.05em}
+#ticket-inner .number{font-size:10px;color:#a0802080;letter-spacing:0.3em;margin-top:12px;font-family:'Courier New',monospace}
+#ticket-edge{position:absolute;inset:6px;border:1px solid #c8981880;border-radius:8px;pointer-events:none}
+#ticket-notch-l,#ticket-notch-r{position:absolute;top:50%;width:16px;height:32px;background:#1a0a00;border-radius:50%;transform:translateY(-50%)}
+#ticket-notch-l{left:-8px}
+#ticket-notch-r{right:-8px}
+#prompt{position:absolute;bottom:15%;left:0;right:0;text-align:center;color:#f5d06050;font-size:13px;letter-spacing:0.2em;font-style:italic;transition:opacity 1s}
+#prompt.hidden{opacity:0}
+.credit{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#f5d06020;font-size:10px;letter-spacing:0.15em}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ticket">
+  <div id="ticket-bg"></div>
+  <div id="ticket-notch-l"></div>
+  <div id="ticket-notch-r"></div>
+  <div id="ticket-edge"></div>
+  <div id="ticket-inner">
+    <h1>Golden Ticket</h1>
+    <div class="divider"></div>
+    <p id="ticket-text">Admit one to the factory floor.<br>Your imagination is the only credential required.</p>
+    <div class="number" id="ticket-number"></div>
+  </div>
+</div>
+<div id="prompt">tap to reveal</div>
+<div class="credit">ystackai</div>
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+let W,H,dpr,particles=[],sparks=[],revealed=false,audioCtx;
+
+function resize(){
+  dpr=window.devicePixelRatio||1;W=window.innerWidth;H=window.innerHeight;
+  canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize',resize);resize();
+
+const MESSAGES=[
+  "Admit one to the factory floor.\nYour imagination is the only credential required.",
+  "This ticket grants you passage\nthrough the door that wasn't there yesterday.",
+  "The bearer of this ticket\nhas been chosen by pure luck\nand absolutely nothing else.",
+  "Good for one impossible thing\nbefore breakfast.",
+  "This ticket cannot be exchanged,\nrefunded, or explained.",
+  "Welcome to the place\nwhere things that shouldn't work\nwork beautifully.",
+  "The factory never closes.\nThe only question is\nwhether you're ready to enter.",
+];
+
+function initAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+}
+
+function playReveal(){
+  if(!audioCtx)return;
+  const t=audioCtx.currentTime;
+  // Rising chime
+  [440,554,659,880].forEach((f,i)=>{
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type='sine';o.frequency.value=f;
+    g.gain.setValueAtTime(0.08,t+i*0.12);
+    g.gain.exponentialRampToValueAtTime(0.001,t+i*0.12+0.8);
+    o.connect(g);g.connect(audioCtx.destination);
+    o.start(t+i*0.12);o.stop(t+i*0.12+0.8);
+  });
+  // Shimmer noise
+  const buf=audioCtx.createBuffer(1,audioCtx.sampleRate*1,audioCtx.sampleRate);
+  const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);
+  const n=audioCtx.createBufferSource();n.buffer=buf;
+  const filt=audioCtx.createBiquadFilter();filt.type='bandpass';filt.frequency.value=3000;filt.Q.value=2;
+  const ng=audioCtx.createGain();ng.gain.setValueAtTime(0.04,t);ng.gain.exponentialRampToValueAtTime(0.001,t+1.5);
+  n.connect(filt);filt.connect(ng);ng.connect(audioCtx.destination);
+  n.start(t);n.stop(t+1.5);
+}
+
+function playReroll(){
+  if(!audioCtx)return;
+  const t=audioCtx.currentTime;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type='triangle';o.frequency.setValueAtTime(300,t);o.frequency.linearRampToValueAtTime(600,t+0.15);
+  g.gain.setValueAtTime(0.06,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+  o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+0.3);
+}
+
+function spawnBurst(x,y,count){
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=1+Math.random()*4;
+    particles.push({
+      x,y,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed-1,
+      size:2+Math.random()*4,
+      life:1,
+      decay:0.008+Math.random()*0.008,
+      hue:40+Math.random()*20,
+    });
+  }
+}
+
+function spawnSparks(x,y){
+  for(let i=0;i<20;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=2+Math.random()*6;
+    sparks.push({
+      x,y,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed,
+      life:1,
+      decay:0.02+Math.random()*0.02,
+    });
+  }
+}
+
+// Ambient floating particles
+function spawnAmbient(){
+  if(particles.length>200)return;
+  particles.push({
+    x:Math.random()*W,y:H+10,
+    vx:(Math.random()-0.5)*0.3,
+    vy:-0.3-Math.random()*0.5,
+    size:1+Math.random()*2,
+    life:1,decay:0.002+Math.random()*0.002,
+    hue:35+Math.random()*25,
+  });
+}
+
+function reveal(){
+  initAudio();
+  const ticket=document.getElementById('ticket');
+  const text=document.getElementById('ticket-text');
+  const num=document.getElementById('ticket-number');
+
+  if(!revealed){
+    revealed=true;
+    ticket.classList.add('revealed');
+    document.getElementById('prompt').classList.add('hidden');
+    const msg=MESSAGES[Math.floor(Math.random()*MESSAGES.length)];
+    text.innerHTML=msg.replace(/\n/g,'<br>');
+    num.textContent='No. '+String(Math.floor(Math.random()*99999)).padStart(5,'0');
+    playReveal();
+    const rect=ticket.getBoundingClientRect();
+    spawnBurst(rect.left+rect.width/2,rect.top+rect.height/2,60);
+    spawnSparks(rect.left+rect.width/2,rect.top+rect.height/2);
+  } else {
+    // Reroll message
+    const msg=MESSAGES[Math.floor(Math.random()*MESSAGES.length)];
+    text.innerHTML=msg.replace(/\n/g,'<br>');
+    num.textContent='No. '+String(Math.floor(Math.random()*99999)).padStart(5,'0');
+    playReroll();
+    const rect=ticket.getBoundingClientRect();
+    spawnBurst(rect.left+rect.width/2,rect.top+rect.height/2,25);
+  }
+}
+
+document.body.addEventListener('pointerdown',reveal);
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+
+  // Ambient spawn
+  if(Math.random()<0.15)spawnAmbient();
+  if(revealed&&Math.random()<0.3)spawnAmbient();
+
+  // Particles
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx;p.y+=p.vy;p.vy+=0.01;p.vx*=0.99;p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue}
+    ctx.globalAlpha=p.life*0.6;
+    ctx.fillStyle=`hsl(${p.hue},90%,${50+p.life*20}%)`;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);ctx.fill();
+    // Glow
+    ctx.globalAlpha=p.life*0.15;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life*3,0,Math.PI*2);ctx.fill();
+  }
+
+  // Sparks
+  for(let i=sparks.length-1;i>=0;i--){
+    const s=sparks[i];
+    s.x+=s.vx;s.y+=s.vy;s.vx*=0.96;s.vy*=0.96;s.life-=s.decay;
+    if(s.life<=0){sparks.splice(i,1);continue}
+    ctx.globalAlpha=s.life;
+    ctx.fillStyle='#fff';
+    ctx.fillRect(s.x-0.5,s.y-0.5,1,1);
+  }
+
+  ctx.globalAlpha=1;
+  requestAnimationFrame(render);
+}
+
+render();
+</script>
+</body>
+</html>
