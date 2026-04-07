@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Drift</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: white;
+        }
+        #game-container {
+            position: relative;
+        }
+        #game-canvas {
+            display: block;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+        }
+        #score {
+            font-size: 24px;
+            text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none;
+        }
+        #restart-btn {
+            background: none;
+            border: 2px solid #f0f;
+            color: #f0f;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 5px;
+            text-shadow: 0 0 10px #f0f;
+        }
+        #restart-btn:hover {
+            background: rgba(255, 0, 255, 0.2);
+        }
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        #start-btn {
+            background: none;
+            border: 2px solid #0ff;
+            color: #0ff;
+            padding: 15px 30px;
+            font-size: 24px;
+            cursor: pointer;
+            margin-top: 30px;
+            border-radius: 5px;
+            text-shadow: 0 0 10px #0ff;
+        }
+        #start-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        <div id="ui">
+            <div id="score">Distance: 0</div>
+        </div>
+        <div id="game-over">
+            <h2>Game Over</h2>
+            <p>Distance: <span id="final-score">0</span></p>
+            <button id="restart-btn">Restart</button>
+        </div>
+        <div id="start-screen">
+            <h1>NEON DRIFT</h1>
+            <p>Hold to accelerate, release to drift</p>
+            <p>Stay on the track!</p>
+            <button id="start-btn">START</button>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const finalScoreElement = document.getElementById('final-score');
+        const gameOverScreen = document.getElementById('game-over');
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // Set canvas size
+        canvas.width = 800;
+        canvas.height = 600;
+
+        // Game state
+        let gameState = {
+            running: false,
+            score: 0,
+            car: {
+                x: 400,
+                y: 300,
+                width: 20,
+                height: 10,
+                angle: 0,
+                speed: 0,
+                maxSpeed: 8,
+                acceleration: 0.2,
+                friction: 0.95,
+                drift: 0,
+                driftPower: 0.3
+            },
+            track: {
+                segments: [],
+                segmentLength: 100,
+                curve: 0,
+                curveSpeed: 0.005,
+                curveChange: 0.001
+            },
+            trail: [],
+            boostZones: [],
+            audio: {
+                engine: null,
+                drift: null,
+                collision: null,
+                ambient: null
+            }
+        };
+
+        // Initialize game
+        function init() {
+            // Reset game state
+            gameState.score = 0;
+            gameState.car.x = 400;
+            gameState.car.y = 300;
+            gameState.car.angle = 0;
+            gameState.car.speed = 0;
+            gameState.car.drift = 0;
+            gameState.track.segments = [];
+            gameState.trail = [];
+            gameState.boostZones = [];
+
+            // Create initial track
+            createInitialTrack();
+
+            // Hide screens
+            gameOverScreen.style.display = 'none';
+            startScreen.style.display = 'none';
+            
+            // Set game running
+            gameState.running = true;
+        }
+
+        // Create initial track
+        function createInitialTrack() {
+            // Create a curved track
+            for (let i = 0; i < 50; i++) {
+                const segment = {
+                    x: 400 + Math.sin(i * 0.1) * 200,
+                    y: 300 + Math.cos(i * 0.1) * 200,
+                    width: 20,
+                    height: 20,
+                    curve: Math.sin(i * 0.1) * 0.5
+                };
+                gameState.track.segments.push(segment);
+            }
+
+            // Add boost zones
+            for (let i = 0; i < 5; i++) {
+                gameState.boostZones.push({
+                    x: 400 + Math.sin(i * 0.5) * 150,
+                    y: 300 + Math.cos(i * 0.5) * 150,
+                    radius: 20
+                });
+            }
+        }
+
+        // Update game state
+        function update() {
+            if (!gameState.running) return;
+
+            // Update car position based on input
+            if (gameState.car.speed > 0) {
+                gameState.car.x += Math.cos(gameState.car.angle) * gameState.car.speed;
+                gameState.car.y += Math.sin(gameState.car.angle) * gameState.car.speed;
+            }
+
+            // Apply friction
+            gameState.car.speed *= gameState.car.friction;
+
+            // Update trail
+            gameState.trail.push({
+                x: gameState.car.x,
+                y: gameState.car.y,
+                opacity: 1
+            });
+
+            // Remove old trail points
+            if (gameState.trail.length > 100) {
+                gameState.trail.shift();
+            }
+
+            // Update score
+            gameState.score += gameState.car.speed;
+            scoreElement.textContent = `Distance: ${Math.floor(gameState.score)}`;
+
+            // Update track
+            updateTrack();
+        }
+
+        // Update track position
+        function updateTrack() {
+            // Move track segments to simulate forward movement
+            for (let i = 0; i < gameState.track.segments.length; i++) {
+                gameState.track.segments[i].x -= gameState.car.speed;
+                gameState.track.segments[i].y -= gameState.car.speed * 0.5;
+            }
+
+            // Add new segments when needed
+            if (gameState.track.segments.length < 100) {
+                const lastSegment = gameState.track.segments[gameState.track.segments.length - 1];
+                const newSegment = {
+                    x: lastSegment.x + Math.cos(lastSegment.angle || 0) * gameState.track.segmentLength,
+                    y: lastSegment.y + Math.sin(lastSegment.angle || 0) * gameState.track.segmentLength,
+                    width: 20,
+                    height: 20,
+                    curve: Math.random() * 0.5 - 0.25
+                };
+                gameState.track.segments.push(newSegment);
+            }
+
+            // Remove old segments
+            if (gameState.track.segments.length > 100) {
+                gameState.track.segments.shift();
+            }
+        }
+
+        // Draw game
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw trail
+            for (let i = 0; i < gameState.trail.length; i++) {
+                const point = gameState.trail[i];
+                const opacity = point.opacity;
+                ctx.fillStyle = `rgba(0, 255, 255, ${opacity * 0.3})`;
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw track
+            ctx.strokeStyle = '#0ff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < gameState.track.segments.length; i++) {
+                const segment = gameState.track.segments[i];
+                if (i === 0) {
+                    ctx.moveTo(segment.x, segment.y);
+                } else {
+                    ctx.lineTo(segment.x, segment.y);
+                }
+            }
+            ctx.stroke();
+
+            // Draw boost zones
+            for (let i = 0; i < gameState.boostZones.length; i++) {
+                const zone = gameState.boostZones[i];
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw car
+            ctx.save();
+            ctx.translate(gameState.car.x, gameState.car.y);
+            ctx.rotate(gameState.car.angle);
+            ctx.fillStyle = '#f0f';
+            ctx.fillRect(-gameState.car.width/2, -gameState.car.height/2, gameState.car.width, gameState.car.height);
+            ctx.restore();
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            if (gameState.running) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            init();
+            gameLoop();
+        });
+
+        restartBtn.addEventListener('click', () => {
+            init();
+            gameLoop();
+        });
+
+        // Handle input
+        let isPressed = false;
+        canvas.addEventListener('mousedown', () => {
+            isPressed = true;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isPressed = false;
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isPressed = true;
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            isPressed = false;
+        });
+
+        // Update car based on input
+        function updateCar() {
+            if (!gameState.running) return;
+            
+            if (isPressed) {
+                // Accelerate
+                gameState.car.speed = Math.min(gameState.car.speed + gameState.car.acceleration, gameState.car.maxSpeed);
+            } else {
+                // Drift
+                gameState.car.drift = 0.1;
+                gameState.car.speed = Math.max(0, gameState.car.speed - 0.1);
+            }
+            
+            // Update car angle
+            if (gameState.car.drift > 0) {
+                gameState.car.angle += gameState.car.drift;
+                gameState.car.drift = Math.max(0, gameState.car.drift - 0.01);
+            }
+            
+            // Update car position
+            gameState.car.x += Math.cos(gameState.car.angle) * gameState.car.speed;
+            gameState.car.y += Math.sin(gameState.car.angle) * gameState.car.speed;
+            
+            // Check collisions with track boundaries
+            if (gameState.car.x < 0 || gameState.car.x > canvas.width || 
+                gameState.car.y < 0 || gameState.car.y > canvas.height) {
+                gameOver();
+            }
+            
+            // Check collisions with boost zones
+            for (let i = 0; i < gameState.boostZones.length; i++) {
+                const zone = gameState.boostZones[i];
+                const dx = gameState.car.x - zone.x;
+                const dy = gameState.car.y - zone.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < zone.radius) {
+                    gameState.car.speed = Math.min(gameState.car.speed + 2, gameState.car.maxSpeed);
+                    break;
+                }
+            }
+            
+            requestAnimationFrame(updateCar);
+        }
+
+        // Game over
+        function gameOver() {
+            gameState.running = false;
+            finalScoreElement.textContent = Math.floor(gameState.score);
+            gameOverScreen.style.display = 'block';
+        }
+
+        // Start input update loop
+        updateCar();
+    </script>
+</body>
+</html>
