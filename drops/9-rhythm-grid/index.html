@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm Grid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Rhythm Grid</h1>
+        <div class="grid-container">
+            <div class="grid" id="rhythm-grid"></div>
+        </div>
+        <div class="controls">
+            <button id="play-btn">Play</button>
+            <button id="stop-btn">Stop</button>
+            <button id="clear-btn">Clear</button>
+            <div class="tempo-control">
+                <label for="tempo">Tempo: <span id="tempo-value">120</span> BPM</label>
+                <input type="range" id="tempo" min="60" max="240" value="120">
+            </div>
+        </div>
+        <div class="status">
+            <span id="status-text">Ready</span>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
