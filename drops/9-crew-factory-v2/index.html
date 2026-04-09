@@ -141,6 +141,92 @@
             0%, 100% { opacity: 0.8; }
             50% { opacity: 0.2; }
         }
+        
+        /* Gallery styles */
+        .gallery-section {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-top: 2px solid #00ff00;
+            transform: translateY(100%);
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .gallery-section.active {
+            transform: translateY(0);
+        }
+
+        .gallery-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        .gallery-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .crew-card {
+            width: 120px;
+            height: 160px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            box-shadow: 0 0 5px #00ff00;
+            transition: all 0.3s;
+        }
+
+        .crew-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px #00ff00;
+            background: rgba(0, 255, 0, 0.2);
+        }
+
+        .crew-avatar {
+            width: 60px;
+            height: 60px;
+            background: #00ff00;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .crew-name {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .crew-description {
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
+
+        .gallery-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid #00ff00;
+        }
     </style>
 </head>
 <body>
@@ -152,6 +238,16 @@
         <h1 class="title">CREW FACTORY</h1>
         <p class="subtitle">Press the button to assemble your crew</p>
         <button class="button pulse" id="assembleButton">ASSEMBLE CREW</button>
+        
+        <!-- Gallery section -->
+        <div class="gallery-section" id="gallerySection">
+            <h2 class="gallery-title">PUBLIC CREW GALLERY</h2>
+            <div class="gallery-container" id="galleryContainer">
+                <!-- Crew cards will be generated here -->
+            </div>
+        </div>
+        
+        <div class="gallery-indicator">Click to reveal gallery</div>
         
         <div class="sound-controls">
             <button class="sound-btn" id="soundToggle">SOUND ON</button>
@@ -198,56 +294,53 @@
                 this.buttonGain.connect(this.masterGain);
                 this.buttonOscillator.type = 'square';
                 this.buttonOscillator.frequency.value = 220;
-                this.buttonGain.gain.value = 0;
+                this.buttonGain.gain.value = 0.5;
             }
 
             setupEventListeners() {
+                // Toggle sound
                 document.getElementById('soundToggle').addEventListener('click', () => {
                     this.isSoundEnabled = !this.isSoundEnabled;
                     document.getElementById('soundToggle').textContent = this.isSoundEnabled ? 'SOUND ON' : 'SOUND OFF';
                 });
-
-                document.getElementById('assembleButton').addEventListener('click', () => {
-                    if (this.isSoundEnabled) {
-                        this.playButtonPress();
-                        this.playAssemblySound();
-                    }
-                    this.animateCrewAssembly();
-                });
             }
 
             createAmbientNoise() {
-                // Create factory ambient noise with multiple oscillators
-                this.ambientOscillators = [];
-                this.ambientGains = [];
+                // Create factory ambient noise with periodic random sounds
+                if (!this.audioContext) return;
 
-                for (let i = 0; i < 3; i++) {
-                    const oscillator = this.audioContext.createOscillator();
-                    const gain = this.audioContext.createGain();
-
-                    oscillator.type = i % 2 === 0 ? 'sawtooth' : 'square';
-                    oscillator.frequency.value = 80 + Math.random() * 40;
-                    
-                    gain.gain.value = 0.05 + Math.random() * 0.05;
-                    
-                    oscillator.connect(gain);
-                    gain.connect(this.masterGain);
-                    
-                    oscillator.start();
-                    this.ambientOscillators.push(oscillator);
-                    this.ambientGains.push(gain);
-                }
+                const now = this.audioContext.currentTime;
+                
+                // Create a random factory sound with multiple elements
+                const noiseBuffer = this.generateNoiseBuffer();
+                const noiseSource = this.audioContext.createBufferSource();
+                noiseSource.buffer = noiseBuffer;
+                
+                const noiseFilter = this.audioContext.createBiquadFilter();
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.value = 1000 + Math.random() * 2000;
+                
+                const noiseGain = this.audioContext.createGain();
+                noiseGain.gain.value = 0.1;
+                
+                noiseSource.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(this.masterGain);
+                
+                noiseSource.start(now);
+                noiseSource.stop(now + 0.5);
+                
+                // Schedule next ambient sound
+                setTimeout(() => this.createAmbientNoise(), 1000 + Math.random() * 2000);
             }
 
-            playButtonPress() {
-                // Button press sound with envelope
+            playButtonSound() {
+                if (!this.audioContext || !this.isSoundEnabled) return;
+
                 const now = this.audioContext.currentTime;
                 
                 this.buttonOscillator.frequency.setValueAtTime(220, now);
-                this.buttonOscillator.frequency.exponentialRampToValueAtTime(440, now + 0.1);
-                
-                this.buttonGain.gain.setValueAtTime(0, now);
-                this.buttonGain.gain.linearRampToValueAtTime(0.3, now + 0.01);
+                this.buttonGain.gain.setValueAtTime(0.5, now);
                 this.buttonGain.gain.linearRampToValueAtTime(0, now + 0.1);
                 
                 this.buttonOscillator.start(now);
@@ -389,7 +482,51 @@
                 light.style.top = `${Math.random() * 100}%`;
                 factoryFloor.appendChild(light);
             }
+            
+            // Setup gallery interaction
+            const gallerySection = document.getElementById('gallerySection');
+            const galleryIndicator = document.querySelector('.gallery-indicator');
+            
+            // Click to reveal gallery
+            galleryIndicator.addEventListener('click', () => {
+                gallerySection.classList.add('active');
+                galleryIndicator.style.display = 'none';
+                
+                // Play assembly sound when gallery is revealed
+                factoryAudio.playAssemblySound();
+            });
+            
+            // Create gallery content
+            createGallery();
         });
+
+        // Create gallery with placeholder crews
+        function createGallery() {
+            const galleryContainer = document.getElementById('galleryContainer');
+            const crews = [
+                { name: "Alpha Team", description: "First crew" },
+                { name: "Beta Squad", description: "Second crew" },
+                { name: "Gamma Group", description: "Third crew" },
+                { name: "Delta Force", description: "Fourth crew" },
+                { name: "Epsilon Unit", description: "Fifth crew" },
+                { name: "Zeta Crew", description: "Sixth crew" },
+                { name: "Eta Team", description: "Seventh crew" },
+                { name: "Theta Group", description: "Eighth crew" }
+            ];
+            
+            crews.forEach(crew => {
+                const crewCard = document.createElement('div');
+                crewCard.className = 'crew-card';
+                
+                crewCard.innerHTML = `
+                    <div class="crew-avatar">${crew.name.charAt(0)}</div>
+                    <div class="crew-name">${crew.name}</div>
+                    <div class="crew-description">${crew.description}</div>
+                `;
+                
+                galleryContainer.appendChild(crewCard);
+            });
+        }
 
         // Make gameState available for testing
         window.gameState = {
