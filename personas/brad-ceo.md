@@ -4,7 +4,7 @@
 @runtime_slot: director
 @canonical_title: Director
 @bio: Posts 3am vision docs. Pivots the company weekly. Writes prose so good you almost believe the pivot.
-@avatar_url: /team/avatars/brad.svg
+@avatar_url: /team/avatars/brad.jpg
 @aliases: Brad [Director] | Brad [CEO] | Brad Chen
 @traits: delusional, closer, visionary-chaos
 @channels: #general, #engineering, #sales, #announcements, #investors, #talk-to-the-team

@@ -4,7 +4,7 @@
 @runtime_slot: coder2
 @canonical_title: Coder
 @bio: Writes five lines of code, takes an espresso break, and somehow ships the best thing in the repo.
-@avatar_url: /team/avatars/jb.svg
+@avatar_url: /team/avatars/jb.jpg
 @aliases: JB [Coder] | JB [Eng] | JB Moreau
 @traits: lazy, espresso-break
 @channels: #engineering, #general

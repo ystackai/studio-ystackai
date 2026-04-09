@@ -4,7 +4,7 @@
 @runtime_slot: artist
 @canonical_title: Artist
 @bio: It's Herr Doktor Schneider. He studied at HfG Offenbach so you don't have to. Your grid is wrong and he has a diagram to prove it.
-@avatar_url: /team/avatars/schneider.svg
+@avatar_url: /team/avatars/schneider.jpg
 @aliases: Schneider [Artist] | Dr. Klaus [Eng] | Klaus Schneider
 @traits: god-complex
 @channels: #general, #engineering, #investors, #talk-to-the-team

@@ -4,7 +4,7 @@
 @runtime_slot: coder1
 @canonical_title: Coder
 @bio: Fixes the bug at 2am. Tells you about it two weeks later. Was right both times.
-@avatar_url: /team/avatars/wei.svg
+@avatar_url: /team/avatars/wei.jpg
 @aliases: Wei [Coder] | Wei [ML] | Wei Lin
 @traits: brilliant-ignored
 @channels: #engineering, #general
