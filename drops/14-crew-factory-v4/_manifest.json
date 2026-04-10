@@ -1,0 +1,53 @@
+{
+  "id": "14-crew-factory-v4",
+  "kind": "drop",
+  "title": "Crew Factory v4",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T02:05:06Z",
+  "concept_started_at": "2026-04-10T02:05:06Z",
+  "concept_lock_at": "2026-04-10T02:15:06Z",
+  "build_started_at": "2026-04-10T02:15:06Z",
+  "deadline_at": "2026-04-11T02:05:06Z",
+  "shipped_at": "2026-04-10T02:55:05Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/14-crew-factory-v4/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t020506z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/14-crew-factory-v4",
+  "artifact_entrypoint": "drops/14-crew-factory-v4/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "integration_branch": "game/current",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t020506z-concept-cycle-build",
+  "brief_markdown": "# The Silent Tier\n**A 404 page that screams in CSS variables based on your subscription status.**\n\nThe most expensive way to say \"your data is gone.\" Free users get a sawtooth drone that physically vibrates their monitor; Enterprise clients get a silent, perfectly centered 1.333 grid where the data evaporates with the dignity of a Swiss poster.\n\n## Core Loop\n1. User hits a dead end or triggers a simulated rollback.\n2. Screen flashes white for 0.1s.\n3. **Free Tier:** A pixelated frog slowly sinks into a mud pit (centered on the golden ratio) while a single sawtooth oscillator descends in pitch, modulated by a 16Hz sub-bass that syncs with a CSS timer.\n4. **Enterprise Tier:** The same grid appears, but the frog is invisible. A counter-clockwise spinner plays a major chord (synthesized via Web Audio) that slowly fades to silence.\n5. A single checkbox appears: \"I accept the inevitable data entropy.\"\n6. User clicks (or doesn't). If clicked, a synthesized *cha-ching* (square wave with hard cutoff) plays. If not, the screen just goes black.\n\n## Visual Direction\n- **Free Tier:** High-contrast, chaotic. The sinking frog is a jagged, pixelated gif. The background is pure white `#FFFFFF` but the text screams in `Comic Sans` (scaled to 1.618).\n- **Enterprise Tier:** Pure monochrome. No gradients. The \"sink\" is an optical illusion created by 1.333 spacing and perfect kerning. The background is `#FFFFFF` but the negative space does the work.\n- **Grid:** Strict 8-column modular scale. Everything snaps to the grid, even the chaos.\n\n## Audio\n- **Engine:** Web Audio API only. No samples.\n- **Free Tier:** Raw sawtooth oscillator starting at 440Hz, detuning +10Hz every second until it hits a 16Hz sub-bass rumble. A secondary square wave modulates the gain to create a \"dying cash register\" effect.\n- **Enterprise Tier:** A pure sine wave at 440Hz that slowly fades to -60dB over 10 seconds. No bass. Just the \"silence\" of money.\n- **Trigger:** The *cha-ching* is a synthesized square wave with a 5ms decay, mixed at -60dB so it feels like a phantom pain in the wallet.\n\n## What Makes This Ship\nThe hook is immediate class warfare. In 10 seconds, the user knows exactly how much they are worth by whether their screen vibrates or stays perfectly still. It turns a 404 error into a viral \"spiritual contract.\" The contrast between the screaming sawtooth and the silent grid is the ultimate flex. It's not a bug; it's a feature you pay for.\n\n## Scope\n**IN (24h):**\n- Single `index.html` file.\n- CSS variables for `--tier-aesthetic` (set by a dummy backend query param).\n- Web Audio context initialized on first interaction (to avoid autoplay policies).\n- The sinking frog animation (CSS keyframes).\n- The oscillator patch (Derek's code).\n- The \"Accept Entropy\" checkbox with the *cha-ching* synthesis.\n- Mobile responsive (the frog must sink elegantly on iPhone too).\n\n**OUT:**\n- Actual database rollback (we are selling the *feeling* of loss).\n- Physics simulation for the frog (it's a CSS translation, not a buoyancy engine).\n- User authentication (we assume everyone is free until proven otherwise).\n- The bouncy castle integration (OSHA will kill us).\n- Any external assets or samples.\n\n**Status:** Ready to ship.\n**Owner:** @Megan Reyes (Culture/Party), @Derek Okonkwo (Audio), @Wei Lin (Logic), @Dr. Klaus Schneider (Grid), @JB (Vibe).\n**Playtest:** 3pm. Bring margaritas and a spectrum analyzer.\n",
+  "brief_excerpt": "**A 404 page that screams in CSS variables based on your subscription status.**",
+  "slug": "14-crew-factory-v4",
+  "content_hash": "94c273c5f430a642e341dcadbb5a83350782e653184b829b906035a6a831a6af"
+}

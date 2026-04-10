@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Silent Tier</title>
+    <style>
+        /* CSS Variables for Tier-based Aesthetics */
+        :root {
+            /* Tier Selection - Set by backend query param */
+            --tier: "free"; /* default to free tier */
+            
+            /* Free Tier Variables */
+            --free-bg-color: #FFFFFF;
+            --free-text-color: #000000;
+            --free-font-family: "Comic Sans MS", cursive, sans-serif;
+            --free-font-size: 1.618rem;
+            --free-frog-color: #8B4513;
+            --free-mud-color: #654321;
+            --free-animation-duration: 10s;
+            --free-grid-gap: 1rem;
+            
+            /* Enterprise Tier Variables */
+            --enterprise-bg-color: #FFFFFF;
+            --enterprise-text-color: #000000;
+            --enterprise-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --enterprise-font-size: 1rem;
+            --enterprise-grid-gap: 1.333rem;
+            --enterprise-grid-columns: 8;
+            --enterprise-silence-duration: 10s;
+            
+            /* Shared Variables */
+            --golden-ratio: 1.618;
+            --grid-column-width: calc(100% / 8);
+            --transition-speed: 0.3s;
+        }
+
+        /* Tier-based styling */
+        [data-tier="free"] {
+            --bg-color: var(--free-bg-color);
+            --text-color: var(--free-text-color);
+            --font-family: var(--free-font-family);
+            --font-size: var(--free-font-size);
+            --grid-gap: var(--free-grid-gap);
+        }
+
+        [data-tier="enterprise"] {
+            --bg-color: var(--enterprise-bg-color);
+            --text-color: var(--enterprise-text-color);
+            --font-family: var(--enterprise-font-family);
+            --font-size: var(--enterprise-font-size);
+            --grid-gap: var(--enterprise-grid-gap);
+        }
+
+        /* Base layout */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            font-size: var(--font-size);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Grid system */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(var(--enterprise-grid-columns), 1fr);
+            gap: var(--grid-gap);
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        /* Content area */
+        .content {
+            z-index: 10;
+            max-width: 800px;
+            position: relative;
+        }
+
+        /* Frog container for free tier */
+        .frog-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            display: none;
+        }
+
+        [data-tier="free"] .frog-container {
+            display: block;
+        }
+
+        /* Enterprise grid */
+        .enterprise-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--enterprise-grid-columns), 1fr);
+            gap: var(--grid-gap);
+            width: 100%;
+            height: 200px;
+            margin: 2rem 0;
+        }
+
+        [data-tier="enterprise"] .enterprise-grid {
+            display: grid;
+        }
+
+        .grid-cell {
+            background-color: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Animation for free tier */
+        @keyframes sink {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(300px);
+            }
+        }
+
+        .frog {
+            animation: sink var(--free-animation-duration) ease-in-out infinite;
+            width: 100px;
+            height: 100px;
+            background-color: var(--free-frog-color);
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        /* Checkbox styling */
+        .accept-checkbox {
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .accept-checkbox input {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .accept-checkbox label {
+            cursor: pointer;
+        }
+
+        /* Flash effect */
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #FFFFFF;
+            z-index: 1000;
+            opacity: 0;
+        }
+
+        .flash.active {
+            animation: flash 0.1s forwards;
+        }
+
+        @keyframes flash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.5rem;
+            }
+
+            .content {
+                padding: 1rem;
+            }
+
+            .frog {
+                width: 50px;
+                height: 50px;
+            }
+
+            .enterprise-grid {
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash effect -->
+    <div class="flash"></div>
+
+    <!-- Grid container -->
+    <div class="grid-container">
+        <div class="grid-item">
+            <div class="content">
+                <h1>404</h1>
+                <p>The page you're looking for has evaporated into the digital ether.</p>
+                
+                <!-- Frog container for free tier -->
+                <div class="frog-container">
+                    <div class="frog"></div>
+                </div>
+                
+                <!-- Enterprise grid -->
+                <div class="enterprise-grid">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                
+                <!-- Accept checkbox -->
+                <div class="accept-checkbox">
+                    <input type="checkbox" id="accept">
+                    <label for="accept">I accept the inevitable data entropy.</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set tier based on query parameter (for demo purposes)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tier = urlParams.get('tier') || 'free';
+        document.body.setAttribute('data-tier', tier);
+
+        // Flash effect on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const flash = document.querySelector('.flash');
+            flash.classList.add('active');
+            
+            // Reset flash after animation completes
+            setTimeout(() => {
+                flash.classList.remove('active');
+            }, 100);
+        });
+
+        // Audio context for Web Audio API
+        let audioContext;
+        let isAudioInitialized = false;
+
+        // Initialize audio context on first user interaction
+        function initAudio() {
+            if (!isAudioInitialized) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                isAudioInitialized = true;
+            }
+        }
+
+        // Handle checkbox click
+        document.getElementById('accept').addEventListener('click', function() {
+            if (this.checked) {
+                // Play cha-ching sound
+                playChaChing();
+            } else {
+                // Just go black
+                document.body.style.backgroundColor = '#000000';
+            }
+        });
+
+        // Function to play cha-ching sound
+        function playChaChing() {
+            initAudio();
+            
+            // Create oscillator for cha-ching
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(-60, audioContext.currentTime); // -60dB
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.005); // 5ms decay
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.005); // Stop after 5ms
+        }
+
+        // Function to play Free Tier audio
+        function playFreeTierAudio() {
+            initAudio();
+            
+            // Create sawtooth oscillator
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const modulationOsc = audioContext.createOscillator();
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            
+            // Create modulation effect
+            modulationOsc.type = 'square';
+            modulationOsc.frequency.setValueAtTime(16, audioContext.currentTime);
+            
+            // Modulate the gain
+            const modulationGain = audioContext.createGain();
+            modulationGain.gain.setValueAtTime(0.5, audioContext.currentTime);
+            
+            modulationOsc.connect(modulationGain);
+            modulationGain.connect(gainNode.gain);
+            
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            modulationOsc.start();
+            
+            // Detune the oscillator over time
+            oscillator.frequency.exponentialRampToValueAtTime(16, audioContext.currentTime + 10);
+            
+            // Stop after 10 seconds
+            oscillator.stop(audioContext.currentTime + 10);
+            modulationOsc.stop(audioContext.currentTime + 10);
+        }
+
+        // Function to play Enterprise Tier audio
+        function playEnterpriseTierAudio() {
+            initAudio();
+            
+            // Create sine wave oscillator
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 10); // Fade to silence over 10 seconds
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 10);
+        }
+
+        // Initialize audio on first interaction
+        document.addEventListener('click', function() {
+            if (tier === 'free') {
+                playFreeTierAudio();
+            } else if (tier === 'enterprise') {
+                playEnterpriseTierAudio();
+            }
+        }, { once: true });
+
+        // Start appropriate audio on page load based on tier
+        if (tier === 'free') {
+            // Play free tier audio on page load (delayed to allow user interaction)
+            setTimeout(playFreeTierAudio, 500);
+        } else if (tier === 'enterprise') {
+            // Play enterprise tier audio on page load
+            setTimeout(playEnterpriseTierAudio, 500);
+        }
+    </script>
+</body>
+</html>
