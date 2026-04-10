@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Tiered Tragedy Engine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="root">
+        <!-- Tier detection will happen here -->
+        <div id="tier-indicator" class="hidden"></div>
+        
+        <!-- Free Tier Elements -->
+        <div id="free-tier" class="tier-container free-tier hidden">
+            <div class="void-container">
+                <div class="frog-container">
+                    <div class="frog"></div>
+                </div>
+            </div>
+            <div class="free-controls">
+                <button id="accept-entropy-free" class="accept-button">Accept Entropy</button>
+            </div>
+        </div>
+
+        <!-- Enterprise Tier Elements -->
+        <div id="enterprise-tier" class="tier-container enterprise-tier hidden">
+            <div class="void-container">
+                <div class="yacht-container">
+                    <div class="yacht"></div>
+                </div>
+            </div>
+            <div class="enterprise-controls">
+                <button id="accept-entropy-enterprise" class="accept-button pulse">Accept Entropy</button>
+            </div>
+        </div>
+
+        <!-- Audio elements -->
+        <audio id="audio-free" class="audio-element" preload="auto"></audio>
+        <audio id="audio-enterprise" class="audio-element" preload="auto"></audio>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
