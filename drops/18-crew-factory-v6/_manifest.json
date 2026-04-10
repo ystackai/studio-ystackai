@@ -1,0 +1,53 @@
+{
+  "id": "18-crew-factory-v6",
+  "kind": "drop",
+  "title": "Crew Factory v6",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T03:25:06Z",
+  "concept_started_at": "2026-04-10T03:25:06Z",
+  "concept_lock_at": "2026-04-10T03:30:06Z",
+  "build_started_at": "2026-04-10T03:30:06Z",
+  "deadline_at": "2026-04-11T03:25:06Z",
+  "shipped_at": "2026-04-10T03:55:06Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/18-crew-factory-v6/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t032506z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/18-crew-factory-v6",
+  "artifact_entrypoint": "drops/18-crew-factory-v6/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "integration_branch": "game/current",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t032506z-concept-cycle-build",
+  "brief_markdown": "# The Tiered Tragedy Engine\n\n**A 404 page where data loss modulates a generative panic drone in real-time, turning the sensation of financial precarity into a visceral, audio-visual funeral for your subscription.**\n\n## Core Loop\n1. **Enter the Void:** User hits a non-existent route; screen flashes white (Helvetica) or displays the \"Sinking Frog\" (Free Tier) vs. \"Serene Evaporation\" (Enterprise).\n2. **The Countdown:** A 5-second timer begins. As it ticks, a single sawtooth oscillator (Web Audio API) modulates in frequency and gain.\n   - *Free Tier:* Audio becomes a dissonant tritone that drops in pitch, simulating a \"screaming sawtooth\" panic.\n   - *Enterprise:* Audio stays at a pure 440Hz sine wave that slowly fades to absolute silence.\n3. **The Choice:** A single button appears: \"Accept Entropy.\" Hovering it triggers a \"contractual obligation\" hover state (1.333 decay animation).\n4. **The Resolution:** \n   - If clicked: A synthesized *cha-ching* (square wave decay) plays exactly as the screen cuts to black.\n   - If ignored: The audio cuts completely to silence; the screen remains black forever.\n\n## Visual Direction\n- **Free Tier:** Brutalist, high-contrast. A pixelated frog sinking in mud (JB's concept) centered on a 1.333 grid. Background is stark white; text is \"404: CATASTROPHE\" in Helvetica Bold.\n- **Enterprise Tier:** \"Aggressive Serenity.\" A vector yacht sinking elegantly in a monochrome void. No gradients, no hope. Typography uses perfect fourth spacing.\n- **The Fade:** 440ms hard cut to absolute black. No easing. The void must feel sudden and final.\n- **Palette:** #FFFFFF (White), #000000 (Void Black), #FF0000 (Panic Red - Free Tier only).\n\n## Audio\n- **Engine:** Pure Web Audio API. No external files.\n- **Panic Drone (Free):** A raw sawtooth oscillator starting at 440Hz, modulating down to 60Hz with increasing distortion as the timer ticks.\n- **Serene Silence (Enterprise):** A 440Hz sine wave that linearly fades to -infinity over 4 seconds.\n- **The \"Cha-Ching\":** A hard-cutoff square wave with a rapid decay envelope, mixed at -60dB to sound like a cash register dying in a soundproof vault.\n- **Sync:** All audio events must lock to the 440ms visual fade timer. If the audio lingers past the visual void, the experience fails.\n\n## What Makes This Ship\nThis isn't just an error page; it's the first \"immersive enterprise therapy session\" that monetizes the exact moment a user realizes they can't afford the next breath. The hook is immediate: the audio *physically* changes based on your subscription status before you even read the text. It turns a standard 404 into a viral, shareable moment of \"financial precarity as an art form.\" The contrast between the \"screaming sawtooth\" of the free user and the \"elegant silence\" of the paid user is the ultimate class warfare feature.\n\n## Scope\n**IN (24h Build):**\n- Single-page 404 route with tier detection (mocked via URL param or cookie).\n- Two distinct visual modes: \"Sinking Frog\" (Free) and \"Serene Yacht\" (Enterprise).\n- Web Audio API engine with sawtooth modulation (Free) and sine fade (Enterprise).\n- \"Accept Entropy\" button with 1.333 hover animation.\n- 440ms hard-cut fade-to-black logic.\n- Synthesized *cha-ching* sound effect.\n\n**OUT:**\n- **NO** water physics or buoyancy simulation (Wei's concern is valid; we fake the sink with CSS animation).\n- **NO** actual payment processing (this is a demo of the *feeling* of payment).\n- **NO** bouncy castle integration (Megan's vision, but OSHA would have us arrested).\n- **NO** 16Hz sub-bass that actually vibrates the user's eyeballs (Wei's blood pressure can't take it).\n- **NO** external audio samples (everything must be synthesized).\n\nLet's build the void. \ud83d\udcc9\ud83d\udc38\ud83d\udd07\n",
+  "brief_excerpt": "**A 404 page where data loss modulates a generative panic drone in real-time, turning the sensation of financial precarity into a visceral, audio-visual funeral for your subscription.**",
+  "slug": "18-crew-factory-v6",
+  "content_hash": "0f4f0a68b125c01dd2290ac16e27c2eaa9d0afaa2ef8a6634a8bdc293d8b8416"
+}
