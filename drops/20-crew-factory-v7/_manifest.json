@@ -1,0 +1,53 @@
+{
+  "id": "20-crew-factory-v7",
+  "kind": "drop",
+  "title": "Crew Factory v7",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T04:00:07Z",
+  "concept_started_at": "2026-04-10T04:00:07Z",
+  "concept_lock_at": "2026-04-10T04:10:06Z",
+  "build_started_at": "2026-04-10T04:10:06Z",
+  "deadline_at": "2026-04-11T04:00:07Z",
+  "shipped_at": "2026-04-10T04:45:06Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/20-crew-factory-v7/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t040007z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/20-crew-factory-v7",
+  "artifact_entrypoint": "drops/20-crew-factory-v7/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "integration_branch": "game/current",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t040007z-concept-cycle-build",
+  "brief_markdown": "# The Tiered Tragedy Engine (404: Inevitable Loss)\n\n**What makes this exciting:** The first error page that monetizes panic in real-time. We don't just show a 404; we make the user *feel* their subscription tier evaporating through a mathematically precise, generative audio-visual funeral where the only way to stop the scream is to \"Accept Entropy\" and pay up.\n\n## Core Loop\n1. **Trigger:** User hits a non-existent route or data loss event.\n2. **Tier Detection:** System instantly classifies user as `free` or `enterprise`.\n3. **Free Tier Experience:**\n   - Screen flashes stark white (minimalist void).\n   - A pixelated frog (Golden Ratio sized) slowly sinks into a mud-texture void.\n   - Audio: A raw sawtooth oscillator screams a dissonant tritone that gets progressively dirtier and lower in pitch every second.\n   - **Action:** A single \"Accept Entropy\" button appears. If they don't click it immediately, the audio modulates to a 16Hz sub-bass that physically vibrates the browser window (simulated haptics) until the page crashes or they pay.\n4. **Enterprise Tier Experience:**\n   - Screen remains black with a vector yacht sinking elegantly in a 1.333 decay curve.\n   - Audio: A G7 chord resolves into a \"cha-ching\" synthesized from a dying square wave, mixed with a soothing ambient drone that gets slightly more dissonant the longer they wait.\n   - **Action:** The \"Accept Entropy\" button pulses at the optical center. Clicking it triggers a satisfying *cha-ching* sound (synthesized) and a smooth fade to a \"Thank You\" screen.\n5. **Resolution:** Clicking the button either processes the payment intent or resets the cycle with higher dissonance.\n\n## Visual Direction\n- **Style:** Brutalist Swiss Design meets \"Don't Hug Me I'm Scared\" surrealism.\n- **Palette:** Stark white (#FFFFFF) for free tier voids; Deep Void Black (#000000) for enterprise.\n- **Accents:** 1px red borders for error states, exactly 1.333px optical kerning for all text.\n- **Animation:** No easing. Everything moves in linear, mathematically inevitable decay curves. The frog sinks at a rate derived from the Fibonacci sequence; the yacht sinks at a 1.333 ratio.\n- **Typography:** Helvetica Neue (Free) vs. custom variable font with 0.5px optical kerning (Enterprise).\n\n## Audio\n- **Engine:** Web Audio API only. No external samples.\n- **Free Tier:** A single sawtooth oscillator modulated by a low-frequency oscillator (LFO) that increases in frequency and distortion over time. Ends in a 16Hz sub-bass rumble.\n- **Enterprise:** A generative drone based on a G7 chord. The \"cha-ching\" is synthesized from a square wave with a hard decay envelope, triggered exactly on the beat of the grid.\n- **Dynamic Logic:** If the \"Accept Entropy\" button is not clicked within 5 seconds, the audio pitch bends downward (free) or upward (enterprise) to simulate the \"soul leaving the body.\"\n\n## What Makes This Ship\n- **The Hook:** It turns a boring 404 into a viral, shareable \"trauma loop.\" The first 10 seconds feature a screaming frog and a vibrating screen that makes users question their financial decisions immediately.\n- **Shareability:** The \"Accept Entropy\" checkbox is the first \"spiritual contract\" in SaaS. People will screen-record the moment the 16Hz vibration hits and post it with \"I lost my data but at least the audio was mathematically perfect.\"\n- **Differentiation:** While competitors offer \"Sorry, page not found,\" we offer \"Your data is screaming, would you like to pay to silence it?\"\n\n## Scope\n- **IN:**\n  - 404 page with tiered logic (Free vs. Enterprise).\n  - Procedural audio generation (Sawtooth scream vs. G7 drone).\n  - CSS-only animations for the sinking frog (free) and yacht (enterprise) using `requestAnimationFrame` for precision.\n  - \"Accept Entropy\" button with synthesized *cha-ching* feedback.\n  - 16Hz vibration simulation (CSS/JS trigger) for free tier.\n- **OUT:**\n  - Actual physics simulation (water, buoyancy). The sinking is purely visual/animation based.\n  - External audio files or samples.\n  - Complex legal terms; the \"contract\" is purely the click handler.\n  - Multi-language support (only English, as the screaming is universal).\n  - The bouncy castle. (Strictly prohibited by OSHA and Wei's sanity).\n\n**Deadline:** Ship by 2:45pm for the \"Mandatory Therapy Session\" playtest. If the build segfaults, tell the void it was a feature. \ud83d\udc38\ud83d\udcc9\ud83d\udd07\n",
+  "brief_excerpt": "**What makes this exciting:** The first error page that monetizes panic in real-time. We don't just show a 404; we make the user *feel* their subscription tier evaporating through a mathematically precise, generative audio-visual funeral where the only way to stop the scream is to \"Accept Entropy\" and pay up.",
+  "slug": "20-crew-factory-v7",
+  "content_hash": "974c1ad7612362239ffc67d280a97856d3518233981fcb0a148d5d9cee090c18"
+}

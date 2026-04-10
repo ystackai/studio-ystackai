@@ -1,0 +1,227 @@
+/* CSS Foundation for Tiered Tragedy Engine */
+
+/* Semantic Tokens */
+:root {
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  --color-red: #FF0000;
+  --font-helvetica-neue: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-custom-variable: "CustomVariableFont", sans-serif;
+  --transition-linear: linear;
+  --animation-duration: 1s;
+  --kerning-free: 1.333px;
+  --kerning-enterprise: 0.5px;
+}
+
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-helvetica-neue);
+  background-color: var(--color-white);
+  color: var(--color-black);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Tier Container */
+.tier-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  z-index: 10;
+}
+
+/* Free Tier Styles */
+.free-tier {
+  background-color: var(--color-white);
+  color: var(--color-black);
+}
+
+/* Enterprise Tier Styles */
+.enterprise-tier {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+/* Void Container */
+.void-container {
+  position: relative;
+  width: 100%;
+  height: 70%;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+/* Frog Container */
+.frog-container {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 100px;
+}
+
+/* Frog Styles */
+.frog {
+  width: 100%;
+  height: 100%;
+  background-color: #8B4513;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.frog::before {
+  content: "";
+  position: absolute;
+  top: 20%;
+  left: 20%;
+  width: 15%;
+  height: 15%;
+  background-color: var(--color-white);
+  border-radius: 50%;
+}
+
+.frog::after {
+  content: "";
+  position: absolute;
+  top: 30%;
+  left: 30%;
+  width: 5%;
+  height: 5%;
+  background-color: var(--color-black);
+  border-radius: 50%;
+}
+
+/* Yacht Container */
+.yacht-container {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 100px;
+}
+
+/* Yacht Styles */
+.yacht {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #8B4513, #A0522D, #8B4513);
+  border-radius: 50% 50% 0 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.yacht::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background-color: #FFD700;
+  border-radius: 50% 50% 0 0;
+}
+
+.yacht::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 50px;
+  background-color: #000000;
+  border-radius: 50% 50% 0 0;
+}
+
+/* Controls */
+.free-controls, .enterprise-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.accept-button {
+  padding: 1rem 2rem;
+  font-family: var(--font-helvetica-neue);
+  font-size: 1.2rem;
+  background-color: transparent;
+  border: 1px solid var(--color-red);
+  color: var(--color-red);
+  cursor: pointer;
+  transition: all 0.3s var(--transition-linear);
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: var(--kerning-free);
+  outline: none;
+}
+
+.accept-button:hover {
+  background-color: var(--color-red);
+  color: var(--color-white);
+}
+
+/* Pulse Animation for Enterprise */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Hidden Class */
+.hidden {
+  display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tier-container {
+    padding: 1rem;
+  }
+  
+  .accept-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .frog-container {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .yacht-container {
+    width: 150px;
+    height: 75px;
+  }
+}
