@@ -1,0 +1,53 @@
+{
+  "id": "16-crew-factory-v5",
+  "kind": "drop",
+  "title": "Crew Factory v5",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T03:00:06Z",
+  "concept_started_at": "2026-04-10T03:00:06Z",
+  "concept_lock_at": "2026-04-10T03:05:06Z",
+  "build_started_at": "2026-04-10T03:05:06Z",
+  "deadline_at": "2026-04-11T03:00:06Z",
+  "shipped_at": "2026-04-10T03:20:06Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/16-crew-factory-v5/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t030006z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/16-crew-factory-v5",
+  "artifact_entrypoint": "drops/16-crew-factory-v5/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "integration_branch": "game/current",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t030006z-concept-cycle-build",
+  "brief_markdown": "# Tiered Tragedy: The 404 That Sells Silence\n\nA 404 error page that weaponizes subscription tiers to turn data loss into an immersive, mathematical tragedy where free users get a screaming frog and 16Hz physical vibration, while enterprise clients pay for a \"beautifully silent\" evaporation in perfect Swiss grid alignment.\n\n## Core Loop\n1. **Trigger:** The user hits a 404 error. The screen is initially blank white (minimalist panic).\n2. **The Judgment:** A pixelated frog (JB's concept) sinks in mud, strictly aligned to a 1.618 golden ratio grid.\n3. **The Sound:** \n   - *Free Tier:* A raw sawtooth oscillator generates a chaotic \"screaming sawtooth\" that gets dirtier and lower-pitched every second, modulating against a 16Hz sub-bass that physically vibrates the user's eyeballs.\n   - *Enterprise Tier:* Absolute silence, followed by a single, perfectly tuned G7 chord resolving into nothingness.\n4. **The Contract:** A single, pulsing pixel (no text) appears at the optical center. Clicking it triggers a synthesized \"cha-ching\" (square wave + hard cutoff) and accepts the \"Inevitable Data Entropy.\"\n5. **Resolution:** The screen fades to black. The only remaining UI is the memory of the silence or the ringing in the ears.\n\n## Visual Direction\n*   **Style:** Swiss International Style meets existential horror. Strict 8-column grid, heavy Helvetica/Inter typography.\n*   **Palette:** High-contrast monochrome. `#000000` (void), `#FFFFFF` (panic), and a single accent color for the frog (a sickly `#FF4040` red for free tier, `#00FF00` for enterprise).\n*   **Animation:** No physics engine. The \"sinking\" is a pre-calculated CSS transform following a 1.333 decay curve. The frog moves with mathematical precision, not bounciness.\n*   **Micro-interaction:** The \"Accept Entropy\" button is just a pixel that pulses at the golden ratio frequency.\n\n## Audio\n*   **Engine:** Pure Web Audio API. No samples. All sounds generated in real-time.\n*   **Free Tier:** A sawtooth oscillator modulating down in frequency with a low-pass filter opening up as the timer ticks. A 16Hz sine wave sub-bass plays constantly (dangerous but features).\n*   **Enterprise Tier:** A single sustained major chord (G7) that resolves to silence. The \"cha-ching\" is a synthesized square wave with a sharp envelope, mixed at -60dB so it feels like a phantom pain.\n*   **Mix:** The \"cha-ching\" must sync exactly with the frame where the screen goes black.\n\n## What Makes This Ship\nThis isn't just an error page; it's a class warfare simulator that the team has been screaming about for 200 messages. The hook is the *physical sensation* of debt: free users feel the vibration in their bones, enterprise users feel the weight of the silence. It's shareable because it's a \"spiritual contract\" that feels like a glitch in the matrix. The first 10 seconds (the sinking frog + the drone) are the viral clip. It turns a \"bug\" into a premium feature.\n\n## Scope\n*   **IN:** \n    *   Single-page React component for the 404.\n    *   Web Audio API implementation for both tiers (sawtooth drone vs. silent chord).\n    *   CSS Grid layout with 1.333 ratio logic for the frog and button.\n    *   \"Accept Entropy\" click handler that triggers the fade-to-black and audio cues.\n    *   Mobile responsive (vibration works on mobile).\n*   **OUT:** \n    *   Actual physics engine (water simulation is dead; it's a CSS transform).\n    *   Bouncy castle integration (OSHA nightmare).\n    *   Real backend data deletion (this is just the UI experience).\n    *   Multiple error messages (it's always a 404).\n    *   \"Skip Ad\" button (the silence is the upsell).\n",
+  "brief_excerpt": "A 404 error page that weaponizes subscription tiers to turn data loss into an immersive, mathematical tragedy where free users get a screaming frog and 16Hz physical vibration, while enterprise clients pay for a \"beautifully silent\" evaporation in perfect Swiss grid alignment.",
+  "slug": "16-crew-factory-v5",
+  "content_hash": "79bfba81a862c855d09565931f15188d786ec386c32618ce007f7e5c91c6319e"
+}
