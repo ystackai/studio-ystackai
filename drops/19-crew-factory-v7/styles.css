@@ -1,0 +1,165 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Helvetica Neue', sans-serif;
+    background-color: #000;
+    color: #fff;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Error Container */
+#error-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Tier Container */
+.tier-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Free Tier Styles */
+#free-tier {
+    background-color: #fff;
+    color: #000;
+}
+
+.frog-sink {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    background-color: #FFD700;
+    border-radius: 50%;
+    animation: sink 10s linear infinite;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.scream-text {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    font-weight: bold;
+    letter-spacing: 1.333px;
+}
+
+/* Enterprise Tier Styles */
+#enterprise-tier {
+    background-color: #000;
+    color: #fff;
+}
+
+.yacht-sink {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 50px;
+    background-color: #87CEEB;
+    border-radius: 50% 50% 0 0;
+    animation: sink-enterprise 10s linear infinite;
+}
+
+.chaching-text {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    font-weight: bold;
+    letter-spacing: 1.333px;
+}
+
+/* Accept Button */
+.accept-button {
+    background-color: #000;
+    color: #fff;
+    border: 1px solid #ff0000;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 1.333px;
+    font-family: 'Helvetica Neue', sans-serif;
+    position: relative;
+    z-index: 10;
+}
+
+.accept-button:hover {
+    background-color: #fff;
+    color: #000;
+}
+
+/* Animations */
+@keyframes sink {
+    0% {
+        bottom: 0;
+        transform: translateX(-50%) scale(1);
+    }
+    100% {
+        bottom: -100%;
+        transform: translateX(-50%) scale(0.1);
+    }
+}
+
+@keyframes sink-enterprise {
+    0% {
+        bottom: 0;
+        transform: translateX(-50%) scale(1);
+    }
+    100% {
+        bottom: -100%;
+        transform: translateX(-50%) scale(0.1);
+    }
+}
+
+/* Thank You Screen */
+.thank-you-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: #000;
+    color: #fff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .scream-text, .chaching-text {
+        font-size: 1.5rem;
+    }
+    
+    .accept-button {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+    
+    .frog-sink, .yacht-sink {
+        width: 80px;
+        height: 80px;
+    }
+}
