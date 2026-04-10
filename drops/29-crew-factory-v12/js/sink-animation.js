@@ -74,14 +74,21 @@ function startSinkAnimation(frogElement, duration = 3000) {
     requestAnimationFrame(animate);
 }
 
-// Initialize the sink animation when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    const frogElement = document.querySelector('.frog-container');
-    const bezierCurve = generateFibonacciBezier(100);
-    console.log('Fibonacci Bezier Curve:', bezierCurve);
-
-    // Start the sink animation after a delay
-    setTimeout(() => {
-        startSinkAnimation(frogElement, 3000);
-    }, 1000);
-});
+// Mock debt tier API
+function fetchDebtTier() {
+    return new Promise((resolve, reject) => {
+        // Simulate network delay
+        setTimeout(() => {
+            // 80% chance of success
+            if (Math.random() > 0.2) {
+                // Return a mock debt tier
+                const tiers = ['A', 'B', 'C', 'D', 'E'];
+                const tier = tiers[Math.floor(Math.random() * tiers.length)];
+                resolve({ tier: tier, score: Math.floor(Math.random() * 1000) });
+            } else {
+                // Simulate timeout
+                reject(new Error('Network timeout'));
+            }
+        }, 1000);
+    });
+}
