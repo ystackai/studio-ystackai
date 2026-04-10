@@ -107,15 +107,7 @@
             0% {
                 background-color: #FFFFFF;
             }
-            100% {
-                background-color: #000000;
-            }
-        }
 
-        /* Animation for fade to white */
-        @keyframes fadeToWhite {
-            0% {
-                background-color: #000000;
             }
             100% {
                 background-color: #FFFFFF;
@@ -137,7 +129,11 @@
         let sawtoothOscillator;
         let sineOscillator;
         let gainNode;
+        let modulationInterval;
+        let subBassTimeout;
         let subBassGainNode;
+        let modulationInterval;
+        let subBassTimeout;
         let startTime;
 
         // Initialize audio context on first user interaction
@@ -169,6 +165,8 @@
 
                 // Start oscillators
                 sawtoothOscillator.start();
+                // Start modulation of the drone
+                startDroneModulation();
                 sineOscillator.start();
 
                 // Set initial gain values
@@ -180,79 +178,3 @@
         }
 
         // Start the sink animation and audio
-        function startSink() {
-            const frog = document.getElementById('frog');
-            const container = document.querySelector('.container');
-
-            // Start audio on user interaction
-            document.body.addEventListener('click', initAudio, { once: true });
-
-            // Set up frog sinking animation with golden ratio
-            frog.style.animation = `sink 3s cubic-bezier(0.618, 0.0, 0.382, 1.0) forwards`;
-
-            // Fade to black when frog reaches bottom
-            setTimeout(() => {
-                container.style.animation = 'fadeToBlack 0.44s forwards';
-                // Stop audio and fade out gain
-                if (sawtoothOscillator) {
-                    sawtoothOscillator.stop();
-                }
-                if (sineOscillator) {
-                    sineOscillator.stop();
-                }
-                // Show checkbox
-                const checkbox = document.getElementById('acceptEntropy');
-                const label = document.querySelector('label[for="acceptEntropy"]');
-                checkbox.style.opacity = '1';
-                label.style.opacity = '1';
-            }, 3000);
-
-            // Add sub-bass at 3 seconds
-            setTimeout(() => {
-                if (subBassGainNode) {
-                    subBassGainNode.gain.value = 0.1;
-                }
-            }, 3000);
-
-            // Fade to white on checkbox click
-            document.getElementById('acceptEntropy').addEventListener('change', function() {
-                if (this.checked) {
-                    container.style.animation = 'fadeToWhite 0.44s forwards';
-                    // Create "cha-ching" sound
-                    createChaChingSound();
-                    // Redirect to home after fade
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 440);
-                }
-            });
-        }
-
-        // Create the "cha-ching" sound
-        function createChaChingSound() {
-            if (!audioContext) return;
-
-            const chaChingOscillator = audioContext.createOscillator();
-            const chaChingGain = audioContext.createGain();
-
-            chaChingOscillator.type = 'square';
-            chaChingOscillator.frequency.value = 880; // Higher pitch for "cha-ching"
-
-            chaChingGain.gain.value = 0.01; // Very low gain
-
-            chaChingOscillator.connect(chaChingGain);
-            chaChingGain.connect(audioContext.destination);
-
-            // Apply exponential decay
-            chaChingGain.gain.setValueAtTime(0.01, audioContext.currentTime);
-            chaChingGain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.5);
-
-            chaChingOscillator.start(audioContext.currentTime);
-            chaChingOscillator.stop(audioContext.currentTime + 0.5);
-        }
-
-        // Initialize on page load
-        window.addEventListener('load', startSink);
-    </script>
-</body>
-</html>
