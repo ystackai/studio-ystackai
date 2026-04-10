@@ -74,6 +74,21 @@
             margin-bottom: var(--grid-unit);
         }
     </style>
+        .frog {
+            animation: sink 440ms cubic-bezier(0.133, 0.133, 0.867, 0.867) forwards;
+            transform-origin: center;
+        }
+
+        @keyframes sink {
+            0% {
+                transform: translateY(0);
+                font-size: calc(var(--grid-unit) * 4);
+            }
+            100% {
+                transform: translateY(100vh);
+                font-size: 0.1rem;
+            }
+        }
 </head>
 <body>
     <header>
@@ -87,7 +102,7 @@
     </main>
 
     <div class="frog-container">
-        <div class="frog">🐸</div>
+<div class="frog" id="frog">🐸</div>
     </div>
 
     <footer>
