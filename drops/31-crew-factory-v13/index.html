@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Void: A Hostile Acquisition</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #FFFFFF;
+            font-family: monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .grid-line {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            max-width: 80%;
+        }
+
+        .frog {
+            width: 100px;
+            height: 100px;
+            background-color: #FFFFFF;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 20;
+        }
+
+        .yacht {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            z-index: 15;
+        }
+
+        .yacht-sinking {
+            animation: sink 440ms cubic-bezier(1.333, 1.333, 1.333, 1.333) forwards;
+        }
+
+        @keyframes sink {
+            0% {
+                transform: translate(-50%, 50%) translateY(0);
+            }
+            100% {
+                transform: translate(-50%, 50%) translateY(100vh);
+            }
+        }
+
+        .cursor {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FF0000;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            transform: translate(-50%, -50%);
+        }
+
+        .button {
+            background: none;
+            border: 1px solid #FFFFFF;
+            color: #FFFFFF;
+            padding: 10px 20px;
+            font-family: monospace;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            position: relative;
+            z-index: 30;
+        }
+
+        .button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .void {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            opacity: 0;
+            z-index: 50;
+        }
+
+        .void-fade {
+            animation: fade 440ms forwards;
+        }
+
+        @keyframes fade {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid">
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+        <div class="grid-line"></div>
+    </div>
+
+    <div class="content">
+        <div class="frog"></div>
+        <svg class="yacht" width="100" height="50" viewBox="0 0 100 50">
+            <path d="M10 40 L90 40 L95 30 L50 10 L5 30 L10 40" fill="none" stroke="white" stroke-width="2"/>
+        </svg>
+        <h1>404 - Page Not Found</h1>
+        <p>Your credit score has been audited.</p>
+        <p>Debt tier: <span id="debt-tier">0</span></p>
+        <button class="button" id="accept-button">Accept Terms</button>
+    </div>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="void" id="void"></div>
+
+    <script>
+        // Audio system for The Void: A Hostile Acquisition
+        class AudioSystem {
+            constructor() {
+                this.audioContext = null;
+                this.isInitialized = false;
+                this.init();
+            }
+
+            init() {
+                // Initialize Web Audio API
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.isInitialized = true;
+                } catch (e) {
+                    console.error('Web Audio API is not supported in this browser', e);
+                }
+            }
+
+            // Create void hum (sine wave)
+            createVoidHum() {
+                if (!this.isInitialized) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 440; // 440 Hz sine wave for the void hum
+
+                gainNode.gain.value = 0.1; // Quiet volume
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.start();
+
+                // Return oscillator for later stopping
+                return oscillator;
+            }
+
+            // Create judgment phase sawtooth ramp
+            createJudgmentRamp() {
+                if (!this.isInitialized) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.value = 220; // Starting frequency for judgment
+
+                gainNode.gain.value = 0.3; // Moderate volume
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.start();
+
+                // Ramp the frequency upward over 440ms (duration of judgment)
+                oscillator.frequency.exponentialRampToValueAtTime(880, this.audioContext.currentTime + 0.44);
+
+                // Return oscillator for later stopping
+                return oscillator;
+            }
+
+            // Create cha-ching sound effect (square wave with sawtooth decay)
+            createChaChing() {
+                if (!this.isInitialized) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                // Use square wave for the cha-ching
+                oscillator.type = 'square';
+                oscillator.frequency.value = 880; // High frequency for cash register sound
+
+                // Apply envelope for sawtooth decay effect
+                gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1); // 100ms decay
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.start();
+
+                // Stop oscillator after decay
+                oscillator.stop(this.audioContext.currentTime + 0.1);
+
+                return oscillator;
+            }
+
+            // Create a dissonant G7 chord
+            createG7Chord() {
+                if (!this.isInitialized) return;
+
+                // Create multiple oscillators for the chord
+                const oscillators = [];
+                const gainNodes = [];
+
+                // G7 chord frequencies (in Hz)
+                const frequencies = [196, 246.94, 293.66, 392]; // G, B, D, G
+
+                frequencies.forEach(freq => {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.value = freq;
+
+                    gainNode.gain.value = 0.1; // Low volume to make it dissonant
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+
+                    oscillator.start();
+
+                    oscillators.push(oscillator);
+                    gainNodes.push(gainNode);
+                });
+
+                // Stop oscillators after a short time
+                setTimeout(() => {
+                    oscillators.forEach(osc => {
+                        osc.stop();
+                    });
+                }, 200);
+
+                return { oscillators, gainNodes };
+            }
+
+            // Play the complete audio sequence
+            playSequence() {
+                if (!this.isInitialized) return;
+
+                // Create void hum (will continue throughout)
+                const voidHum = this.createVoidHum();
+
+                // Create judgment ramp (starts immediately)
+                const judgmentRamp = this.createJudgmentRamp();
+
+                // Create the cha-ching sound at 440ms mark
+                setTimeout(() => {
+                    this.createChaChing();
+                    this.createG7Chord();
+                }, 440);
+
+                // Cleanup after sequence
+                setTimeout(() => {
+                    if (voidHum) voidHum.stop();
+                    if (judgmentRamp) judgmentRamp.stop();
+                }, 800);
+            }
+        }
+
+        // Initialize audio system when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const audioSystem = new AudioSystem();
+            
+            // Play the audio sequence
+            audioSystem.playSequence();
+            
+            // Simulate credit check delay
+            setTimeout(() => {
+                // Start the sinking animation
+                const yacht = document.querySelector('.yacht');
+                yacht.classList.add('yacht-sinking');
+                
+                // Fade to void after 440ms
+                const voidElement = document.getElementById('void');
+                setTimeout(() => {
+                    voidElement.classList.add('void-fade');
+                }, 440);
+                
+                // Auto-click the accept button after 440ms
+                setTimeout(() => {
+                    document.getElementById('accept-button').click();
+                }, 440);
+            }, 100);
+        });
+
+        // Simulate credit score API delay (440ms)
+        const simulateCreditCheck = () => {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    // Generate a random debt tier for visual effect
+                    const debtTier = Math.floor(Math.random() * 100);
+                    document.getElementById('debt-tier').textContent = debtTier;
+                    
+                    // Adjust font size based on debt tier
+                    const fontSize = Math.max(12, 24 - debtTier * 0.15); // Font size shrinks with debt
+                    document.body.style.fontSize = fontSize + 'px';
+                    
+                    resolve(debtTier);
+                }, 440);
+            });
+        };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simulate credit check
+            simulateCreditCheck();
+        });
+
+        // Auto-click button
+        document.getElementById('accept-button').addEventListener('click', (e) => {
+            e.preventDefault();
+            // Simulate acceptance
+            console.log('Terms accepted');
+            
+            // Reload with smaller font size if user tries to click back
+            setTimeout(() => {
+                const currentSize = parseFloat(document.body.style.fontSize || '16');
+                document.body.style.fontSize = Math.max(12, currentSize * 0.9) + 'px';
+                // Simulate page reload
+                window.location.reload();
+            }, 100);
+        });
+
+        // Track cursor position for auto-clicker effect
+        document.addEventListener('mousemove', (e) => {
+            const cursor = document.getElementById('cursor');
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // Blink cursor to simulate rogue AI
+        setInterval(() => {
+            const cursor = document.getElementById('cursor');
+            cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+        }, 500);
+    </script>
+</body>
+</html>
