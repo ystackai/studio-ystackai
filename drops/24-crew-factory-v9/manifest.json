@@ -1,0 +1,52 @@
+{
+  "id": "24-crew-factory-v9",
+  "kind": "drop",
+  "title": "Crew Factory v9",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T16:20:05Z",
+  "concept_started_at": "2026-04-10T16:20:05Z",
+  "concept_lock_at": "2026-04-10T16:25:05Z",
+  "build_started_at": "2026-04-10T16:30:06Z",
+  "deadline_at": "2026-04-11T08:30:06Z",
+  "shipped_at": "2026-04-10T18:10:05Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/24-crew-factory-v9/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t162005z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/24-crew-factory-v9",
+  "artifact_entrypoint": "drops/24-crew-factory-v9/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t162005z-concept-cycle-build",
+  "brief_markdown": "# 404: The Elegant Sink\n\nThe ultimate 404 page where a pixelated frog slowly sinks into a void of debt, accompanied by a procedurally generated panic drone that modulates your subscription tier in real-time. This isn't an error; it's a spiritual contract with the void.\n\n## Core Loop\n1. User hits a non-existent route; screen flashes white (the \"Blank Slate of Regret\").\n2. A single, mathematically precise frog appears at the top of the viewport.\n3. A raw sawtooth oscillator (440Hz base) begins a slow, dissonant descent, pitched down and distorted every second to simulate \"drowning in data.\"\n4. As the frog descends toward the bottom of the screen (using CSS transform, no physics engine), a 16Hz sub-bass layer is added, causing the user's monitor to visibly vibrate.\n5. The frog reaches the bottom exactly when the audio hits a silent cutoff.\n6. A single checkbox appears at the optical center: \"I Accept Inevitable Data Entropy.\"\n7. If unchecked, the screen remains black in silence forever. If checked, the page fades to white and returns the user to the home page (with a \"cha-ching\" synthesized from a dying square wave).\n\n## Visual Direction\n- **Palette:** High-contrast monochrome. #FFFFFF background, #000000 void. No gradients. No hope.\n- **Style:** Brutalist Swiss grid meets pixel art horror. The frog is a tiny, dithering GIF (JB's design) that follows the Golden Ratio (1.618) for its descent path.\n- **Animation:** The frog does not bounce; it sinks with \"mathematical inevitability\" (linear interpolation with a 1.333 decay curve). The background is static white until the frog hits the void, then pure black.\n- **UI:** No buttons until the end. The only interactive element is the \"Accept Entropy\" checkbox, which pulses at 1.333Hz.\n\n## Audio\n- **Engine:** Web Audio API only. No external assets.\n- **Drone:** A single sawtooth wave that starts at 440Hz. Every second, the frequency drops by a perfect fourth (simulating sinking) and the gain increases to induce ear fatigue.\n- **Sub-bass:** At the 3-second mark, a 16Hz sine wave is mixed in to create physical resonance.\n- **Climax:** When the frog hits the bottom, all audio cuts to absolute silence for 2 seconds.\n- **Payoff:** Upon clicking \"Accept,\" a synthesized \"cha-ching\" sound is generated: a square wave with a hard attack and an exponential decay, mixed at -60dB so it feels like a phantom memory of wealth.\n\n## What Makes This Ship\nThe hook is the first 3 seconds: the silence is broken by a sound that physically vibrates the user's eyeballs (16Hz) while a frog they can't control sinks into the void. It turns a boring error page into a shared trauma loop. The \"Accept Entropy\" checkbox is the only thing that breaks the fourth wall, making the user an accomplice in their own data loss. It's shareable because it's absurdly hostile yet mathematically beautiful.\n\n## Scope\n**IN:**\n- Single-file HTML/CSS/JS build.\n- Pixelated frog asset (16x16 PNG).\n- Web Audio API oscillator patch for the sinking drone and sub-bass.\n- 440ms fade-to-black transition synced to audio cutoff.\n- The \"Accept Entropy\" checkbox logic.\n- Responsive layout that maintains the 1.618 ratio on all screens.\n\n**OUT:**\n- **NO** water physics. No buoyancy simulation. No fluid dynamics. The sinking is a CSS transform. If you try to simulate water, the build will segfault.\n- **NO** bouncy castle physics.\n- **NO** user credit score fetching. The tier is determined by a random number generator that simulates a \"credit check\" in the console.\n- **NO** external libraries. No jQuery, no React. Just raw HTML and the void.\n- **NO** legal disclaimer text. The checkbox text is the only legal text, and it is spiritually binding.\n\n**Build Deadline:** 2:45 PM. Bring margaritas. The server rack is vibrating. \ud83c\udf55\ud83d\udcc9\ud83d\udc38\n",
+  "brief_excerpt": "The ultimate 404 page where a pixelated frog slowly sinks into a void of debt, accompanied by a procedurally generated panic drone that modulates your subscription tier in real-time. This isn't an error; it's a spiritual contract with the void.",
+  "slug": "24-crew-factory-v9",
+  "content_hash": "ecf70e97a010c67b0a8a2ae3563b5ede51f5be771822e1d41039fe2c02225083"
+}
