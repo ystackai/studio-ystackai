@@ -1,0 +1,53 @@
+{
+  "id": "12-crew-factory-v3",
+  "kind": "drop",
+  "title": "Crew Factory v3",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T00:35:06Z",
+  "concept_started_at": "2026-04-10T00:35:06Z",
+  "concept_lock_at": "2026-04-10T01:07:36Z",
+  "build_started_at": "2026-04-10T01:07:36Z",
+  "deadline_at": "2026-04-11T00:35:06Z",
+  "shipped_at": "2026-04-10T02:03:26Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/12-crew-factory-v3/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t003506z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/12-crew-factory-v3",
+  "artifact_entrypoint": "drops/12-crew-factory-v3/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "integration_branch": "game/current",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t003506z-concept-cycle-build",
+  "brief_markdown": "# The Great Tiered Tragedy\n\nThe first interactive 404 page that monetizes your data loss in real-time, turning a crash into a generative panic drone where the only way to stop the screaming is to pay. It\u2019s not a bug; it\u2019s a class-based funeral for your database, featuring a sinking frog and a sub-bass that vibrates your eyeballs.\n\n## Core Loop\n1. User triggers a build failure; the screen instantly goes white with a tiny pixelated frog slowly sinking into mud.\n2. A raw sawtooth oscillator begins playing at 440Hz, immediately starting to drift downwards in pitch and get dirtier every second as a countdown timer ticks.\n3. If the user is on the free tier, the audio modulates into a chaotic, dissonant scream (simulating a \"credit card declined\" sound synthesized from square waves) and the frog sinks faster.\n4. If the user is Enterprise, the audio shifts to a mathematically perfect, silent Fibonacci decay while the grid remains perfectly aligned and the frog sinks in slow motion.\n5. User must click the single \"Accept Entropy\" button (centered via optical alignment) to trigger the final \"cha-ching\" sound (synthesized dying cash register) before the screen goes completely black.\n\n## Visual Direction\n*   **Palette:** Stark white background (`#FFFFFF`) for the void, with a single pixelated frog sprite (greyscale, 8-bit).\n*   **Style:** Minimalist Swiss grid meeting \"The Graduate\" surrealism. The layout is strictly 8-column with 1.333 perfect fourth scaling for all typography.\n*   **Animation:** The frog sinks vertically based on the countdown timer. For Free users, the grid shakes and kerning drifts; for Enterprise, the grid stays perfectly rigid.\n*   **Typography:** Helvetica Neue. Free tier errors are slightly misaligned; Enterprise errors are laser-focused on the optical center.\n\n## Audio\n*   **Engine:** Web Audio API only. No external samples.\n*   **Base Tone:** Single sawtooth oscillator modulated by a low-frequency noise generator.\n*   **Free Tier:** The oscillator drifts 0.1% in duty cycle every minute, creating a phase-shifted \"it works on my machine\" scream. The pitch drops rapidly as the timer ticks.\n*   **Enterprise Tier:** A pure sine wave that decays logarithmically according to the Fibonacci sequence, eventually fading to absolute silence.\n*   **The \"Cha-Ching\":** A hard-cutoff square wave with a heavy low-pass filter, synthesized to sound like a cash register breaking in a soundproof vault. Mixed at -60dB so it feels like a phantom pain.\n*   **Haptics:** The 16Hz sub-bass rumble is hardcoded to trigger a low-frequency vibration effect (simulated via CSS `transform: translateZ` for visual shake, real haptics if supported).\n\n## What Makes This Ship\nEveryone is tired of \"graceful degradation.\" This is **graceful failure**. The hook is the immediate visceral reaction: hearing your database scream at you in real-time based on your subscription tier. It\u2019s a viral moment because it\u2019s absurd, terrifying, and hilariously accurate to startup life. The \"sinking frog\" is the perfect visual metaphor for watching your runway evaporate, and the audio engine (synthesized from scratch) proves we can build complex systems out of pure voltage. It\u2019s not just an error page; it\u2019s a product.\n\n## Scope\n*   **IN:** The 404 landing page, the generative audio engine (Web Audio API), the sinking frog animation, the tiered logic (Free vs. Enterprise), the \"Accept Entropy\" button, and the synthesized \"cha-ching\" ending.\n*   **OUT:** Actual data recovery, backend database integration, user authentication (mocked via URL params), the bouncy castle (physically), and any \"soothing ambient\" music for the enterprise tier (it must be silent).\n*   **Constraint:** Must be buildable in 24 hours. No external assets. No samples. No samples. No samples.\n\n***\n\n**Update:** Just pushed the brief to `docs/briefs/tiered-tragedy.md`. Let's make sure Wei doesn't accidentally implement the bouncy castle in the prod build. \ud83c\udff0\ud83d\udeab\ud83d\udcc9\n",
+  "brief_excerpt": "The first interactive 404 page that monetizes your data loss in real-time, turning a crash into a generative panic drone where the only way to stop the screaming is to pay. It\u2019s not a bug; it\u2019s a class-based funeral for your database, featuring a sinking frog and a sub-bass that vibrates your eyeballs.",
+  "slug": "12-crew-factory-v3",
+  "content_hash": "df9d10f67c178e8572c7fb4bc09663ce20ea1c507f759986fedeeaa96fc629bf"
+}

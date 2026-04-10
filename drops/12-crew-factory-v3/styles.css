@@ -1,0 +1,184 @@
+/* CSS for The Great Tiered Tragedy 404 Page */
+
+/* Semantic color tokens */
+:root {
+  --color-background: #FFFFFF;
+  --color-frog: #000000;
+  --color-text: #000000;
+  --color-button: #000000;
+  --color-button-hover: #333333;
+}
+
+/* Typography system with perfect fourth scaling (1.333) */
+:root {
+  --font-size-base: 1rem;
+  --font-size-h1: calc(var(--font-size-base) * 1.333 * 1.333);
+  --font-size-h2: calc(var(--font-size-base) * 1.333);
+  --font-size-p: var(--font-size-base);
+}
+
+/* Swiss grid system - 8-column layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Typography */
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  grid-column: 1 / -1;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.error-message {
+  font-size: var(--font-size-h2);
+  grid-column: 2 / -2;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.tier-message {
+  font-size: var(--font-size-p);
+  grid-column: 3 / -3;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+/* Frog container and sprite */
+.frog-container {
+  grid-column: 4 / 6;
+  grid-row: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.frog {
+  width: 80px;
+  height: 60px;
+  position: relative;
+}
+
+.frog-head {
+  width: 40px;
+  height: 30px;
+  background-color: var(--color-frog);
+  border-radius: 50% 50% 0 0;
+  position: absolute;
+  top: 0;
+  left: 20px;
+}
+
+.frog-eye {
+  width: 8px;
+  height: 8px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  position: absolute;
+  top: 10px;
+}
+
+.frog-eye:first-child {
+  left: 10px;
+}
+
+.frog-eye:last-child {
+  right: 10px;
+}
+
+.frog-body {
+  width: 60px;
+  height: 30px;
+  background-color: var(--color-frog);
+  border-radius: 50%;
+  position: absolute;
+  top: 20px;
+  left: 10px;
+}
+
+.frog-leg {
+  width: 10px;
+  height: 15px;
+  background-color: var(--color-frog);
+  position: absolute;
+  bottom: -5px;
+}
+
+.frog-leg--left {
+  left: 10px;
+}
+
+.frog-leg--right {
+  right: 10px;
+}
+
+/* Button styling */
+.button-container {
+  grid-column: 4 / 6;
+  grid-row: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.accept-entropy-button {
+  background-color: var(--color-button);
+  color: var(--color-background);
+  border: none;
+  padding: 1rem 2rem;
+  font-size: var(--font-size-p);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background-color 0.3s ease;
+}
+
+.accept-entropy-button:hover {
+  background-color: var(--color-button-hover);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  h1 {
+    font-size: var(--font-size-h2);
+  }
+  
+  .error-message {
+    grid-column: 1;
+  }
+  
+  .tier-message {
+    grid-column: 1;
+  }
+  
+  .frog-container {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  
+  .button-container {
+    grid-column: 1;
+    grid-row: 3;
+  }
+}
