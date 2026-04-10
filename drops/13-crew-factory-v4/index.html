@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="tier-page">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,6 +33,26 @@
             --golden-ratio: 1.618;
             --grid-column-width: calc(100% / 8);
             --transition-speed: 0.3s;
+        }
+
+        /* Free Tier Animation */
+        @keyframes sink {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(300px);
+            }
+        }
+
+        /* Enterprise Spinner Animation */
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(-360deg);
+            }
         }
 
         /* Tier-based styling */
@@ -83,6 +103,7 @@
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
         }
 
         .grid-item {
@@ -106,9 +127,42 @@
             height: 200px;
             margin: 0 auto;
             display: none;
+            animation: sink var(--free-animation-duration) ease-in-out infinite;
         }
 
         [data-tier="free"] .frog-container {
+            display: block;
+        }
+
+        /* Pixelated frog */
+        .frog {
+            width: 100px;
+            height: 100px;
+            background-color: var(--free-frog-color);
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+            /* Pixelated effect */
+            background-image: 
+                linear-gradient(90deg, #8B4513 50%, transparent 50%),
+                linear-gradient(90deg, #8B4513 50%, transparent 50%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        /* Enterprise grid spinner */
+        .enterprise-spinner {
+            width: 100px;
+            height: 100px;
+            border: 4px solid transparent;
+            border-top: 4px solid var(--text-color);
+            border-radius: 50%;
+            animation: spin var(--enterprise-silence-duration) linear infinite;
+            margin: 0 auto;
+            display: none;
+        }
+
+        [data-tier="enterprise"] .enterprise-spinner {
             display: block;
         }
 
@@ -130,26 +184,6 @@
             background-color: rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 4px;
-        }
-
-        /* Animation for free tier */
-        @keyframes sink {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(300px);
-            }
-        }
-
-        .frog {
-            animation: sink var(--free-animation-duration) ease-in-out infinite;
-            width: 100px;
-            height: 100px;
-            background-color: var(--free-frog-color);
-            border-radius: 50%;
-            position: relative;
-            margin: 0 auto;
         }
 
         /* Checkbox styling */
@@ -241,6 +275,9 @@
                     <div class="grid-cell"></div>
                 </div>
                 
+                <!-- Enterprise spinner -->
+                <div class="enterprise-spinner"></div>
+                
                 <!-- Accept checkbox -->
                 <div class="accept-checkbox">
                     <input type="checkbox" id="accept">
@@ -278,11 +315,97 @@
             }
         });
 
+        // Initialize audio context on first interaction
+        let audioContext;
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
         // Function to play cha-ching sound
         function playChaChing() {
-            // This will be implemented in the audio section
-            console.log('Cha-ching sound would play here');
+            initAudio();
+            
+            // Create oscillator for cha-ching sound
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(440, audioContext.currentTime + 0.005);
+            
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.005);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.005);
         }
+
+        // Function to play oscillator patch for free tier
+        function playFreeTierAudio() {
+            initAudio();
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const modulator = audioContext.createOscillator();
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(16, audioContext.currentTime + 10);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 10);
+            
+            modulator.type = 'square';
+            modulator.frequency.setValueAtTime(16, audioContext.currentTime);
+            modulator.frequency.setValueAtTime(16, audioContext.currentTime + 10);
+            
+            // Connect modulator to gain
+            modulator.connect(gainNode.gain);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 10);
+            
+            modulator.start(audioContext.currentTime);
+            modulator.stop(audioContext.currentTime + 10);
+        }
+
+        // Function to play silent grid audio for enterprise tier
+        function playEnterpriseTierAudio() {
+            initAudio();
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 10);
+            
+            gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 10);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 10);
+        }
+
+        // Add event listeners to trigger audio on interaction
+        document.addEventListener('click', function() {
+            if (document.body.getAttribute('data-tier') === 'free') {
+                playFreeTierAudio();
+            } else if (document.body.getAttribute('data-tier') === 'enterprise') {
+                playEnterpriseTierAudio();
+            }
+        }, { once: true });
     </script>
 </body>
 </html>
