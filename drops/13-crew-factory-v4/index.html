@@ -291,84 +291,120 @@
         });
 
         // Function to play cha-ching sound
-        function playChaChing() {
-            initAudio();
-            
-            // Create oscillator for cha-ching
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.type = 'square';
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-            
-            gainNode.gain.setValueAtTime(-60, audioContext.currentTime); // -60dB
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.005); // 5ms decay
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.005); // Stop after 5ms
+udioContext.currentTime + 0.005);/d
         }
 
         // Function to play Free Tier audio
         function playFreeTierAudio() {
+udioContext.currentTime + 10);/d
             initAudio();
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             // Create sawtooth oscillator
+udioContext.currentTime + 10);/d
             const oscillator = audioContext.createOscillator();
+udioContext.currentTime + 10);/d
             const gainNode = audioContext.createGain();
+udioContext.currentTime + 10);/d
             const modulationOsc = audioContext.createOscillator();
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             oscillator.type = 'sawtooth';
+udioContext.currentTime + 10);/d
             oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             // Create modulation effect
+udioContext.currentTime + 10);/d
             modulationOsc.type = 'square';
+udioContext.currentTime + 10);/d
             modulationOsc.frequency.setValueAtTime(16, audioContext.currentTime);
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             // Modulate the gain
+udioContext.currentTime + 10);/d
             const modulationGain = audioContext.createGain();
+udioContext.currentTime + 10);/d
             modulationGain.gain.setValueAtTime(0.5, audioContext.currentTime);
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             modulationOsc.connect(modulationGain);
+udioContext.currentTime + 10);/d
             modulationGain.connect(gainNode.gain);
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             oscillator.connect(gainNode);
+udioContext.currentTime + 10);/d
             gainNode.connect(audioContext.destination);
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             oscillator.start();
+udioContext.currentTime + 10);/d
             modulationOsc.start();
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             // Detune the oscillator over time
+udioContext.currentTime + 10);/d
             oscillator.frequency.exponentialRampToValueAtTime(16, audioContext.currentTime + 10);
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             // Stop after 10 seconds
+udioContext.currentTime + 10);/d
             oscillator.stop(audioContext.currentTime + 10);
+udioContext.currentTime + 10);/d
             modulationOsc.stop(audioContext.currentTime + 10);
         }
 
         // Function to play Enterprise Tier audio
         function playEnterpriseTierAudio() {
+udioContext.currentTime + 10);/d
             initAudio();
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             // Create sine wave oscillator
+udioContext.currentTime + 10);/d
             const oscillator = audioContext.createOscillator();
+udioContext.currentTime + 10);/d
             const gainNode = audioContext.createGain();
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             oscillator.type = 'sine';
+udioContext.currentTime + 10);/d
             oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+udioContext.currentTime + 10);/d
             gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 10); // Fade to silence over 10 seconds
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             oscillator.connect(gainNode);
+udioContext.currentTime + 10);/d
             gainNode.connect(audioContext.destination);
+udioContext.currentTime + 10);/d
             
+udioContext.currentTime + 10);/d
             oscillator.start();
+udioContext.currentTime + 10);/d
             oscillator.stop(audioContext.currentTime + 10);
+udioContext.currentTime + 10);/d
         }
 
         // Initialize audio on first interaction
