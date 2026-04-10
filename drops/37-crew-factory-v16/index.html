@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hostile Acquisition: A 404 That Screams Your Credit Score</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #FFF;
+            font-family: 'Space Mono', 'IBM Plex Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .frog-container {
+            position: relative;
+            margin: 40px auto;
+            width: 200px;
+            height: 200px;
+        }
+
+        .frog {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.1s ease-out;
+        }
+
+        .credit-score {
+            font-size: 24px;
+            margin: 20px 0;
+            color: #FF0033;
+        }
+
+        .button {
+            background-color: #FF0033;
+            color: #FFF;
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Space Mono', 'IBM Plex Mono', monospace;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .button:hover {
+            background-color: #ff3366;
+        }
+
+        .sink-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .grid-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .grid-line.horizontal {
+            top: 25%;
+        }
+
+        .grid-line.vertical {
+            left: 25%;
+        }
+
+        .hidden {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #FFF;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .flash.active {
+            animation: flash 0.1s ease-out;
+        }
+
+        @keyframes flash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes sink {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(100vh);
+            }
+        }
+
+        .sink {
+            animation: sink 0.44s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+        }
+
+        /* Modular scale grid lines */
+        .grid-line:nth-child(1) { top: 0; }
+        .grid-line:nth-child(2) { top: 25%; }
+        .grid-line:nth-child(3) { top: 50%; }
+        .grid-line:nth-child(4) { top: 75%; }
+        .grid-line:nth-child(5) { top: 100%; }
+        .grid-line:nth-child(6) { left: 0; }
+        .grid-line:nth-child(7) { left: 25%; }
+        .grid-line:nth-child(8) { left: 50%; }
+        .grid-line:nth-child(9) { left: 75%; }
+        .grid-line:nth-child(10) { left: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="credit-score" id="creditScore">Loading...</div>
+        <div class="frog-container">
+            <svg class="frog" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <path d="M100,20 C120,10 140,20 150,40 C160,60 150,80 130,90 C110,100 90,100 70,90 C50,80 40,60 50,40 C60,20 80,10 100,20 Z" fill="#FFF"/>
+                <circle cx="80" cy="70" r="10" fill="#000"/>
+                <circle cx="120" cy="70" r="10" fill="#000"/>
+                <path d="M80,110 Q100,130 120,110" stroke="#000" stroke-width="5" fill="none"/>
+            </svg>
+        </div>
+        <button class="button" id="acceptButton">Accept Contract</button>
+    </div>
+
+    <div class="sink-animation" id="sinkAnimation"></div>
+    <div class="flash" id="flash"></div>
+
+    <script>
+        // Audio context for Web Audio API
+        let audioContext;
+        let oscillator;
+        let gainNode;
+        let lfo;
+        let startTime;
+        let isPlaying = false;
+
+        // Credit score mock API
+        function fetchCreditScore() {
+            // Simulate a random credit score between 300-850
+            return Math.floor(Math.random() * 551) + 300;
+        }
+
+        // Update font size based on credit score
+        function updateFontSize(score) {
+            const container = document.querySelector('.container');
+            const fontSize = Math.max(8, 24 - (score - 300) / 50);
+            container.style.fontSize = `${fontSize}px`;
+        }
+
+        // Initialize audio engine
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // Create oscillator for the scream
+            oscillator = audioContext.createOscillator();
+            gainNode = audioContext.createGain();
+            lfo = audioContext.createOscillator();
+
+            // Configure oscillator
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.value = 220; // Start at A3
+
+            // Configure gain node for volume control
+            gainNode.gain.value = 0.2;
+
+            // Configure LFO for pitch modulation
+            lfo.type = 'sine';
+            lfo.frequency.value = 2; // 2 Hz modulation
+
+            // Connect nodes
+            lfo.connect(oscillator.frequency);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Start oscillators
+            oscillator.start();
+            lfo.start();
+
+            isPlaying = true;
+        }
+
+        // Start the scream audio
+        function startScream() {
+            if (!isPlaying) {
+                initAudio();
+            }
+
+            // Start timing for the 440ms sink
+            startTime = audioContext.currentTime;
+
+            // Animate the frog sink
+            const frogContainer = document.querySelector('.frog-container');
+            frogContainer.classList.add('sink');
+
+            // Create flash effect at 440ms
+            setTimeout(() => {
+                const flash = document.getElementById('flash');
+                flash.classList.add('active');
+                setTimeout(() => {
+                    flash.classList.remove('active');
+                }, 100);
+
+                // Stop audio after the sink
+                if (oscillator) {
+                    oscillator.stop();
+                    oscillator = null;
+                }
+
+                // Black screen effect
+                document.body.style.backgroundColor = '#000';
+                document.body.style.transition = 'background-color 0.5s ease';
+                setTimeout(() => {
+                    document.body.style.backgroundColor = '#000';
+                }, 500);
+            }, 440);
+        }
+
+        // Initialize the page
+        function init() {
+            // Create grid lines
+            const sinkAnimation = document.getElementById('sinkAnimation');
+            for (let i = 0; i < 10; i++) {
+                const gridLine = document.createElement('div');
+                gridLine.className = i < 5 ? 'grid-line horizontal' : 'grid-line vertical';
+                sinkAnimation.appendChild(gridLine);
+            }
+
+            // Fetch credit score and update UI
+            const score = fetchCreditScore();
+            document.getElementById('creditScore').textContent = `Credit Score: ${score}`;
+            updateFontSize(score);
+
+            // Set up button event
+            document.getElementById('acceptButton').addEventListener('click', () => {
+                startScream();
+            });
+
+            // Start audio on hover
+            document.addEventListener('mouseenter', () => {
+                if (!isPlaying) {
+                    initAudio();
+                }
+            });
+        }
+
+        // Start when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
