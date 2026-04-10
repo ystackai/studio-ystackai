@@ -1,0 +1,52 @@
+{
+  "id": "36-crew-factory-v15",
+  "kind": "drop",
+  "title": "Crew Factory v15",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T22:05:05Z",
+  "concept_started_at": "2026-04-10T22:05:05Z",
+  "concept_lock_at": "2026-04-10T22:10:06Z",
+  "build_started_at": "2026-04-10T22:15:06Z",
+  "deadline_at": "2026-04-11T14:15:06Z",
+  "shipped_at": "2026-04-10T22:45:05Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/36-crew-factory-v15/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t220505z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/36-crew-factory-v15",
+  "artifact_entrypoint": "drops/36-crew-factory-v15/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t220505z-concept-cycle-build",
+  "brief_markdown": "# The Elegant Sink\n\na 404 page that doesn't just say \"not found,\" but legally judges your credit score in real-time and screams a mathematically perfect tritone as it sinks into the void.\n\n## Core Loop\n1. User lands on the page; the grid instantly checks their \"debt tier\" (simulated via a timeout or cookie).\n2. A vector frog sits in the center, judging the user with a 1.333 aspect ratio stare.\n3. On load, a raw sawtooth oscillator begins a rising dissonant tritone that pitches up as the frog begins to sink.\n4. The user attempts to hover over the \"Accept Terms\" button, but the cursor is auto-judged; the button shrinks or grows based on the calculated debt level.\n5. At exactly 440ms, the frog hits the bottom of the screen, the audio resolves to a jarring G7 chord, and the screen fades to pure black.\n6. A \"Cha-ching\" sound (synthesized from a square wave) triggers the exact millisecond the text vanishes.\n\n## Visual Direction\n**Swiss Grid Brutalism meets Hostile FinTech.**\n- **Palette:** Stark #000000 void, #FFFFFF text, and a single accent of \"Debt Red\" (#FF3333) that pulses in sync with the audio.\n- **Style:** Pure vector graphics. No raster images. The frog is a geometric shape that never blinks.\n- **Typography:** Modular scale strictly locked to the 1.333 ratio. Font sizes dynamically adjust based on the \"debt tier\" (higher debt = smaller, barely legible text, but never unreadable).\n- **Motion:** The sink animation uses a custom `cubic-bezier` derived from the Fibonacci sequence. It feels inevitable, not like a physics sim.\n\n## Audio\n**Procedural Hostility (Web Audio API only).**\n- **No samples.** All sounds are generated via oscillators.\n- **Background:** A low-frequency drone that rises in pitch as the frog sinks.\n- **The Scream:** A tritone (augmented fourth) interval that resolves into a G7 chord exactly at the 440ms mark.\n- **The \"Cha-ching\":** A harsh square wave envelope that mimics a cash register but sounds like a server crash.\n- **Sync:** The audio must resolve the second the visual void hits black. If the audio lingers, it's a bug.\n\n## What Makes This Ship\nThe team debated \"bouncy castles\" and \"physics engines,\" but the consensus is that **static dread** is the only honest mechanic for selling bankruptcy. The hook is the *synchronization*: the feeling that the grid is judging you faster than you can blink. It's shareable because it's a \"hostile takeover\" of a standard error page. It turns a 404 into a viral moment of \"financial shaming\" that feels like a glitch but is actually a feature.\n\n## Scope\n**IN:**\n- The 404 scaffold with the geometric frog.\n- The tiered debt logic (simulated).\n- The procedural audio engine (tritone + square wave cash register).\n- The 440ms fade-to-black with Fibonacci timing.\n- Dynamic typography scaling based on debt tier.\n\n**OUT:**\n- **NO** water physics or buoyancy simulation (Wei's segfault warning stands).\n- **NO** actual credit card APIs or real money processing (yet).\n- **NO** \"pay to resize\" microtransactions in this build.\n- **NO** bouncy castle physics or server rack destruction.\n\nship the dread, not the water. \ud83d\udc38\ud83d\udcc9\ud83d\udd0a\n",
+  "brief_excerpt": "a 404 page that doesn't just say \"not found,\" but legally judges your credit score in real-time and screams a mathematically perfect tritone as it sinks into the void.",
+  "slug": "36-crew-factory-v15",
+  "content_hash": "bfa6fd319deacd2321f20eaa41e5cd1757bb5dc1f770cc64cdefb9cfd4690d42"
+}
