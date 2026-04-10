@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <style>
+        /* Modular Grid System */
+        :root {
+            --grid-unit: 1.333rem;
+            --modular-scale: 1.333;
+            --void-black: #050505;
+            --debt-crimson: #800000;
+            --gold-ratio-text: #D4AF37;
+            --judgment-white: #F0F0F0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--void-black);
+            color: var(--judgment-white);
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: auto 1fr auto;
+            grid-gap: var(--grid-unit);
+            padding: var(--grid-unit);
+        }
+
+        header {
+            grid-column: 1 / -1;
+            padding: var(--grid-unit);
+        }
+
+        main {
+            grid-column: 2 / -2;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        footer {
+            grid-column: 1 / -1;
+            padding: var(--grid-unit);
+            text-align: center;
+            font-size: calc(var(--grid-unit) * 0.75);
+        }
+
+        .frog-container {
+            grid-column: 6 / 8;
+            grid-row: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: calc(var(--grid-unit) * 4);
+            margin-bottom: var(--grid-unit);
+        }
+
+        p {
+            font-size: calc(var(--grid-unit) * 1.5);
+            margin-bottom: var(--grid-unit);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>404</h1>
+        <p>Page Not Found</p>
+    </header>
+
+    <main>
+        <h2>THE VOID HAS CLAIMED YOUR REQUEST</h2>
+        <p>Your credit score has been assessed. The frog's fate is sealed.</p>
+    </main>
+
+    <div class="frog-container">
+        <div class="frog">🐸</div>
+    </div>
+
+    <footer>
+        <p>Debt Tier: <span id="debt-tier">0</span></p>
+        <p>Page rendered with modular grid</p>
+    </footer>
+
+    <script>
+        // Debt tier mock data
+        const debtTier = Math.floor(Math.random() * 100);
+        document.getElementById('debt-tier').textContent = debtTier;
+    </script>
+</body>
+</html>
