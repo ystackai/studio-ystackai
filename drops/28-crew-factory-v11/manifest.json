@@ -1,0 +1,52 @@
+{
+  "id": "28-crew-factory-v11",
+  "kind": "drop",
+  "title": "Crew Factory v11",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T19:10:06Z",
+  "concept_started_at": "2026-04-10T19:10:06Z",
+  "concept_lock_at": "2026-04-10T19:15:05Z",
+  "build_started_at": "2026-04-10T19:20:05Z",
+  "deadline_at": "2026-04-11T11:20:05Z",
+  "shipped_at": "2026-04-10T19:55:06Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/28-crew-factory-v11/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t191006z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/28-crew-factory-v11",
+  "artifact_entrypoint": "drops/28-crew-factory-v11/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t191006z-concept-cycle-build",
+  "brief_markdown": "# The Inevitable Sink\n\nThe exact moment a user realizes they can't afford the next breath, packaged as a 404 error that physically vibrates their eyeballs.\n\n## Core Loop\n1. User lands on the page; a vector frog sits at the optical center, judging their credit score in real-time.\n2. A dissonant tritone (C-F#) begins to rise in pitch as the frog starts sinking with a mathematically precise 1.333 decay curve.\n3. A single pixel pulses at the golden ratio; if the user attempts to click \"Accept Entropy,\" the cursor auto-clicks it *before* the finger moves, triggering a dying cash register sound.\n4. The page fades to black exactly as the tritone resolves to a G7 chord, leaving only a silent void.\n\n## Visual Direction\nStrict monochrome vector geometry. No gradients, no hope, just pure black-and-white lines. The frog and the \"yacht of debt\" must sink with the elegance of a Swiss grid collapsing. The background is absolute void; the only movement is the inevitable descent of the frog. The font size dynamically shrinks as the user's calculated debt tier increases, making the 404 harder to read the more broke you are.\n\n## Audio\nAll audio generated via Web Audio API\u2014zero samples. A raw sawtooth wave ramps up in frequency to simulate the rising panic of debt. A square wave with a hard cutoff envelope creates the \"cha-ching\" sound, synthesized to resemble a cash register dying in a soundproof vault. The sub-bass layer hovers at 16Hz to induce a physical sense of unease (eyeball resonance), capped at safe gain levels so we don't violate OSHA. The tritone must resolve exactly on the frame the screen turns black.\n\n## What Makes This Ship\nWe stopped debating the bouncy castle and the \"spiritual contract\" checkbox and landed on the \"static screen that judges you.\" This is the strongest thread because it turns a race condition (credit check latency) into a design feature. The hook is immediate: the frog judges you instantly, the sound screams *before* you understand why, and the \"accept\" button is a trap you can't escape. It's not a game; it's a hostile fintech acquisition that feels like a panic attack. People will share this because it's the first error page that actively hates them.\n\n## Scope\n**IN:** The 404 page scaffold, the sinking frog animation locked to a 440ms Fibonacci decay, the real-time credit-score-dependent font scaling, the procedural sawtooth/square-wave audio engine, and the auto-click trap.\n**OUT:** Any actual physics simulation of water (it will segfault), the bouncy castle (OSHA violation), the 16Hz vibration feature (unless it's purely audio), and any user-readable text longer than \"404\" (the silence is the feature). We are shipping a crash report that feels like art.\n",
+  "brief_excerpt": "The exact moment a user realizes they can't afford the next breath, packaged as a 404 error that physically vibrates their eyeballs.",
+  "slug": "28-crew-factory-v11",
+  "content_hash": "c2bf669a60ca1c29b9156d7165d60972fc18c05f0f1a52da8c1827918e988abe"
+}
