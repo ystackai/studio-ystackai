@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="elegant-sink">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +15,7 @@
         body {
             background-color: #FFFFFF;
             color: #000000;
-            font-family: 'Courier New', monospace;
+            font-family: 'Courier New', monospace, sans-serif;
             height: 100vh;
             overflow: hidden;
             position: relative;
@@ -82,7 +82,7 @@
         /* Animation keyframes for frog sinking */
         @keyframes sink {
             0% {
-                transform: translateX(-50%) translateY(0);
+                transform: translateX(-50%) translateY(0px);
             }
             100% {
                 transform: translateX(-50%) translateY(calc(100vh - 16px));
@@ -107,10 +107,30 @@
             0% {
                 background-color: #FFFFFF;
             }
-
+            90% {
+                background-color: #FFFFFF;
             }
             100% {
-                background-color: #FFFFFF;
+                background-color: #000000;
+            }
+        }
+
+        /* Animation for frog sinking with 1.333 decay curve */
+        @keyframes sinkWithDecay {
+            0% {
+                transform: translateX(-50%) translateY(0px);
+            }
+            25% {
+                transform: translateX(-50%) translateY(calc(100vh * 0.25 * 1.333));
+            }
+            50% {
+                transform: translateX(-50%) translateY(calc(100vh * 0.5 * 1.333));
+            }
+            75% {
+                transform: translateX(-50%) translateY(calc(100vh * 0.75 * 1.333));
+            }
+            100% {
+                transform: translateX(-50%) translateY(calc(100vh - 16px));
             }
         }
     </style>
@@ -129,12 +149,22 @@
         let sawtoothOscillator;
         let sineOscillator;
         let gainNode;
-        let modulationInterval;
-        let subBassTimeout;
         let subBassGainNode;
-        let modulationInterval;
-        let subBassTimeout;
         let startTime;
+        let frogElement;
+        let acceptCheckbox;
+        let audioVisualizer;
+        let sinkAnimation;
+        let fadeToBlackAnimation;
+        let fadeToBlackTimeout;
+        let sinkComplete = false;
+
+        // Set up the page elements
+        document.addEventListener('DOMContentLoaded', function() {
+            frogElement = document.getElementById('frog');
+            acceptCheckbox = document.getElementById('acceptEntropy');
+            audioVisualizer = document.getElementById('audioVisualizer');
+        });
 
         // Initialize audio context on first user interaction
         function initAudio() {
@@ -165,8 +195,6 @@
 
                 // Start oscillators
                 sawtoothOscillator.start();
-                // Start modulation of the drone
-                startDroneModulation();
                 sineOscillator.start();
 
                 // Set initial gain values
@@ -178,3 +206,107 @@
         }
 
         // Start the sink animation and audio
+        function startSink() {
+            // Initialize audio on first user interaction
+            initAudio();
+
+            // Apply the sink animation with decay curve
+            frogElement.style.animation = 'sinkWithDecay 4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards';
+
+            // Start modulation of the drone
+            startDroneModulation();
+
+            // Add sub-bass at 3 seconds
+            setTimeout(() => {
+                subBassGainNode.gain.value = 0.3;
+            }, 3000);
+
+            // Set up fade to black when sink is complete
+            setTimeout(() => {
+                sinkComplete = true;
+                document.body.style.animation = 'fadeToBlack 2s forwards';
+                // Stop audio after fade
+                setTimeout(() => {
+                    if (sawtoothOscillator) {
+                        sawtoothOscillator.stop();
+                    }
+                    if (sineOscillator) {
+                        sineOscillator.stop();
+                    }
+                }, 2000);
+            }, 4000);
+
+            // Show the checkbox after 4 seconds
+            setTimeout(() => {
+                acceptCheckbox.style.opacity = '1';
+                acceptCheckbox.style.animation = 'pulse 0.75s infinite';
+            }, 4000);
+        }
+
+        // Start drone modulation - frequency drops by perfect fourth every second
+        function startDroneModulation() {
+            let modulationInterval = setInterval(() => {
+                if (sawtoothOscillator && audioContext) {
+                    let now = audioContext.currentTime;
+                    let currentFreq = sawtoothOscillator.frequency.value;
+                    // Drop by a perfect fourth (3/4 ratio)
+                    let newFreq = currentFreq * 0.75;
+                    sawtoothOscillator.frequency.setValueAtTime(newFreq, now);
+
+                    // Increase gain to induce ear fatigue
+                    let currentGain = gainNode.gain.value;
+                    gainNode.gain.setValueAtTime(currentGain + 0.05, now);
+                }
+            }, 1000);
+        }
+
+        // Handle checkbox interaction
+        acceptCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Play cha-ching sound
+                playChaChing();
+
+                // Fade back to white
+                document.body.style.animation = 'fadeToBlack 2s forwards';
+
+                // Return to home page after delay
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                // If unchecked, remain in black silence forever
+                document.body.style.backgroundColor = '#000000';
+            }
+        });
+
+        // Play the cha-ching sound
+        function playChaChing() {
+            if (audioContext) {
+                const squareOscillator = audioContext.createOscillator();
+                const chaChingGain = audioContext.createGain();
+
+                squareOscillator.type = 'square';
+                squareOscillator.frequency.value = 880; // Higher pitch for cha-ching
+
+                chaChingGain.gain.value = 0.01; // -60dB level as specified
+
+                squareOscillator.connect(chaChingGain);
+                chaChingGain.connect(audioContext.destination);
+
+                // Apply attack and decay
+                const now = audioContext.currentTime;
+                chaChingGain.gain.setValueAtTime(0, now);
+                chaChingGain.gain.linearRampToValueAtTime(0.01, now + 0.01); // Attack
+                chaChingGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3); // Decay
+
+                squareOscillator.start(now);
+                squareOscillator.stop(now + 0.3);
+            }
+        }
+
+        // Start the animation on any user interaction
+        document.addEventListener('click', startSink);
+        document.addEventListener('keydown', startSink);
+    </script>
+</body>
+</html>
