@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404: The Elegant Sink</title>
+    <style>
+        /* Brutalist monochrome aesthetic */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #FFFFFF;
+            color: #000000;
+            font-family: monospace;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #frog-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            transition: transform 0.1s linear;
+        }
+
+        #frog {
+            width: 100%;
+            height: 100%;
+        }
+
+        #void {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background-color: #000000;
+            transition: height 0.1s linear;
+        }
+
+        #accept-checkbox {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        #accept-checkbox:checked + label {
+            animation: pulse 0.75s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Golden Ratio layout */
+        .golden-ratio {
+            aspect-ratio: 1.618;
+        }
+    </style>
+</head>
+<body>
+    <div id="frog-container">
+        <img id="frog" src="frog.png" alt="Pixelated frog sinking into void">
+    </div>
+    <div id="void"></div>
+    <input type="checkbox" id="accept-checkbox">
+    <label for="accept-checkbox">I Accept Inevitable Data Entropy</label>
+
+    <script>
+        // Audio context initialization
+        let audioContext;
+        let oscillator;
+        let gainNode;
+        let subBassOscillator;
+        let subBassGain;
+
+        // Frog animation variables
+        let frogElement;
+        let voidElement;
+        let startTime;
+        let animationFrame;
+
+        // Initialize the page
+        function init() {
+            // Initialize audio context on first user interaction
+            document.body.addEventListener('click', initAudio, { once: true });
+
+            frogElement = document.getElementById('frog');
+            voidElement = document.getElementById('void');
+            const acceptCheckbox = document.getElementById('accept-checkbox');
+            const acceptLabel = document.querySelector('label[for="accept-checkbox"]');
+
+            // Set up checkbox event listener
+            acceptCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Fade to white and redirect
+                    document.body.style.backgroundColor = '#FFFFFF';
+                    document.body.style.transition = 'background-color 0.44s ease';
+
+                    // Play "cha-ching" sound
+                    playChaChing();
+
+                    // Redirect after delay
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                }
+            });
+
+            // Start animation after a delay
+            setTimeout(startAnimation, 1000);
+        }
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                gainNode = audioContext.createGain();
+                gainNode.connect(audioContext.destination);
+                gainNode.gain.value = 0.5;
+            }
+        }
+
+        function startAnimation() {
+            startTime = Date.now();
+            animateFrog();
+        }
+
+        function animateFrog() {
+            const elapsed = (Date.now() - startTime) / 1000; // seconds
+            const totalDuration = 3; // seconds to sink
+
+            // Linear interpolation with 1.333 decay curve
+            const progress = Math.min(elapsed / totalDuration, 1);
+            const decay = Math.pow(1.333, progress);
+            const yPosition = progress * 100 * decay;
+
+            // Update frog position
+            const frogContainer = document.getElementById('frog-container');
+            frogContainer.style.transform = `translateX(-50%) translateY(${yPosition}vh)`;
+
+            // Update void height
+            voidElement.style.height = `${yPosition}%`;
+
+            // Start sub-bass at 3 seconds
+            if (elapsed >= 3 && !subBassOscillator) {
+                startSubBass();
+            }
+
+            // Stop animation at 3 seconds
+            if (elapsed < totalDuration) {
+                animationFrame = requestAnimationFrame(animateFrog);
+            } else {
+                // End of animation
+                endAnimation();
+            }
+        }
+
+        function startSubBass() {
+            if (!audioContext) return;
+
+            // Create sub-bass oscillator
+            subBassOscillator = audioContext.createOscillator();
+            subBassGain = audioContext.createGain();
+
+            subBassOscillator.type = 'sine';
+            subBassOscillator.frequency.value = 16; // 16Hz sub-bass
+
+            subBassGain.gain.value = 0.1; // Low volume to start
+
+            subBassOscillator.connect(subBassGain);
+            subBassGain.connect(audioContext.destination);
+
+            subBassOscillator.start();
+
+            // Gradually increase volume
+            subBassGain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            subBassGain.gain.exponentialRampToValueAtTime(0.5, audioContext.currentTime + 1);
+        }
+
+        function endAnimation() {
+            // Show checkbox when frog reaches bottom
+            const acceptCheckbox = document.getElementById('accept-checkbox');
+            const acceptLabel = document.querySelector('label[for="accept-checkbox"]');
+
+            acceptCheckbox.style.display = 'inline';
+            acceptLabel.style.display = 'inline';
+
+            // Play silence for 2 seconds before fading
+            setTimeout(() => {
+                if (oscillator) {
+                    oscillator.stop();
+                }
+                if (subBassOscillator) {
+                    subBassOscillator.stop();
+                }
+
+                // Fade to black
+                document.body.style.backgroundColor = '#000000';
+                document.body.style.transition = 'background-color 0.44s ease';
+
+                // Fade to white after 2 seconds
+                setTimeout(() => {
+                    document.body.style.backgroundColor = '#FFFFFF';
+                    document.body.style.transition = 'background-color 0.44s ease';
+                }, 2000);
+            }, 2000);
+        }
+
+        function playChaChing() {
+            if (!audioContext) return;
+
+            // Create square wave for "cha-ching"
+            const chaChingOsc = audioContext.createOscillator();
+            const chaChingGain = audioContext.createGain();
+
+            chaChingOsc.type = 'square';
+            chaChingOsc.frequency.value = 440; // A4 note
+
+            chaChingGain.gain.value = 0.01; // Very low volume
+
+            // Apply envelope
+            chaChingGain.gain.setValueAtTime(0.01, audioContext.currentTime);
+            chaChingGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2); // Fast decay
+
+            chaChingOsc.connect(chaChingGain);
+            chaChingGain.connect(audioContext.destination);
+
+            chaChingOsc.start();
+            chaChingOsc.stop(audioContext.currentTime + 0.2);
+        }
+
+        // Start when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
