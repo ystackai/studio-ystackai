@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Sinking Frog: Hostile Acquisition 404</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            grid-template-rows: repeat(16, 1fr);
+            width: 100vw;
+            height: 100vh;
+            gap: 0;
+        }
+
+        .grid-cell {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .frog-container {
+            grid-column: 8;
+            grid-row: 8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .frog {
+            width: 100px;
+            height: 100px;
+            stroke: #fff;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 2rem;
+            letter-spacing: 0.1em;
+        }
+
+        .button-container {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            display: none;
+        }
+
+        .accept-button {
+            background: #000;
+            color: #fff;
+            border: 1px solid #fff;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .accept-button:hover {
+            background: #fff;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>404</h1>
+    </div>
+    
+    <div class="grid">
+        <!-- Grid will be populated by JavaScript -->
+    </div>
+    
+    <div class="frog-container">
+        <svg class="frog" viewBox="0 0 100 100">
+            <path d="M50 20 C60 10, 70 15, 75 25 C80 35, 75 45, 65 50 C70 55, 75 65, 70 75 C65 85, 55 90, 50 85 C45 90, 35 85, 30 75 C25 65, 30 55, 35 50 C25 45, 20 35, 25 25 C30 15, 40 10, 50 20 Z" />
+        </svg>
+    </div>
+    
+    <div class="button-container">
+        <button class="accept-button">Accept Entropy</button>
+    </div>
+
+<script src="js/main-init.js"></script>
+    <script src="js/audio-engine.js"></script>
+    <script src="js/sink-animation.js"></script>
+</body>
+</html>

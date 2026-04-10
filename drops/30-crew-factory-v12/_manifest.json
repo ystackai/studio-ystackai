@@ -1,0 +1,52 @@
+{
+  "id": "30-crew-factory-v12",
+  "kind": "drop",
+  "title": "Crew Factory v12",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T20:00:07Z",
+  "concept_started_at": "2026-04-10T20:00:07Z",
+  "concept_lock_at": "2026-04-10T20:05:05Z",
+  "build_started_at": "2026-04-10T20:10:05Z",
+  "deadline_at": "2026-04-11T12:10:05Z",
+  "shipped_at": "2026-04-10T20:45:05Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/30-crew-factory-v12/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t200007z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/30-crew-factory-v12",
+  "artifact_entrypoint": "drops/30-crew-factory-v12/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t200007z-concept-cycle-build",
+  "brief_markdown": "# The Sinking Frog: Hostile Acquisition 404\n\n**Hook:** A mathematically precise, procedurally generated 404 page where a frog sinks into the void in perfect sync with a \"debt scream\" tritone, turning a browser error into an unavoidable, audio-visual judgment of your creditworthiness.\n\n## Core Loop\n1. User hits a 404 page; a minimalist grid loads with a single frog centered on the 1.333 golden ratio.\n2. The browser immediately attempts to fetch the user's \"debt tier\" (mocked API); if it hangs, the screen stays silent.\n3. **The Trigger:** As soon as the tier resolves (or times out), a raw sawtooth-wave \"cha-ching\" fires, and the frog begins its sink animation.\n4. **The Sink:** The frog descends along a custom `cubic-bezier` curve (derived from Fibonacci) while a pitch-bent tritone drone rises in volume and dissonance.\n5. **The Climax:** At the exact moment the frog hits the bottom of the viewport, the drone resolves to a jarring G7 chord, the screen flashes white for 440ms, and fades to a silent, mathematically perfect void.\n6. **The Choice:** A single \"Accept Entropy\" button appears. Clicking it triggers a fake credit card swipe sound and immediately redirects to a generic \"Thank You\" page.\n\n## Visual Direction\n- **Palette:** Stark monochrome. Deep void black (`#000`), surgical white (`#fff`), and a single \"debt red\" (`#D90429`) that only appears during the tritone resolution.\n- **Style:** Brutalist Swiss grid. No gradients, no soft shadows. The frog is a sharp, vector line-art asset.\n- **Motion:** The sink must feel heavy and inevitable, not bouncy. The animation curve is locked to the Fibonacci sequence; if the timing deviates by even a few milliseconds, the illusion of \"mathematical inevitability\" breaks.\n\n## Audio\n- **Engine:** Web Audio API only. No external samples.\n- **Soundscape:**\n    - **The Cha-Ching:** A hard-envelope square wave that sounds like a cash register dying in a soundproof vault.\n    - **The Sink:** A pitch-bent sawtooth ramp starting at a low hum and rising to a piercing tritone as the frog descends.\n    - **The Climax:** A G7 major chord resolved into a dissonant silence.\n    - **The UI:** A synthesized \"swipe\" sound for the \"Accept Entropy\" button, built from a burst of white noise filtered to sound like a magnetic strip.\n- **Sync:** Audio must be locked to the `requestAnimationFrame` loop. If the visual sink lags, the audio must pause. If the audio desyncs, the build fails.\n\n## What Makes This Ship\nThis isn't just a 404 page; it's a cultural artifact that weaponizes the anxiety of modern debt. The hook is the first 3 seconds: the sudden, synthesized \"cha-ching\" followed immediately by the rising panic of the tritone. It turns a frustrating error into a moment of shared, dark humor. People will share it because it's absurd, technically impressive (raw audio synthesis), and terrifyingly accurate to the feeling of checking a bank account. It's *The Graduate* meets *Don't Hug Me I'm Scared* in a browser tab.\n\n## Scope\n**IN (24h Build Window):**\n- The static HTML/CSS grid with the vector frog.\n- The `requestAnimationFrame` sink animation with the custom Fibonacci cubic-bezier.\n- The full Web Audio API engine: sawtooth drone, pitch-bend logic, and the square-wave \"cha-ching.\"\n- The mocked \"debt tier\" API with fallback timeout logic.\n- The \"Accept Entropy\" button with the swipe sound effect.\n- The 440ms fade-to-black sequence.\n\n**OUT (Explicitly Excluded):**\n- Real physics simulation (no buoyancy, no water rendering).\n- Actual credit score API integration (use a random mock).\n- Any \"bouncy castle\" or interactive mini-games (the screen is static until the sink begins).\n- Text content beyond the 404 header and the button label.\n- Mobile responsiveness adjustments beyond \"it doesn't break.\"\n\n**Note:** If the tritone doesn't resolve exactly on the downbeat, we are not shipping. The math must be perfect, or the dread is just a bug. \ud83d\udcc9\ud83d\udc38\ud83d\udd0a\n",
+  "brief_excerpt": "**Hook:** A mathematically precise, procedurally generated 404 page where a frog sinks into the void in perfect sync with a \"debt scream\" tritone, turning a browser error into an unavoidable, audio-visual judgment of your creditworthiness.",
+  "slug": "30-crew-factory-v12",
+  "content_hash": "121564dc46151d620aee145353746749be0032988813d48c3665b1143b8d28c1"
+}
