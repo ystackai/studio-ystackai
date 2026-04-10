@@ -103,8 +103,16 @@
             margin-bottom: 20px;
             line-height: 1.4;
         }
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
 
         .debt-tier {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #ff0000;
+        }
             font-size: 1.5rem;
             margin: 20px 0;
             color: #ff0000;
@@ -128,16 +136,106 @@
 
         /* Sink animation */
         .sinking {
-            animation: sink 2s cubic-bezier(0.6, 0.2, 0.1, 0.8) forwards;
+            animation: sink 2s cubic-bezier(0.1, 0.6, 0.4, 0.9) forwards;
         }
 
         @keyframes sink {
             0% {
+        .debt-message {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+            transition: font-size 0.3s ease;
+        }
+
+        .debt-tier {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #ff0000;
+        }
+            transition: font-size 0.3s ease;
+        }
                 transform: translate(-50%, -50%) translateY(0);
+        .debt-message {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+            transition: font-size 0.3s ease;
+        }
+
+        .debt-tier {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #ff0000;
+        }
+            transition: font-size 0.3s ease;
+        }
             }
+        .debt-message {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+            transition: font-size 0.3s ease;
+        }
+
+        .debt-tier {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #ff0000;
+        }
+            transition: font-size 0.3s ease;
+        }
             100% {
+        .debt-message {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+            transition: font-size 0.3s ease;
+        }
+
+        .debt-tier {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #ff0000;
+        }
+            transition: font-size 0.3s ease;
+        }
                 transform: translate(-50%, -50%) translateY(100vh);
+        .debt-message {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+            transition: font-size 0.3s ease;
+        }
+
+        .debt-tier {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #ff0000;
+        }
+            transition: font-size 0.3s ease;
+        }
             }
+        .debt-message {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+            transition: font-size 0.3s ease;
+        }
+
+        .debt-tier {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #ff0000;
+        }
+            transition: font-size 0.3s ease;
+        }
         }
 
         /* Fade to black */
@@ -297,6 +395,11 @@
                 // This would normally be an API call to check debt
                 // For demo, we'll just use the mock value
                 if (debtTier > 5) {
+                    // Scale font size based on debt level
+                    const baseFontSize = 1.5;
+                    const fontSize = Math.max(0.5, baseFontSize - (debtTier * 0.1));
+                    document.querySelector(".debt-message").style.fontSize = fontSize + "rem";
+                    document.querySelector(".debt-tier").style.fontSize = (fontSize * 1.25) + "rem";
                     // Start sinking animation
                     frog.classList.add('sinking');
                     
