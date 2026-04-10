@@ -297,9 +297,22 @@
                 horizontalLine.className = 'grid-line horizontal';
                 horizontalLine.style.top = `${(i / gridLines) * 100}%`;
                 grid.appendChild(horizontalLine);
-            }
-        }
+        // Initialize the page
+        window.addEventListener(load, function() {
+            initGrid();
+            applyDebtTier();
+            setupAudio();
 
+            // Start the sink animation
+            const frogContainer = document.getElementById(frogContainer);
+            frogContainer.classList.add(sink-animation);
+
+            // Add a slight delay to the fade to black to make sure it synchronizes with the audio
+            setTimeout(() => {
+                const voidElement = document.getElementById(void);
+                voidElement.classList.add(fade-to-black);
+            }, 440);
+        });
         // Audio setup
         function setupAudio() {
             // Create audio context
@@ -310,7 +323,7 @@
             const droneOscillator = audioContext.createOscillator();
             const droneGain = audioContext.createGain();
 
-            droneOscillator.type = 'sawtooth';
+            droneOscillator.type = sawtooth;
             droneOscillator.frequency.value = 55;
 
             droneGain.gain.value = 0.1;
@@ -324,7 +337,7 @@
             const tritoneOscillator = audioContext.createOscillator();
             const tritoneGain = audioContext.createGain();
 
-            tritoneOscillator.type = 'sawtooth';
+            tritoneOscillator.type = sawtooth;
             tritoneOscillator.frequency.value = 440;
 
             tritoneGain.gain.value = 0.1;
@@ -345,7 +358,7 @@
                     const osc = audioContext.createOscillator();
                     const gain = audioContext.createGain();
 
-                    osc.type = 'square';
+                    osc.type = square;
                     osc.frequency.value = chordFrequencies[i];
 
                     gain.gain.value = 0.1;
@@ -362,8 +375,8 @@
                 }
 
                 // Fade to black at 440ms
-                const voidElement = document.getElementById('void');
-                voidElement.classList.add('fade-to-black');
+                const voidElement = document.getElementById(void);
+                voidElement.classList.add(fade-to-black);
 
                 // Stop all audio after 1 second
                 setTimeout(() => {
@@ -377,23 +390,23 @@
             }, 440);
 
             // Handle button hover
-            const termsButton = document.getElementById('termsButton');
-            termsButton.addEventListener('mouseenter', function() {
+            const termsButton = document.getElementById(termsButton);
+            termsButton.addEventListener(mouseenter, function() {
                 // Calculate debt tier for hover effect
                 const debtTier = getDebtTier();
                 let hoverScale;
 
                 switch(debtTier) {
-                    case 'low':
+                    case low:
                         hoverScale = 1.2;
                         break;
-                    case 'medium':
+                    case medium:
                         hoverScale = 1.1;
                         break;
-                    case 'high':
+                    case high:
                         hoverScale = 1.05;
                         break;
-                    case 'extreme':
+                    case extreme:
                         hoverScale = 1.02;
                         break;
                     default:
@@ -403,23 +416,23 @@
                 this.style.transform = `scale(${hoverScale})`;
             });
 
-            termsButton.addEventListener('mouseleave', function() {
+            termsButton.addEventListener(mouseleave, function() {
                 // Reset button size on mouse leave
                 const debtTier = getDebtTier();
                 const baseButtonSize = 1;
                 let buttonScale;
 
                 switch(debtTier) {
-                    case 'low':
+                    case low:
                         buttonScale = baseButtonSize;
                         break;
-                    case 'medium':
+                    case medium:
                         buttonScale = baseButtonSize * 0.8;
                         break;
-                    case 'high':
+                    case high:
                         buttonScale = baseButtonSize * 0.6;
                         break;
-                    case 'extreme':
+                    case extreme:
                         buttonScale = baseButtonSize * 0.4;
                         break;
                     default:
@@ -429,23 +442,3 @@
                 this.style.transform = `scale(${buttonScale})`;
             });
         }
-
-        // Initialize the page
-        window.addEventListener('load', function() {
-            initGrid();
-            applyDebtTier();
-            setupAudio();
-
-            // Start the sink animation
-            const frogContainer = document.getElementById('frogContainer');
-            frogContainer.classList.add('sink-animation');
-
-            // Add a slight delay to the fade to black to make sure it synchronizes with the audio
-            setTimeout(() => {
-                const voidElement = document.getElementById('void');
-                voidElement.classList.add('fade-to-black');
-            }, 440);
-        });
-    </script>
-</body>
-</html>
