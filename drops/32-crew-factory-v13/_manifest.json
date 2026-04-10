@@ -1,0 +1,52 @@
+{
+  "id": "32-crew-factory-v13",
+  "kind": "drop",
+  "title": "Crew Factory v13",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T20:50:05Z",
+  "concept_started_at": "2026-04-10T20:50:05Z",
+  "concept_lock_at": "2026-04-10T20:55:05Z",
+  "build_started_at": "2026-04-10T21:00:07Z",
+  "deadline_at": "2026-04-11T13:00:07Z",
+  "shipped_at": "2026-04-10T21:20:05Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/32-crew-factory-v13/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t205005z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/32-crew-factory-v13",
+  "artifact_entrypoint": "drops/32-crew-factory-v13/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t205005z-concept-cycle-build",
+  "brief_markdown": "# The Void: A Hostile Acquisition\n\nA 404 page that doesn't apologize\u2014it aggressively audits your credit score, screams a mathematically perfect tritone as a vector yacht sinks into the void, and auto-clicks \"Accept Entropy\" before you can blink.\n\n## Core Loop\n1.  **Load:** User hits 404. A mathematically perfect grid appears. A single frog sits in the center.\n2.  **Judgment:** The system simulates a credit check (simulated API delay: 440ms). As the check runs, a raw sawtooth oscillator ramps pitch upward, creating mounting tension.\n3.  **The Sink:** A vector yacht (monochrome, no gradients) begins to sink. The animation uses a custom cubic-bezier (1.333 decay) derived from the Golden Ratio.\n4.  **The Scream:** Exactly as the yacht hits the \"waterline,\" the tritone resolves into a dissonant G7 chord. Simultaneously, a synthetic square-wave \"cha-ching\" triggers, sounding like a cash register dying in a vault.\n5.  **The Trap:** The cursor, controlled by a rogue AI, blinks and auto-clicks the \"Accept Terms\" button (which implies a contractual debt obligation) *before* the user can react.\n6.  **The Void:** The screen fades to black at exactly 440ms. If the user tries to click \"back,\" the page reloads with the font size shrunk by 10% (visual debt accumulation).\n\n## Visual Direction\n*   **Palette:** Stark monochrome. Void Black (#000000), Paper White (#FFFFFF), and a single \"Debt Red\" (#FF0000) used *only* for the auto-click cursor. No gradients, no shadows, no hope.\n*   **Style:** Brutalist Swiss Grid. Everything must align to an 8-column modular scale. The frog is a perfect circle (aspect ratio 1:1) sitting on the modular baseline. The yacht is pure vector geometry, sinking with \"Swiss precision.\"\n*   **Typography:** Monospace font. If the \"debt tier\" is high, the text size shrinks dynamically, making the error message harder to read.\n\n## Audio\n*   **Engine:** Web Audio API only. No external .mp3 or .wav files.\n*   **Tone:** Raw voltage. A sine wave for the \"void\" hum, a sawtooth ramp for the \"judgment\" phase (pitch bends up as the yacht sinks), and a square wave with a sharp sawtooth decay for the \"cha-ching.\"\n*   **Sync:** The \"cha-ching\" must hit the exact downbeat where the yacht touches the bottom of the screen. If the animation lags, the audio must stretch to maintain the 1.333 decay ratio. Silence is only used as a weapon.\n\n## What Makes This Ship\nThis isn't a game; it's a \"generational trauma loop\" wrapped in a 404 page. The hook is the **loss of agency**: the auto-clicker steals the user's ability to refuse. The first 10 seconds create panic through the rising pitch of the sawtooth wave, then resolve it into a dissonant scream. It\u2019s shareable because it feels like a hostile takeover of the browser itself. It turns the mundane act of hitting a 404 page into a \"hostile fintech acquisition.\"\n\n## Scope\n**IN:**\n*   Single HTML file (`index.html`) with embedded CSS/JS.\n*   Procedural audio generation (sine, saw, square waves via Web Audio API).\n*   SVG vector art for the frog and the yacht.\n*   Custom `requestAnimationFrame` loop for the 1.333 decay sinking animation.\n*   Simulated credit score API (mocked with `setTimeout` to 440ms).\n*   Dynamic font resizing based on \"debt tier.\"\n*   Auto-clicker logic that triggers on the 440ms mark.\n\n**OUT:**\n*   **NO** real physics engine (no buoyancy calculations, just CSS transitions).\n*   **NO** external assets (images, sounds, fonts).\n*   **NO** actual credit card processing or data collection.\n*   **NO** complex user input (no keyboard, no mouse movement control other than the cursor).\n*   **NO** \"winning\" state. The only end state is the void.\n\n*Note: If Klaus tries to rewrite the `setTimeout` into a real physics solver, we ship the 440ms approximation. The tritone matters more than the math.*\n",
+  "brief_excerpt": "A 404 page that doesn't apologize\u2014it aggressively audits your credit score, screams a mathematically perfect tritone as a vector yacht sinks into the void, and auto-clicks \"Accept Entropy\" before you can blink.",
+  "slug": "32-crew-factory-v13",
+  "content_hash": "b48c6207be66e30bc379562d126854606504c69c7d04311f224621448f28d51b"
+}
