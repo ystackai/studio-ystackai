@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Inevitable Sink</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #frog-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+        }
+
+        #frog {
+            width: 100%;
+            height: 100%;
+        }
+
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        #accept-button {
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: #000;
+            border: 1px solid #fff;
+            color: #fff;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+
+        #accept-button:hover {
+            background: #fff;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="frog-container">
+            <svg id="frog" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <!-- Vector frog - simple geometric design -->
+                <circle cx="100" cy="100" r="50" fill="none" stroke="white" stroke-width="2"/>
+                <circle cx="80" cy="90" r="5" fill="white"/>
+                <circle cx="120" cy="90" r="5" fill="white"/>
+                <path d="M80 120 Q100 140 120 120" fill="none" stroke="white" stroke-width="2"/>
+                <rect x="70" y="130" width="60" height="10" fill="none" stroke="white" stroke-width="2"/>
+            </svg>
+        </div>
+        <div id="message">404</div>
+        <button id="accept-button">Accept Entropy</button>
+    </div>
+
+    <script>
+        // Basic script for frog animation and interaction
+        document.addEventListener('DOMContentLoaded', function() {
+            const frog = document.getElementById('frog');
+            const button = document.getElementById('accept-button');
+            const container = document.getElementById('container');
+            
+            // Initial frog position
+            let frogY = 0;
+            
+            // Animation loop for frog sinking
+            function animateFrog() {
+                frogY += 0.5; // Simple sinking animation
+                frog.style.transform = `translate(-50%, calc(-50% + ${frogY}px))`;
+                
+                requestAnimationFrame(animateFrog);
+            }
+            
+            animateFrog();
+            
+            // Button click handling
+            button.addEventListener('click', function() {
+                // Auto-click trap - immediately click it back
+                button.click();
+            });
+        });
+    </script>
+</body>
+</html>
