@@ -52,7 +52,7 @@
         .button {
             background-color: #FF0033;
             color: #FFF;
-            border: none;
+            border: 2px solid #FF0033;
             padding: 15px 30px;
             font-family: 'Space Mono', 'IBM Plex Mono', monospace;
             font-size: 18px;
@@ -148,6 +148,15 @@
         <div class="frog-container">
             <svg class="frog" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <path d="M100,20 C120,10 140,20 150,40 C160,60 150,80 130,90 C110,100 90,100 70,90 C50,80 40,60 50,40 C60,20 80,10 100,20 Z" fill="#FFF"/>
+                <defs>
+                    <filter id="frogGlow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge> 
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
                 <circle cx="80" cy="70" r="10" fill="#000"/>
                 <circle cx="120" cy="70" r="10" fill="#000"/>
                 <path d="M80,110 Q100,130 120,110" stroke="#000" stroke-width="5" fill="none"/>
@@ -177,8 +186,15 @@
         // Update font size based on credit score
         function updateFontSize(score) {
             const container = document.querySelector('.container');
-            const fontSize = Math.max(8, 24 - (score - 300) / 50);
-            container.style.fontSize = `${fontSize}px`;
+            // Calculate font size based on credit score with sharper gradient
+            // Lower scores = smaller font, higher scores = larger font
+            const minFontSize = 8;
+            const maxFontSize = 24;
+            const fontSize = maxFontSize - ((score - 300) / (850 - 300)) * (maxFontSize - minFontSize);
+            // Ensure font size is within bounds
+            const adjustedFontSize = Math.max(minFontSize, Math.min(maxFontSize, fontSize));
+            container.style.fontSize = `${adjustedFontSize}px`;
+            container.style.fontSize = `${adjustedFontSize}px`;
         }
 
         // Initialize audio engine
