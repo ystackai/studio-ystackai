@@ -1,0 +1,287 @@
+/* CSS for Tiered Tragedy Engine 404 Page */
+
+/* System tokens and variables */
+:root {
+  --white: #FFFFFF;
+  --void-black: #000000;
+  --panic-red: #FF0000;
+  --font-primary: Helvetica, Arial, sans-serif;
+  --font-size-large: 2.5rem;
+  --font-size-medium: 1.5rem;
+  --grid-ratio: 1.333;
+  --transition-duration: 0.3s;
+  --animation-duration: 0.5s;
+}
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--white);
+  color: var(--void-black);
+  font-family: var(--font-primary);
+  font-weight: bold;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+#page-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+#content-container {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+/* Visual mode content */
+.visual-mode {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Free Tier: Sinking Frog */
+#sinking-frog {
+  background-color: var(--white);
+}
+
+.frog-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  animation: sink 5s linear forwards;
+}
+
+.frog {
+  position: relative;
+  width: 100px;
+  height: 70px;
+  background-color: var(--white);
+  border: 2px solid var(--void-black);
+  border-radius: 50%;
+  animation: float 3s ease-in-out infinite;
+}
+
+.frog-head {
+  position: absolute;
+  top: -20px;
+  left: 15px;
+  width: 70px;
+  height: 40px;
+  background-color: var(--white);
+  border: 2px solid var(--void-black);
+  border-radius: 50%;
+}
+
+.eyes {
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  width: 50px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.eye {
+  width: 10px;
+  height: 10px;
+  background-color: var(--void-black);
+  border-radius: 50%;
+}
+
+.mouth {
+  position: absolute;
+  top: 25px;
+  left: 15px;
+  width: 40px;
+  height: 10px;
+  background-color: var(--void-black);
+  border-radius: 0 0 10px 10px;
+}
+
+.body {
+  position: absolute;
+  top: 50px;
+  left: 15px;
+  width: 70px;
+  height: 40px;
+  background-color: var(--white);
+  border: 2px solid var(--void-black);
+  border-radius: 50%;
+}
+
+.legs {
+  position: absolute;
+  top: 60px;
+  left: 10px;
+  display: flex;
+  justify-content: space-between;
+  width: 80px;
+}
+
+.leg {
+  width: 10px;
+  height: 20px;
+  background-color: var(--white);
+  border: 2px solid var(--void-black);
+  border-radius: 5px;
+}
+
+.mud {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 150px;
+  height: 50px;
+  background-color: #8B4513;
+  border-radius: 50% 50% 0 0;
+  animation: mud-sink 5s linear forwards;
+}
+
+/* Enterprise Tier: Serene Yacht */
+#serene-yacht {
+  background-color: var(--void-black);
+}
+
+.yacht-container {
+  position: relative;
+  width: 200px;
+  height: 100px;
+  animation: sink 5s linear forwards;
+}
+
+.yacht {
+  width: 100%;
+  height: 100%;
+}
+
+/* Text styles */
+#text-content h1 {
+  font-size: var(--font-size-large);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+#tier-description {
+  font-size: var(--font-size-medium);
+  margin-bottom: 2rem;
+}
+
+/* Countdown timer */
+#countdown {
+  font-size: 3rem;
+  font-weight: bold;
+  animation: pulse 1s infinite;
+}
+
+/* Accept Entropy button */
+.accept-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  background-color: var(--white);
+  color: var(--void-black);
+  border: 2px solid var(--void-black);
+  cursor: pointer;
+  transition: all var(--transition-duration) ease;
+  animation: button-pulse 2s infinite;
+}
+
+.accept-button:hover {
+  background-color: var(--panic-red);
+  color: var(--white);
+  border-color: var(--panic-red);
+  animation: none;
+}
+
+/* Animations */
+@keyframes sink {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(200px);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes mud-sink {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(200px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes button-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Hidden class for visual mode switching */
+.hidden {
+  display: none !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  #text-content h1 {
+    font-size: 2rem;
+  }
+  
+  #tier-description {
+    font-size: 1.2rem;
+  }
+  
+  #countdown {
+    font-size: 2rem;
+  }
+  
+  .accept-button {
+    padding: 0.8rem 1.6rem;
+    font-size: 1rem;
+  }
+}
