@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Void of Debt</title>
+    <style>
+        /* Base styles for monochrome grid */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: monospace;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Grid background */
+        .grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(17, 17, 17, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(17, 17, 17, 0.5) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: 1;
+        }
+
+        /* Frog container */
+        .frog-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        /* Frog shape - sharp, high-contrast vector */
+        .frog {
+            width: 120px;
+            height: 120px;
+            background-color: #fff;
+            position: relative;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Frog eyes */
+        .frog::before,
+        .frog::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #000;
+            border-radius: 50%;
+            top: 30px;
+        }
+
+        .frog::before {
+            left: 25px;
+        }
+
+        .frog::after {
+            right: 25px;
+        }
+
+        /* Frog mouth */
+        .frog .mouth {
+            position: absolute;
+            bottom: 30px;
+            width: 40px;
+            height: 10px;
+            background-color: #000;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* UI elements */
+        .ui-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 20;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            max-width: 80%;
+        }
+
+        .debt-message {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .debt-tier {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #ff0000;
+        }
+
+        .accept-button {
+            background-color: #fff;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .accept-button:hover {
+            background-color: #333;
+            color: #fff;
+        }
+
+        /* Sink animation */
+        .sinking {
+            animation: sink 2s cubic-bezier(0.6, 0.2, 0.1, 0.8) forwards;
+        }
+
+        @keyframes sink {
+            0% {
+                transform: translate(-50%, -50%) translateY(0);
+            }
+            100% {
+                transform: translate(-50%, -50%) translateY(100vh);
+            }
+        }
+
+        /* Fade to black */
+        .fade-out {
+            animation: fadeOut 0.44s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid"></div>
+    
+    <div class="frog-container">
+        <div class="frog">
+            <div class="mouth"></div>
+        </div>
+    </div>
+
+    <div class="ui-container">
+        <div class="debt-message">
+            You have been audited by the debt algorithm.
+            <br>
+            Your financial status has been evaluated.
+        </div>
+        <div class="debt-tier">DEBT TIER: <span id="tier">0</span></div>
+        <button class="accept-button" id="acceptButton">ACCEPT</button>
+    </div>
+
+    <script>
+        // Audio context for Web Audio API
+        let audioContext;
+        let drone;
+        let chaChing;
+        
+        // Initialize audio on first user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Start the initial drone (G7 chord)
+                startDrone();
+            }
+        }
+        
+        // Start the initial drone sound
+        function startDrone() {
+            if (drone) return; // Already playing
+            
+            drone = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            drone.type = 'sawtooth';
+            drone.frequency.setValueAtTime(196, audioContext.currentTime); // G3
+            drone.frequency.setValueAtTime(247, audioContext.currentTime); // B3
+            drone.frequency.setValueAtTime(392, audioContext.currentTime); // G4
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+            
+            drone.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            drone.start();
+            drone.stop(audioContext.currentTime + 1);
+        }
+        
+        // Play the "cha-ching" sound on hover
+        function playChaChing() {
+            if (!audioContext) initAudio();
+            
+            chaChing = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            chaChing.type = 'square';
+            chaChing.frequency.setValueAtTime(440, audioContext.currentTime); // A4
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            chaChing.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            chaChing.start();
+            chaChing.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Play the pitch-bending sink sound
+        function playSinkSound() {
+            if (!audioContext) initAudio();
+            
+            const sinkOsc = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            sinkOsc.type = 'sawtooth';
+            sinkOsc.frequency.setValueAtTime(220, audioContext.currentTime); // A3
+            
+            // Pitch bend upward
+            sinkOsc.frequency.linearRampToValueAtTime(880, audioContext.currentTime + 2);
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
+            
+            sinkOsc.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            sinkOsc.start();
+            sinkOsc.stop(audioContext.currentTime + 2);
+        }
+        
+        // Play the tritone resolution
+        function playTritoneResolution() {
+            if (!audioContext) initAudio();
+            
+            const tritoneOsc = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            tritoneOsc.type = 'sawtooth';
+            tritoneOsc.frequency.setValueAtTime(220, audioContext.currentTime); // A3
+            tritoneOsc.frequency.setValueAtTime(311, audioContext.currentTime); // B3 (tritone)
+            
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            tritoneOsc.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            tritoneOsc.start();
+            tritoneOsc.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Basic JavaScript structure for the experience
+        document.addEventListener('DOMContentLoaded', function() {
+            const frog = document.querySelector('.frog');
+            const acceptButton = document.getElementById('acceptButton');
+            const tierElement = document.getElementById('tier');
+            
+            // Mock debt tier logic
+            const debtTier = Math.floor(Math.random() * 10) + 1;
+            tierElement.textContent = debtTier;
+            
+            // Initialize audio on first interaction
+            document.body.addEventListener('click', initAudio, { once: true });
+            
+            // Simulate the debt check on button hover
+            acceptButton.addEventListener('mouseenter', function() {
+                // Play cha-ching sound
+                playChaChing();
+                
+                // This would normally be an API call to check debt
+                // For demo, we'll just use the mock value
+                if (debtTier > 5) {
+                    // Start sinking animation
+                    frog.classList.add('sinking');
+                    
+                    // Play sink sound
+                    playSinkSound();
+                }
+            });
+            
+            // Accept button click - would normally process payment
+            acceptButton.addEventListener('click', function() {
+                // Auto-charge credit card (mock implementation)
+                // In real implementation, this would call a payment gateway
+                console.log('Processing payment for debt tier:', debtTier);
+                
+                // Start fade-out animation
+                document.body.classList.add('fade-out');
+                
+                // Play tritone resolution
+                playTritoneResolution();
+                
+                // After fade-out completes, redirect or reload
+                setTimeout(function() {
+                    // In a real implementation, this would redirect to payment success page
+                    console.log('Payment processed. Redirecting...');
+                }, 440);
+            });
+        });
+    </script>
+</body>
+</html>
