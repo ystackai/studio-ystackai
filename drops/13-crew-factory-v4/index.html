@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Silent Tier</title>
+    <style>
+        /* CSS Variables for Tier-based Aesthetics */
+        :root {
+            /* Tier Selection - Set by backend query param */
+            --tier: "free"; /* default to free tier */
+            
+            /* Free Tier Variables */
+            --free-bg-color: #FFFFFF;
+            --free-text-color: #000000;
+            --free-font-family: "Comic Sans MS", cursive, sans-serif;
+            --free-font-size: 1.618rem;
+            --free-frog-color: #8B4513;
+            --free-mud-color: #654321;
+            --free-animation-duration: 10s;
+            --free-grid-gap: 1rem;
+            
+            /* Enterprise Tier Variables */
+            --enterprise-bg-color: #FFFFFF;
+            --enterprise-text-color: #000000;
+            --enterprise-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --enterprise-font-size: 1rem;
+            --enterprise-grid-gap: 1.333rem;
+            --enterprise-grid-columns: 8;
+            --enterprise-silence-duration: 10s;
+            
+            /* Shared Variables */
+            --golden-ratio: 1.618;
+            --grid-column-width: calc(100% / 8);
+            --transition-speed: 0.3s;
+        }
+
+        /* Tier-based styling */
+        [data-tier="free"] {
+            --bg-color: var(--free-bg-color);
+            --text-color: var(--free-text-color);
+            --font-family: var(--free-font-family);
+            --font-size: var(--free-font-size);
+            --grid-gap: var(--free-grid-gap);
+        }
+
+        [data-tier="enterprise"] {
+            --bg-color: var(--enterprise-bg-color);
+            --text-color: var(--enterprise-text-color);
+            --font-family: var(--enterprise-font-family);
+            --font-size: var(--enterprise-font-size);
+            --grid-gap: var(--enterprise-grid-gap);
+        }
+
+        /* Base layout */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            font-size: var(--font-size);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Grid system */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(var(--enterprise-grid-columns), 1fr);
+            gap: var(--grid-gap);
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        /* Content area */
+        .content {
+            z-index: 10;
+            max-width: 800px;
+            position: relative;
+        }
+
+        /* Frog container for free tier */
+        .frog-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            display: none;
+        }
+
+        [data-tier="free"] .frog-container {
+            display: block;
+        }
+
+        /* Enterprise grid */
+        .enterprise-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--enterprise-grid-columns), 1fr);
+            gap: var(--grid-gap);
+            width: 100%;
+            height: 200px;
+            margin: 2rem 0;
+        }
+
+        [data-tier="enterprise"] .enterprise-grid {
+            display: grid;
+        }
+
+        .grid-cell {
+            background-color: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Animation for free tier */
+        @keyframes sink {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(300px);
+            }
+        }
+
+        .frog {
+            animation: sink var(--free-animation-duration) ease-in-out infinite;
+            width: 100px;
+            height: 100px;
+            background-color: var(--free-frog-color);
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        /* Checkbox styling */
+        .accept-checkbox {
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .accept-checkbox input {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .accept-checkbox label {
+            cursor: pointer;
+        }
+
+        /* Flash effect */
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #FFFFFF;
+            z-index: 1000;
+            opacity: 0;
+        }
+
+        .flash.active {
+            animation: flash 0.1s forwards;
+        }
+
+        @keyframes flash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.5rem;
+            }
+
+            .content {
+                padding: 1rem;
+            }
+
+            .frog {
+                width: 50px;
+                height: 50px;
+            }
+
+            .enterprise-grid {
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash effect -->
+    <div class="flash"></div>
+
+    <!-- Grid container -->
+    <div class="grid-container">
+        <div class="grid-item">
+            <div class="content">
+                <h1>404</h1>
+                <p>The page you're looking for has evaporated into the digital ether.</p>
+                
+                <!-- Frog container for free tier -->
+                <div class="frog-container">
+                    <div class="frog"></div>
+                </div>
+                
+                <!-- Enterprise grid -->
+                <div class="enterprise-grid">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                
+                <!-- Accept checkbox -->
+                <div class="accept-checkbox">
+                    <input type="checkbox" id="accept">
+                    <label for="accept">I accept the inevitable data entropy.</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set tier based on query parameter (for demo purposes)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tier = urlParams.get('tier') || 'free';
+        document.body.setAttribute('data-tier', tier);
+
+        // Flash effect on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const flash = document.querySelector('.flash');
+            flash.classList.add('active');
+            
+            // Reset flash after animation completes
+            setTimeout(() => {
+                flash.classList.remove('active');
+            }, 100);
+        });
+
+        // Handle checkbox click
+        document.getElementById('accept').addEventListener('click', function() {
+            if (this.checked) {
+                // Play cha-ching sound
+                playChaChing();
+            } else {
+                // Just go black
+                document.body.style.backgroundColor = '#000000';
+            }
+        });
+
+        // Function to play cha-ching sound
+        function playChaChing() {
+            // This will be implemented in the audio section
+            console.log('Cha-ching sound would play here');
+        }
+    </script>
+</body>
+</html>
