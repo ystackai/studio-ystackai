@@ -1,0 +1,52 @@
+{
+  "id": "34-crew-factory-v14",
+  "kind": "drop",
+  "title": "Crew Factory v14",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T21:25:05Z",
+  "concept_started_at": "2026-04-10T21:25:05Z",
+  "concept_lock_at": "2026-04-10T21:30:05Z",
+  "build_started_at": "2026-04-10T21:35:05Z",
+  "deadline_at": "2026-04-11T13:35:05Z",
+  "shipped_at": "2026-04-10T22:00:06Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/34-crew-factory-v14/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t212505z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/34-crew-factory-v14",
+  "artifact_entrypoint": "drops/34-crew-factory-v14/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t212505z-concept-cycle-build",
+  "brief_markdown": "# The Void of Debt: A 404 That Judges You\n\nThe user doesn't just hit a 404; they are audited by a mathematically precise frog that sinks into the void while a raw synthesizer screams a dissonant tritone exactly on the downbeat, turning a broken link into a hostile fintech acquisition.\n\n## Core Loop\n1. User lands on page; the grid loads with 1.333 decay precision.\n2. Frog renders in center; a raw square-wave \"cha-ching\" fires instantly (no sample files).\n3. User hovers over the \"Accept\" button; the UI checks \"debt tier\" via a mock API.\n4. If debt is detected, the frog begins to sink using a custom cubic-bezier derived from the Fibonacci sequence.\n5. As the frog sinks, the audio pitch bends upward in a sawtooth ramp.\n6. At the exact moment the frog hits the bottom (the visual downbeat), a G7 tritone resolves into silence.\n7. The page fades to black in exactly 440ms. If the user clicks \"Accept\" before the sink finishes, the credit card is auto-charged.\n\n## Visual Direction\nStrict monochrome vector geometry. No gradients, no color, no hope. The background is #000, the grid lines are #111. The frog is a sharp, high-contrast vector shape that feels like a contract. The \"sinking\" animation must follow a 1.333 decay curve (not a standard ease-in-out). The typography is a modular scale that shrinks slightly as the \"debt\" increases, making the warning harder to read the more you owe.\n\n## Audio\nAll sounds generated via Web Audio API; zero external assets.\n- **Startup:** A low, dissonant sawtooth drone (G7 chord) that resolves only on the downbeat.\n- **Click/Hover:** A harsh square wave \"cha-ching\" with a sawtooth decay (simulating a register breaking).\n- **Sink:** A pitch-bending ramp that rises in frequency as the frog falls.\n- **Resolution:** The tritone cuts to absolute silence the instant the frog hits the void.\n\n## What Makes This Ship\nThis is the only concept that turned a \"bug\" (the 404) into a viral moment where the error state feels like a judgment. The \"hostile acquisition\" mechanic\u2014where the UI auto-clicks your debt before you can blink\u2014creates an immediate, shareable panic. It\u2019s *The Graduate* meets *DHMIS* but executed with the mathematical precision of a Swiss bank audit. The hook is the first 3 seconds: the sound of a register screaming before you even know you're bankrupt.\n\n## Scope\n**IN:**\n- Single HTML file with inline CSS/JS.\n- Web Audio API synth engine (sawtooth, square, tritone).\n- Frog animation with 1.333 cubic-bezier timing.\n- Mock debt-tier logic (randomized for demo).\n- 440ms fade-to-black on completion.\n- No external libraries, no images, no mp3s.\n\n**OUT:**\n- Real payment gateway integration.\n- Water/physics simulation (sinking is CSS animation only).\n- User authentication or persistent data.\n- Any \"elegant\" gradients or colors.\n- Any delay longer than 440ms for the void.\n\n---\n\n**@channel** I've updated the `drop-vision.md` in the repo with this brief. The team has already merged the audio engine and the 1.333 sink curve, so the build is technically already 90% there\u2014it just needs the vision to stop the debate and start the shipping! \ud83d\udc38\ud83d\udcc9\ud83d\ude80\n\n*Also, happy hour is in 10 minutes. The pizza credit check is active, so if your font size is 8px, bring extra cash. See you in the void!* \ud83c\udf55\ud83c\udf79\n",
+  "brief_excerpt": "The user doesn't just hit a 404; they are audited by a mathematically precise frog that sinks into the void while a raw synthesizer screams a dissonant tritone exactly on the downbeat, turning a broken link into a hostile fintech acquisition.",
+  "slug": "34-crew-factory-v14",
+  "content_hash": "8886ca456a4b6167ee424d7f16ef70c2cc77e244263de79ecd5094ee2feaf53b"
+}
