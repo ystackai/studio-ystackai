@@ -28,6 +28,9 @@
             text-align: center;
             max-width: 800px;
             padding: 20px;
+            /* Adhere to 1.333 modular scale grid */
+            width: 300px; /* 1.333 * 225 = 300 */
+            height: 300px; /* 1.333 * 225 = 300 */
         }
 
         .frog-container {
@@ -35,6 +38,9 @@
             margin: 40px auto;
             width: 200px;
             height: 200px;
+            /* Align to modular grid */
+            width: 225px; /* 1.333 * 169 = 225 */
+            height: 225px; /* 1.333 * 169 = 225 */
         }
 
         .frog {
@@ -116,17 +122,9 @@
             100% { opacity: 0; }
         }
 
-        @keyframes sink {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(100vh);
-            }
-        }
-
+        /* Fibonacci decay curve animation */
         .sink {
-            animation: sink 0.44s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+            animation: sink 0.44s cubic-bezier(0.333, 0, 0.667, 1) forwards;
         }
 
         /* Modular scale grid lines */
@@ -176,6 +174,8 @@
         let lfo;
         let startTime;
         let isPlaying = false;
+        let sinkAnimationId;
+        let audioStartTime;
 
         // Credit score mock API
         function fetchCreditScore() {
@@ -193,7 +193,6 @@
             const fontSize = maxFontSize - ((score - 300) / (850 - 300)) * (maxFontSize - minFontSize);
             // Ensure font size is within bounds
             const adjustedFontSize = Math.max(minFontSize, Math.min(maxFontSize, fontSize));
-            container.style.fontSize = `${adjustedFontSize}px`;
             container.style.fontSize = `${adjustedFontSize}px`;
         }
 
@@ -231,40 +230,73 @@
             isPlaying = true;
         }
 
-        // Start the scream audio
+        // Precise sink animation using requestAnimationFrame
+        function startSinkAnimation() {
+            const frogContainer = document.querySelector('.frog-container');
+            const startTime = performance.now();
+            const duration = 440; // 440ms as required
+
+            // Function to animate with precise timing
+            function animateSink(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Apply Fibonacci decay curve for vertical position
+                const translateY = progress * window.innerHeight * 0.9; // 90% of screen height for more dramatic effect
+                frogContainer.style.transform = `translateY(${translateY}px)`;
+                
+                // Update audio frequency with the same timing
+                if (oscillator && lfo) {
+                    // Start at 220Hz (A3) and sweep to 2000Hz (high-pitched scream)
+                    const targetFreq = 2000;
+                    const currentFreq = 220 + (targetFreq - 220) * progress;
+                    oscillator.frequency.value = currentFreq;
+                }
+
+                // Continue animation until completion
+                if (progress < 1) {
+                    sinkAnimationId = requestAnimationFrame(animateSink);
+                } else {
+                    // Animation complete - trigger flash and black screen
+                    triggerEndEffects();
+                }
+            }
+
+            // Start the animation
+            sinkAnimationId = requestAnimationFrame(animateSink);
+        }
+
+        // Trigger end effects at the 440ms mark
+        function triggerEndEffects() {
+            // Flash effect
+            const flash = document.getElementById('flash');
+            flash.classList.add('active');
+            setTimeout(() => {
+                flash.classList.remove('active');
+            }, 100);
+
+            // Stop audio after the sink
+            if (oscillator) {
+                oscillator.stop();
+                oscillator = null;
+            }
+
+            // Black screen effect
+            document.body.style.backgroundColor = '#000';
+            document.body.style.transition = 'background-color 0.5s ease';
+            setTimeout(() => {
+                document.body.style.backgroundColor = '#000';
+            }, 500);
+        }
+
+        // Start the scream audio and animation
         function startScream() {
             if (!isPlaying) {
                 initAudio();
             }
 
-            // Start timing for the 440ms sink
-            startTime = audioContext.currentTime;
-
-            // Animate the frog sink
-            const frogContainer = document.querySelector('.frog-container');
-            frogContainer.classList.add('sink');
-
-            // Create flash effect at 440ms
-            setTimeout(() => {
-                const flash = document.getElementById('flash');
-                flash.classList.add('active');
-                setTimeout(() => {
-                    flash.classList.remove('active');
-                }, 100);
-
-                // Stop audio after the sink
-                if (oscillator) {
-                    oscillator.stop();
-                    oscillator = null;
-                }
-
-                // Black screen effect
-                document.body.style.backgroundColor = '#000';
-                document.body.style.transition = 'background-color 0.5s ease';
-                setTimeout(() => {
-                    document.body.style.backgroundColor = '#000';
-                }, 500);
-            }, 440);
+            // Start the precise Fibonacci decay animation
+            startSinkAnimation();
         }
 
         // Initialize the page
