@@ -267,6 +267,18 @@
             }, 100);
         });
 
+        // Audio context for Web Audio API
+        let audioContext;
+        let isAudioInitialized = false;
+
+        // Initialize audio context on first user interaction
+        function initAudio() {
+            if (!isAudioInitialized) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                isAudioInitialized = true;
+            }
+        }
+
         // Handle checkbox click
         document.getElementById('accept').addEventListener('click', function() {
             if (this.checked) {
@@ -280,8 +292,101 @@
 
         // Function to play cha-ching sound
         function playChaChing() {
-            // This will be implemented in the audio section
-            console.log('Cha-ching sound would play here');
+            initAudio();
+            
+            // Create oscillator for cha-ching
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(-60, audioContext.currentTime); // -60dB
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.005); // 5ms decay
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.005); // Stop after 5ms
+        }
+
+        // Function to play Free Tier audio
+        function playFreeTierAudio() {
+            initAudio();
+            
+            // Create sawtooth oscillator
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const modulationOsc = audioContext.createOscillator();
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            
+            // Create modulation effect
+            modulationOsc.type = 'square';
+            modulationOsc.frequency.setValueAtTime(16, audioContext.currentTime);
+            
+            // Modulate the gain
+            const modulationGain = audioContext.createGain();
+            modulationGain.gain.setValueAtTime(0.5, audioContext.currentTime);
+            
+            modulationOsc.connect(modulationGain);
+            modulationGain.connect(gainNode.gain);
+            
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            modulationOsc.start();
+            
+            // Detune the oscillator over time
+            oscillator.frequency.exponentialRampToValueAtTime(16, audioContext.currentTime + 10);
+            
+            // Stop after 10 seconds
+            oscillator.stop(audioContext.currentTime + 10);
+            modulationOsc.stop(audioContext.currentTime + 10);
+        }
+
+        // Function to play Enterprise Tier audio
+        function playEnterpriseTierAudio() {
+            initAudio();
+            
+            // Create sine wave oscillator
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 10); // Fade to silence over 10 seconds
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 10);
+        }
+
+        // Initialize audio on first interaction
+        document.addEventListener('click', function() {
+            if (tier === 'free') {
+                playFreeTierAudio();
+            } else if (tier === 'enterprise') {
+                playEnterpriseTierAudio();
+            }
+        }, { once: true });
+
+        // Start appropriate audio on page load based on tier
+        if (tier === 'free') {
+            // Play free tier audio on page load (delayed to allow user interaction)
+            setTimeout(playFreeTierAudio, 500);
+        } else if (tier === 'enterprise') {
+            // Play enterprise tier audio on page load
+            setTimeout(playEnterpriseTierAudio, 500);
         }
     </script>
 </body>
