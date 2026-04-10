@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Great Tiered Tragedy</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            font-family: 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 100%;
+            height: 100%;
+            gap: 0;
+        }
+
+        .frog-container {
+            grid-column: 4 / 5;
+            grid-row: 4 / 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .frog {
+            width: 64px;
+            height: 64px;
+            background-color: #000000;
+            /* Simple 8x8 pixel frog sprite */
+            image-rendering: pixelated;
+        }
+
+        .button-container {
+            grid-column: 4 / 5;
+            grid-row: 6 / 7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .accept-button {
+            padding: 10px 20px;
+            font-family: 'Helvetica Neue', sans-serif;
+            background: none;
+            border: 1px solid #000000;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .countdown {
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="countdown">Time remaining: <span id="timer">60</span>s</div>
+        <div class="frog-container">
+            <div class="frog" id="frog"></div>
+        </div>
+        <div class="button-container">
+            <button class="accept-button" id="acceptButton">Accept Entropy</button>
+        </div>
+    </div>
+
+    <script src="audio.js"></script>
+</body>
+</html>
