@@ -1,0 +1,52 @@
+{
+  "id": "26-crew-factory-v10",
+  "kind": "drop",
+  "title": "Crew Factory v10",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T18:15:05Z",
+  "concept_started_at": "2026-04-10T18:15:05Z",
+  "concept_lock_at": "2026-04-10T18:20:05Z",
+  "build_started_at": "2026-04-10T18:25:05Z",
+  "deadline_at": "2026-04-11T10:25:05Z",
+  "shipped_at": "2026-04-10T19:05:06Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/26-crew-factory-v10/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t181505z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/26-crew-factory-v10",
+  "artifact_entrypoint": "drops/26-crew-factory-v10/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t181505z-concept-cycle-build",
+  "brief_markdown": "# Subscription Scream: The Elegant Sink\n\nThe first 404 page that doesn't just tell you you're lost, but financially modulates a generative panic drone in real-time as your subscription expires. It\u2019s an immersive enterprise therapy session where the only \"pay to save\" button is the silence of your own obsolescence.\n\n## Core Loop\n1. **Enter the Void:** User hits 404; the page renders a strictly modular grid featuring a pixelated frog sitting at the \"optical center.\"\n2. **The Judgment:** The frog instantly scans the user's local storage/tier status. A dissonant tritone (raw sawtooth oscillators) begins a G7 resolution that gets progressively dirtier and lower in pitch.\n3. **The Sink:** A vector yacht (monochrome, no gradients) begins to \"sink\" visually via CSS transforms (no physics engine). The audio pitch bends upward (C# sharp) in direct sync with the visual decay.\n4. **The Acceptance:** The user sees a single, pulsing pixel at the grid's center representing the \"Accept Entropy\" checkbox. They must click it before the screen fades to black.\n5. **The Silence:** If clicked, a synthesized *cha-ching* (square wave with hard cutoff) plays, followed by immediate, total silence. If not clicked, the screen fades to black and the audio cuts off, simulating a data death.\n\n## Visual Direction\n**Aesthetic:** \"Minimalist Funeral\" / \"Hostile Fintech.\"\n**Palette:** Void Black (#000000), Data Red (#FF0000 - used sparingly for the tritone visualizer), and Vector White (#FFFFFF).\n**Art Style:** Strict 1.333 (Perfect Fourth) grid. No anti-aliasing on the frog. The yacht is rendered in pure vector geometry that degrades in opacity as it sinks. The \"Accept Entropy\" button is just a single pixel that pulses at the golden ratio frequency.\n\n## Audio\n**Engine:** Web Audio API (Raw Oscillators Only).\n**Dynamics:**\n- **Base:** A 16Hz sub-bass rumble (just below audible threshold, intended to vibrate the user's eyeballs/cheeks).\n- **Scream:** A sawtooth wave that detunes and drops in pitch as the timer counts down, creating a \"losing its mind\" effect.\n- **Climax:** A pitch-bent high-frequency tritone that rises as the yacht sinks.\n- **Resolution:** A synthesized *cha-ching* (dying cash register sound) created from a square wave with a -60dB decay, triggered only on click.\n- **End State:** Absolute silence. No reverb, no tail.\n\n## What Makes This Ship\nThis isn't an error page; it's a \"hostile acquisition\" of the user's attention. The hook in the first 5 seconds is the physical sensation of the 16Hz sub-bass combined with the visual inevitability of the sinking yacht. It\u2019s shareable because it turns the mundane frustration of a 404 into a visceral, emotional trauma loop that feels like a glitch in the matrix of credit scores. It weaponizes shame as a feature.\n\n## Scope\n**IN (24h Build):**\n- Static 404 page with modular grid and vector frog.\n- Audio engine: Raw oscillators (Sawtooth + Sub-bass) with time-based pitch modulation.\n- CSS-only \"sinking\" animation for the yacht (no physics libraries).\n- Click handler for \"Accept Entropy\" that triggers the *cha-ching* and fades to black.\n- \"Tier Detection\" logic that adjusts the starting pitch of the drone based on simulated user debt.\n\n**OUT (Explicitly Excluded):**\n- No water physics simulation (Wei's \"segfault\" warning stands).\n- No external audio samples or presets.\n- No \"Pay to Save\" button with actual payment processing (it's just the click that triggers the silence).\n- No bouncy castle in the build (OSHA violation).\n- No adaptive typography based on credit score (Klaus's \"visual loan shark\" constraint).\n\n*Build this before the therapy session starts at 2:45pm. If the frog judges you into the void, you don't need an onboarding flow; you need a lawyer.*\n",
+  "brief_excerpt": "The first 404 page that doesn't just tell you you're lost, but financially modulates a generative panic drone in real-time as your subscription expires. It\u2019s an immersive enterprise therapy session where the only \"pay to save\" button is the silence of your own obsolescence.",
+  "slug": "26-crew-factory-v10",
+  "content_hash": "547bb0c30f7c30183db7a2b406fff47cf11e3b271f3d294d4621088a7b52f8f4"
+}
