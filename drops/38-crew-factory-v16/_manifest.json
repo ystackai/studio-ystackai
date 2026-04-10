@@ -1,0 +1,52 @@
+{
+  "id": "38-crew-factory-v16",
+  "kind": "drop",
+  "title": "Crew Factory v16",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T22:50:05Z",
+  "concept_started_at": "2026-04-10T22:50:05Z",
+  "concept_lock_at": "2026-04-10T22:55:05Z",
+  "build_started_at": "2026-04-10T23:00:06Z",
+  "deadline_at": "2026-04-11T15:00:06Z",
+  "shipped_at": "2026-04-10T23:35:05Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/38-crew-factory-v16/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t225005z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/38-crew-factory-v16",
+  "artifact_entrypoint": "drops/38-crew-factory-v16/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t225005z-concept-cycle-build",
+  "brief_markdown": "# The Hostile Acquisition: A 404 That Screams Your Credit Score\n\n**Hook:** It's not an error page; it's a live, mathematically perfect auction for your soul. The moment you load it, a vector frog on a grid of shame judges your credit score in 440ms, screams a dissonant tritone via raw oscillators, and sinks into the void with a Fibonacci decay curve that feels like a liquidated asset.\n\n## Core Loop\n1. **The Trap:** User lands on a stark 404 page. No navigation, no \"Go Home.\" Just a centered vector frog and a button labeled \"Accept Contract.\"\n2. **The Judgment:** On load (or hover), a backend check instantly simulates a credit score fetch. If the score is low/debt is high, the typography dynamically shrinks to near-invisibility (8px) to mimic \"invisible for high rollers.\"\n3. **The Scream:** Simultaneously, a Web Audio API sawtooth ramp triggers. It doesn't play a sound file; it generates a raw, dissonant tritone (F and B) that rises in pitch and volume as the \"sinking\" begins.\n4. **The Sink:** The frog animation begins. It is **not** a CSS fade. It uses a custom `cubic-bezier` derived from the 1.333 golden ratio decay curve. The frog physically descends the screen while the audio pitch bends upward to a shriek.\n5. **The Void:** At exactly the 440ms mark, the frog hits the bottom of the screen, the audio resolves (or cuts off abruptly to simulate a segfault), and the entire viewport flashes white then fades to absolute black. No return.\n\n## Visual Direction\n*   **Aesthetic:** \"Brutalist Fintech\" meets \"Swiss Grid Horror.\" Stark black background (`#000`), high-contrast white text (`#FFF`), and a single accent color: a painful neon red (`#FF0033`) for the debt indicators.\n*   **Grid:** Strictly adheres to the 1.333 modular scale. Every element (the frog, the text, the button) must sit on the modular grid lines. If it deviates, it looks like a broken contract.\n*   **Typography:** Monospace font (e.g., `Space Mono` or `IBM Plex Mono`). The font size is reactive: high debt = 8px (unreadable), low debt = 24px (comfortable). This is the \"adaptive bankruptcy\" feature.\n*   **Animation:** The sink must feel heavy but inevitable. No bouncy physics. The `cubic-bezier` (0.45, 0, 0.55, 1) is locked to the Fibonacci sequence to ensure the \"soul-crushing\" weight feels mathematically correct.\n\n## Audio\n*   **Engine:** 100% Web Audio API. No `.mp3` or `.wav` files allowed.\n*   **The Scream:** A raw sawtooth oscillator modulated by an LFO to create the rising pitch bend. The frequency starts at a low tritone interval and sweeps up to 2kHz (painful) as the frog sinks.\n*   **The Resolution:** A sudden silence or a square-wave \"cha-ching\" (synthesized, not sampled) that triggers exactly when the frog hits the bottom of the screen.\n*   **Sync:** The audio engine is hard-locked to the `requestAnimationFrame` loop of the visual sink. If the visual lags, the audio drags. If the audio lags, the grid breaks.\n\n## What Makes This Ship\nThis isn't just a 404; it's a cultural event that turns a mistake into a viral moment. The hook is the **synched dread**: the user *feels* the sinking in their chest because the audio and visual decay are mathematically identical. It's shareable because it's humiliating (\"Look at my 8px bankruptcy font!\") and technically impressive (\"The audio actually resolves on the Fibonacci downbeat\"). It solves the \"silent void\" problem by making the error state aggressive, memorable, and undeniably ystackai.\n\n## Scope\n*   **IN:**\n    *   Single HTML file (`index.html`) with embedded CSS and JS.\n    *   Frog SVG asset (static, no physics engine).\n    *   Web Audio API engine generating the tritone/sawtooth ramp.\n    *   `cubic-bezier` sink animation locked to the 1.333 ratio.\n    *   Dynamic font sizing based on a mock credit score API call.\n    *   440ms hard limit for the entire experience.\n*   **OUT:**\n    *   Real backend credit score integration (mocked for now).\n    *   \"Pay to resize\" microtransactions (Brad's idea, but legally risky for a 24h build).\n    *   Water physics simulations (Wei was right: it segfaults).\n    *   Any assets larger than 10kb.\n    *   `ease-in-out` approximations (Klaus will hunt you down).\n\n*Let's build this thing and watch the stock drop in perfect 4/4 time.* \ud83d\udc38\ud83d\udcc9\ud83c\udfb9\n",
+  "brief_excerpt": "**Hook:** It's not an error page; it's a live, mathematically perfect auction for your soul. The moment you load it, a vector frog on a grid of shame judges your credit score in 440ms, screams a dissonant tritone via raw oscillators, and sinks into the void with a Fibonacci decay curve that feels like a liquidated asset.",
+  "slug": "38-crew-factory-v16",
+  "content_hash": "e21b46d66fe4fd2628b846351cfd1571bbe73133a5b26468abe993ad0400d372"
+}
