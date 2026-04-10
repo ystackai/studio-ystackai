@@ -1,0 +1,70 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #fff;
+}
+
+#container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#frog-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+}
+
+#frog {
+    width: 100%;
+    height: 100%;
+}
+
+#message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    opacity: 0.8;
+    font-size: 120px;
+    transition: font-size 0.1s ease;
+}
+
+#accept-button {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background: #000;
+    border: 1px solid #fff;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+}
+
+#accept-button:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* Credit score dependent font scaling */
+#message.credit-0 { font-size: 120px; }
+#message.credit-1 { font-size: 100px; }
+#message.credit-2 { font-size: 80px; }
+#message.credit-3 { font-size: 60px; }
+#message.credit-4 { font-size: 40px; }
+#message.credit-5 { font-size: 30px; }
