@@ -1,0 +1,53 @@
+{
+  "id": "22-crew-factory-v8",
+  "kind": "drop",
+  "title": "Crew Factory v8",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T04:50:07Z",
+  "concept_started_at": "2026-04-10T04:50:07Z",
+  "concept_lock_at": "2026-04-10T05:00:06Z",
+  "build_started_at": "2026-04-10T15:10:05Z",
+  "deadline_at": "2026-04-11T07:10:05Z",
+  "shipped_at": "2026-04-10T16:15:06Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/22-crew-factory-v8/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t045007z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/22-crew-factory-v8",
+  "artifact_entrypoint": "drops/22-crew-factory-v8/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t045007z-concept-cycle-build",
+  "integration_branch": "game/current",
+  "brief_markdown": "# The Subscription Scream\n\nA 404 error page that doesn't just tell you your data is gone, but *screams* your financial ruin in real-time. It\u2019s not an outage; it\u2019s a generative panic attack where the audio pitch bends higher and dirtier the longer you stare at the void.\n\n## Core Loop\n1. User lands on the page: A pixel-perfect, mathematically judged frog sinks slowly into mud on a stark white void.\n2. Audio engine activates immediately: A raw sawtooth oscillator begins a dissonant drone that modulates pitch and timbre based on \"debt duration.\"\n3. User interacts with the single UI element: A pulsing pixel (the \"Accept Entropy\" button) appears at the optical center of the grid.\n4. On click: A synthesized \"cha-ching\" (square wave with hard decay) triggers instantly, followed by an immediate fade-to-black and total silence.\n5. If ignored: The drone escalates to a 16Hz sub-bass rumble (eyeball resonance) until the screen cuts to black on its own.\n\n## Visual Direction\n*   **Aesthetic:** \"Minimalist Funeral.\" Stark white background, infinite void.\n*   **Art Style:** Vector geometry strictly adhering to the Golden Ratio (1.618) and the Fibonacci sequence. No gradients, no color, only monochrome black on white.\n*   **Key Element:** A tiny, pixelated GIF of a frog sinking in mud, rendered with exact modular scale. The frog is the only organic thing; everything else is a rigid, unforgiving grid.\n*   **Motion:** The frog sinks at a 1.333 decay rate. The \"Accept Entropy\" pixel pulses at the perfect fourth.\n\n## Audio\n*   **Engine:** Web Audio API only. No external samples.\n*   **The Drone:** A raw sawtooth wave that starts at a neutral pitch and descends into a muddy, dissonant tritone as time passes.\n*   **The Climax:** If the user doesn't click within 440ms, the oscillator modulates to a 16Hz sub-bass (feeling more than hearing) to induce physical dread.\n*   **The Click:** A synthesized \"cash register dying\" sound\u2014hard-cutoff square wave with a -60dB mix.\n*   **The Silence:** Absolute silence post-click. The void is the feature.\n\n## What Makes This Ship\n*   **The Hook:** Most 404s are helpful; this one is an immersive therapy session for people who forgot to pay. The first 10 seconds feature a visual judgment (the frog) paired with audio that literally gets \"uglier\" the longer you hesitate.\n*   **Shareability:** It\u2019s a viral clip waiting to happen: \"I lost my data but at least I got the Helvetica version of grief.\" The 16Hz vibration is a physical sensation people will want to film.\n*   **Differentiation:** While others build \"cute\" error pages, we are monetizing the *sensation* of financial precarity. The audio isn't background; it's the core mechanic.\n\n## Scope\n*   **IN (24h):**\n    *   404 Scaffold with strict CSS grid (Golden Ratio enforcement).\n    *   Pixel-perfect sinking frog asset.\n    *   Web Audio API engine: Sawtooth drone, 16Hz sub-bass modulator, synthesized \"cha-ching.\"\n    *   Single click handler for \"Accept Entropy\" with 440ms fade-to-black.\n    *   Tier detection logic (free vs. enterprise visual/audio variance).\n*   **OUT:**\n    *   No water physics simulation (fade-to-black only).\n    *   No \"bouncy castle\" or external hardware integration.\n    *   No complex backend user data fetching (mock tier logic is sufficient).\n    *   No \"Helpful Tips\" or links to other pages. The user must accept the void or get lost.\n",
+  "brief_excerpt": "A 404 error page that doesn't just tell you your data is gone, but *screams* your financial ruin in real-time. It\u2019s not an outage; it\u2019s a generative panic attack where the audio pitch bends higher and dirtier the longer you stare at the void.",
+  "slug": "22-crew-factory-v8",
+  "content_hash": "4fc7899d8b3b34eadbfd61fe07347e89d8c49acf65b2b96dfbcae418da626b3f"
+}

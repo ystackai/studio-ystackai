@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Scream - 404</title>
+    <style>
+        /* Golden Ratio CSS Grid Layout */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            color: black;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: grid;
+            grid-template-columns: 1fr 1.618fr 1fr;
+            grid-template-rows: 1fr 1.618fr 1fr;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Center container for the frog */
+        .frog-container {
+            grid-column: 2;
+            grid-row: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Frog sinking animation */
+        .frog {
+            width: 100px;
+            height: 100px;
+            background-color: #000;
+            border-radius: 50%;
+            position: relative;
+            animation: sink 4s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        /* Mud effect */
+        .mud {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(to top, #333, #000);
+            border-radius: 50% 50% 0 0;
+        }
+
+        @keyframes sink {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(20px) scale(0.95);
+            }
+            100% {
+                transform: translateY(40px) scale(0.9);
+            }
+        }
+
+        /* Accept Entropy Button */
+        .accept-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background-color: black;
+            border-radius: 50%;
+            animation: pulse 1.333s infinite;
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.3;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                opacity: 0.3;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Audio engine status indicator */
+        .audio-status {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="frog-container">
+        <div class="frog">
+            <div class="mud"></div>
+        </div>
+        <div class="accept-button" id="acceptButton"></div>
+    </div>
+    <div class="audio-status" id="audioStatus">Audio: Initializing...</div>
+
+    <script>
+        // Audio engine initialization
+        let audioContext;
+        let droneOscillator;
+        let clickSound;
+        let fadeTimeout;
+        let startTime;
+
+        // Initialize audio on first user interaction
+        function initAudio() {
+            if (audioContext) return; // Already initialized
+
+            try {
+                // Create audio context
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create drone oscillator (sawtooth wave)
+                droneOscillator = audioContext.createOscillator();
+                droneOscillator.type = 'sawtooth';
+                
+                // Create gain node for volume control
+                const droneGain = audioContext.createGain();
+                droneGain.gain.value = 0.1; // Start quiet
+                
+                // Connect drone oscillator to gain node and output
+                droneOscillator.connect(droneGain);
+                droneGain.connect(audioContext.destination);
+                
+                // Start the oscillator
+                droneOscillator.start();
+                
+                // Set initial frequency (neutral pitch)
+                droneOscillator.frequency.value = 220; // A3 note
+                
+                // Update audio status
+                document.getElementById('audioStatus').textContent = 'Audio: Active';
+                
+                // Start the drone modulation
+                startDroneModulation();
+                
+                console.log('Audio engine initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize audio engine:', error);
+                document.getElementById('audioStatus').textContent = 'Audio: Error';
+            }
+        }
+
+        // Start drone modulation based on time
+        function startDroneModulation() {
+            if (!droneOscillator) return;
+            
+            startTime = Date.now();
+            
+            // Modulate pitch and timbre over time
+            function modulateDrone() {
+                const elapsed = (Date.now() - startTime) / 1000; // seconds
+                
+                // Pitch bends down over time (from A3 to C#2)
+                const targetFrequency = 220 - (elapsed * 20); // 220Hz to ~100Hz
+                droneOscillator.frequency.setValueAtTime(targetFrequency, audioContext.currentTime);
+                
+                // Increase dissonance over time (change waveform)
+                if (elapsed > 5) {
+                    // Switch to more dissonant waveform after 5 seconds
+                    droneOscillator.type = 'triangle';
+                }
+                
+                // Continue modulation
+                requestAnimationFrame(modulateDrone);
+            }
+            
+            modulateDrone();
+        }
+
+        // Play the "cha-ching" sound effect
+        function playChaChing() {
+            if (!audioContext) return;
+            
+            try {
+                // Create square wave oscillator for "cha-ching"
+                const chaChingOsc = audioContext.createOscillator();
+                chaChingOsc.type = 'square';
+                
+                // Create gain node for decay
+                const chaChingGain = audioContext.createGain();
+                chaChingGain.gain.value = 0.3;
+                
+                // Apply envelope (quick decay)
+                chaChingGain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                chaChingGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                // Connect and play
+                chaChingOsc.connect(chaChingGain);
+                chaChingGain.connect(audioContext.destination);
+                
+                // Set frequency and play
+                chaChingOsc.frequency.value = 880; // A5 note
+                chaChingOsc.start(audioContext.currentTime);
+                chaChingOsc.stop(audioContext.currentTime + 0.1);
+                
+                console.log('Cha-ching sound played');
+            } catch (error) {
+                console.error('Failed to play cha-ching:', error);
+            }
+        }
+
+        // Handle click event for "Accept Entropy"
+        function handleAcceptClick() {
+            // Play the "cha-ching" sound
+            playChaChing();
+            
+            // Clear any pending fade
+            if (fadeTimeout) {
+                clearTimeout(fadeTimeout);
+            }
+            
+            // Set up fade-to-black effect after a short delay
+            fadeTimeout = setTimeout(() => {
+                // Fade to black
+                document.body.style.backgroundColor = 'black';
+                
+                // Stop all audio
+                if (droneOscillator) {
+                    droneOscillator.stop();
+                }
+                
+                // Update status
+                document.getElementById('audioStatus').textContent = 'Audio: Silent';
+                
+                console.log('Fade-to-black complete');
+            }, 200);
+        }
+
+        // Initialize everything when the page loads
+        window.addEventListener('load', function() {
+            // Initialize audio on first interaction
+            document.addEventListener('click', function() {
+                initAudio();
+            });
+            
+            // Set up the accept button
+            const acceptButton = document.getElementById('acceptButton');
+            acceptButton.addEventListener('click', handleAcceptClick);
+            
+            // Start fade-to-black if no interaction within 440ms
+            fadeTimeout = setTimeout(() => {
+                // Start sub-bass modulation
+                startSubBass();
+            }, 440);
+        });
+
+        // Start sub-bass modulation (16Hz rumble)
+        function startSubBass() {
+            if (!audioContext || !droneOscillator) return;
+            
+            try {
+                // Stop the current drone
+                droneOscillator.stop();
+                
+                // Create a new sub-bass oscillator
+                droneOscillator = audioContext.createOscillator();
+                droneOscillator.type = 'sine';
+                
+                // Create gain node for sub-bass
+                const subBassGain = audioContext.createGain();
+                subBassGain.gain.value = 0.5;
+                
+                // Connect and play
+                droneOscillator.connect(subBassGain);
+                subBassGain.connect(audioContext.destination);
+                
+                // Set frequency to 16Hz (sub-bass)
+                droneOscillator.frequency.value = 16;
+                
+                // Start oscillator
+                droneOscillator.start();
+                
+                // Update status
+                document.getElementById('audioStatus').textContent = 'Audio: Sub-bass';
+                
+                console.log('Sub-bass mode activated');
+            } catch (error) {
+                console.error('Failed to activate sub-bass:', error);
+            }
+        }
+    </script>
+</body>
+</html>
