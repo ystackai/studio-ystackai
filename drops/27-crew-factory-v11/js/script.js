@@ -5,6 +5,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const message = document.getElementById('message');
     const container = document.getElementById('container');
     
+    // Audio context for Web Audio API
+    let audioContext;
+    let tritoneOscillator;
+    let cashRegisterOscillator;
+    let subBassOscillator;
+    let tritoneGainNode;
+    let cashRegisterGainNode;
+    let subBassGainNode;
+    
     // Initial frog position
     let frogY = 0;
     let creditScore = 0;
@@ -43,6 +52,108 @@ document.addEventListener('DOMContentLoaded', function() {
         requestAnimationFrame(animateFrog);
     }
     
+    // Initialize audio system
+    function initAudio() {
+        // Create audio context
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create tritone oscillator (C-F#) - sawtooth wave
+        tritoneOscillator = audioContext.createOscillator();
+        tritoneOscillator.type = 'sawtooth';
+        
+        // Create gain node for tritone
+        tritoneGainNode = audioContext.createGain();
+        tritoneGainNode.gain.value = 0;
+        
+        // Connect tritone oscillator to gain node
+        tritoneOscillator.connect(tritoneGainNode);
+        tritoneGainNode.connect(audioContext.destination);
+        
+        // Create cash register oscillator - square wave
+        cashRegisterOscillator = audioContext.createOscillator();
+        cashRegisterOscillator.type = 'square';
+        
+        // Create gain node for cash register
+        cashRegisterGainNode = audioContext.createGain();
+        cashRegisterGainNode.gain.value = 0;
+        
+        // Connect cash register oscillator to gain node
+        cashRegisterOscillator.connect(cashRegisterGainNode);
+        cashRegisterGainNode.connect(audioContext.destination);
+        
+        // Create sub-bass oscillator - 16Hz
+        subBassOscillator = audioContext.createOscillator();
+        subBassOscillator.type = 'sine';
+        subBassOscillator.frequency.value = 16;
+        
+        // Create gain node for sub-bass
+        subBassGainNode = audioContext.createGain();
+        subBassGainNode.gain.value = 0.1; // Safe gain level
+        
+        // Connect sub-bass oscillator to gain node
+        subBassOscillator.connect(subBassGainNode);
+        subBassGainNode.connect(audioContext.destination);
+        
+        // Start oscillators
+        tritoneOscillator.start();
+        cashRegisterOscillator.start();
+        subBassOscillator.start();
+    }
+    
+    // Play tritone sequence
+    function playTritoneSequence() {
+        if (!audioContext) initAudio();
+        
+        // Set initial frequency (C note, about 261.63 Hz)
+        const startFrequency = 261.63;
+        
+        // Set end frequency (F# note, about 369.99 Hz)
+        const endFrequency = 369.99;
+        
+        // Start with low volume
+        tritoneGainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        tritoneGainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+        
+        // Ramp frequency up from C to F# over time
+        tritoneOscillator.frequency.setValueAtTime(startFrequency, audioContext.currentTime);
+        tritoneOscillator.frequency.linearRampToValueAtTime(endFrequency, audioContext.currentTime + 3);
+        
+        // Gradually decrease volume over 3 seconds
+        tritoneGainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 3);
+    }
+    
+    // Play cash register sound
+    function playCashRegister() {
+        if (!audioContext) initAudio();
+        
+        // Set cash register frequency (high pitch)
+        cashRegisterOscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        
+        // Set envelope - sharp cutoff
+        cashRegisterGainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+        cashRegisterGainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
+    }
+    
+    // Start sub-bass layer
+    function startSubBass() {
+        if (!audioContext) initAudio();
+        
+        // Set initial gain for sub-bass
+        subBassGainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    }
+    
+    // Start audio system on first interaction
+    function startAudioOnInteraction() {
+        // Start audio when user interacts with the page
+        document.addEventListener('click', function() {
+            if (!audioContext) {
+                initAudio();
+                playTritoneSequence();
+                startSubBass();
+            }
+        }, { once: true });
+    }
+    
     // Start animation
     animateFrog();
     
@@ -50,5 +161,11 @@ document.addEventListener('DOMContentLoaded', function() {
     button.addEventListener('click', function() {
         // Auto-click trap - immediately click it back
         button.click();
+        
+        // Play cash register sound when button is clicked
+        playCashRegister();
     });
+    
+    // Start audio on interaction
+    startAudioOnInteraction();
 });
