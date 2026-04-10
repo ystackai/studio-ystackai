@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crew Factory - Onboarding</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .factory-floor {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #111, #000);
+            overflow: hidden;
+        }
+
+        .assembly-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #333;
+            transform: translateY(-50%);
+        }
+
+        .button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            margin: 20px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px #00ff00;
+            transition: all 0.3s;
+        }
+
+        .button:hover {
+            background: #00cc00;
+            box-shadow: 0 0 20px #00ff00;
+        }
+
+        .button:active {
+            transform: scale(0.95);
+        }
+
+        .title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .crew-assembly {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .crew-member {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #00ff00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff00;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .sound-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .sound-btn {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .factory-light {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ff0000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ff0000;
+            animation: flicker 2s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.2; }
+        }
+        
+        /* Gallery styles */
+        .gallery-section {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-top: 2px solid #00ff00;
+            transform: translateY(100%);
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .gallery-section.active {
+            transform: translateY(0);
+        }
+
+        .gallery-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        .gallery-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .crew-card {
+            width: 120px;
+            height: 160px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            box-shadow: 0 0 5px #00ff00;
+            transition: all 0.3s;
+        }
+
+        .crew-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px #00ff00;
+            background: rgba(0, 255, 0, 0.2);
+        }
+
+        .crew-avatar {
+            width: 60px;
+            height: 60px;
+            background: #00ff00;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .crew-name {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .crew-description {
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
+
+        .gallery-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="factory-floor">
+        <div class="assembly-line"></div>
+        <div class="crew-assembly" id="crewAssembly">
+            <!-- Crew members will be generated here -->
+        </div>
+        <h1 class="title">CREW FACTORY</h1>
+        <p class="subtitle">Press the button to assemble your crew</p>
+        <button class="button pulse" id="assembleButton">ASSEMBLE CREW</button>
+        
+        <!-- Gallery section -->
+        <div class="gallery-section" id="gallerySection">
+            <h2 class="gallery-title">PUBLIC CREW GALLERY</h2>
+            <div class="gallery-container" id="galleryContainer">
+                <!-- Crew cards will be generated here -->
+            </div>
+        </div>
+        
+        <div class="gallery-indicator">Click to reveal gallery</div>
+        
+        <div class="sound-controls">
+            <button class="sound-btn" id="soundToggle">SOUND ON</button>
+        </div>
+    </div>
+
+    <script>
+        // Web Audio API implementation for factory sounds
+        class FactoryAudio {
+            constructor() {
+                this.audioContext = null;
+                this.isSoundEnabled = true;
+                this.initAudio();
+                this.setupEventListeners();
+            }
+
+            initAudio() {
+                // Create audio context on first user interaction
+                const initAudioContext = () => {
+                    if (!this.audioContext) {
+                        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        this.setupAudioNodes();
+                    }
+                };
+
+                // Initialize on first click
+                document.addEventListener('click', initAudioContext, { once: true });
+                document.addEventListener('touchstart', initAudioContext, { once: true });
+            }
+
+            setupAudioNodes() {
+                // Create master gain node for volume control
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.connect(this.audioContext.destination);
+                this.masterGain.gain.value = 0.5;
+
+                // Create factory ambient noise
+                this.createAmbientNoise();
+
+                // Create oscillator for button press
+                this.buttonOscillator = this.audioContext.createOscillator();
+                this.buttonGain = this.audioContext.createGain();
+                this.buttonOscillator.connect(this.buttonGain);
+                this.buttonGain.connect(this.masterGain);
+                this.buttonOscillator.type = 'square';
+                this.buttonOscillator.frequency.value = 220;
+                this.buttonGain.gain.value = 0.5;
+            }
+
+            setupEventListeners() {
+                // Toggle sound
+                document.getElementById('soundToggle').addEventListener('click', () => {
+                    this.isSoundEnabled = !this.isSoundEnabled;
+                    document.getElementById('soundToggle').textContent = this.isSoundEnabled ? 'SOUND ON' : 'SOUND OFF';
+                });
+            }
+
+            createAmbientNoise() {
+                // Create factory ambient noise with periodic random sounds
+                if (!this.audioContext) return;
+
+                const now = this.audioContext.currentTime;
+                
+                // Create a random factory sound with multiple elements
+                const noiseBuffer = this.generateNoiseBuffer();
+                const noiseSource = this.audioContext.createBufferSource();
+                noiseSource.buffer = noiseBuffer;
+                
+                const noiseFilter = this.audioContext.createBiquadFilter();
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.value = 1000 + Math.random() * 2000;
+                
+                const noiseGain = this.audioContext.createGain();
+                noiseGain.gain.value = 0.1;
+                
+                noiseSource.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(this.masterGain);
+                
+                noiseSource.start(now);
+                noiseSource.stop(now + 0.5);
+                
+                // Schedule next ambient sound
+                setTimeout(() => this.createAmbientNoise(), 1000 + Math.random() * 2000);
+            }
+
+            playButtonSound() {
+                if (!this.audioContext || !this.isSoundEnabled) return;
+
+                const now = this.audioContext.currentTime;
+                
+                this.buttonOscillator.frequency.setValueAtTime(220, now);
+                this.buttonGain.gain.setValueAtTime(0.5, now);
+                this.buttonGain.gain.linearRampToValueAtTime(0, now + 0.1);
+                
+                this.buttonOscillator.start(now);
+                this.buttonOscillator.stop(now + 0.1);
+            }
+
+            playAssemblySound() {
+                // Create assembly sound with multiple oscillators and envelopes
+                if (!this.audioContext) return;
+
+                const now = this.audioContext.currentTime;
+                
+                // Main assembly oscillator
+                const mainOsc = this.audioContext.createOscillator();
+                const mainGain = this.audioContext.createGain();
+                
+                mainOsc.type = 'sine';
+                mainOsc.frequency.value = 261.63; // C4
+                
+                // Apply envelope to main oscillator
+                mainGain.gain.setValueAtTime(0, now);
+                mainGain.gain.linearRampToValueAtTime(0.3, now + 0.05);
+                mainGain.gain.linearRampToValueAtTime(0, now + 0.2);
+                
+                mainOsc.connect(mainGain);
+                mainGain.connect(this.masterGain);
+                
+                mainOsc.start(now);
+                mainOsc.stop(now + 0.2);
+                
+                // Add some harmonics for richer sound
+                for (let i = 1; i <= 3; i++) {
+                    const harmonicOsc = this.audioContext.createOscillator();
+                    const harmonicGain = this.audioContext.createGain();
+                    
+                    harmonicOsc.type = 'sine';
+                    harmonicOsc.frequency.value = 261.63 * (i + 1);
+                    
+                    harmonicGain.gain.setValueAtTime(0, now);
+                    harmonicGain.gain.linearRampToValueAtTime(0.1, now + 0.05);
+                    harmonicGain.gain.linearRampToValueAtTime(0, now + 0.2);
+                    
+                    harmonicOsc.connect(harmonicGain);
+                    harmonicGain.connect(this.masterGain);
+                    
+                    harmonicOsc.start(now);
+                    harmonicOsc.stop(now + 0.2);
+                }
+            }
+
+            animateCrewAssembly() {
+                const crewAssembly = document.getElementById('crewAssembly');
+                crewAssembly.style.opacity = '1';
+                
+                // Clear previous members
+                crewAssembly.innerHTML = '';
+
+                // Create 6 crew members in a circular pattern
+                for (let i = 0; i < 6; i++) {
+                    const member = document.createElement('div');
+                    member.className = 'crew-member';
+                    member.style.opacity = '0';
+                    
+                    // Position in circle
+                    const angle = (i / 6) * Math.PI * 2;
+                    const radius = 80;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    
+                    member.style.left = `calc(50% + ${x}px)`;
+                    member.style.top = `calc(50% + ${y}px)`;
+                    
+                    // Animate each member appearing with delay
+                    setTimeout(() => {
+                        member.style.opacity = '1';
+                    }, i * 100);
+                    
+                    crewAssembly.appendChild(member);
+                }
+
+                // Reset after animation
+                setTimeout(() => {
+                    crewAssembly.style.opacity = '0';
+                }, 2000);
+            }
+
+            // Procedural sound generation for factory noises
+            createFactorySound() {
+                if (!this.audioContext) return;
+
+                const now = this.audioContext.currentTime;
+                
+                // Create a random factory sound with multiple elements
+                const noiseBuffer = this.generateNoiseBuffer();
+                const noiseSource = this.audioContext.createBufferSource();
+                noiseSource.buffer = noiseBuffer;
+                
+                const noiseFilter = this.audioContext.createBiquadFilter();
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.value = 1000 + Math.random() * 2000;
+                
+                const noiseGain = this.audioContext.createGain();
+                noiseGain.gain.value = 0.1;
+                
+                noiseSource.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(this.masterGain);
+                
+                noiseSource.start(now);
+                noiseSource.stop(now + 0.5);
+            }
+
+            generateNoiseBuffer() {
+                // Generate a noise buffer for factory sounds
+                const bufferSize = this.audioContext.sampleRate * 0.5;
+                const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                return buffer;
+            }
+        }
+
+        // Initialize audio when the page loads
+        let factoryAudio;
+
+        window.addEventListener('load', () => {
+            factoryAudio = new FactoryAudio();
+            
+            // Add some factory lights for visual effect
+            const factoryFloor = document.querySelector('.factory-floor');
+            for (let i = 0; i < 10; i++) {
+                const light = document.createElement('div');
+                light.className = 'factory-light';
+                light.style.left = `${Math.random() * 100}%`;
+                light.style.top = `${Math.random() * 100}%`;
+                factoryFloor.appendChild(light);
+            }
+            
+            // Setup gallery interaction
+            const gallerySection = document.getElementById('gallerySection');
+            const galleryIndicator = document.querySelector('.gallery-indicator');
+            
+            // Click to reveal gallery
+            galleryIndicator.addEventListener('click', () => {
+                gallerySection.classList.add('active');
+                galleryIndicator.style.display = 'none';
+                
+                // Play assembly sound when gallery is revealed
+                factoryAudio.playAssemblySound();
+            });
+            
+            // Create gallery content
+            createGallery();
+        });
+
+        // Create gallery with placeholder crews
+        function createGallery() {
+            const galleryContainer = document.getElementById('galleryContainer');
+            const crews = [
+                { name: "Alpha Team", description: "First crew" },
+                { name: "Beta Squad", description: "Second crew" },
+                { name: "Gamma Group", description: "Third crew" },
+                { name: "Delta Force", description: "Fourth crew" },
+                { name: "Epsilon Unit", description: "Fifth crew" },
+                { name: "Zeta Crew", description: "Sixth crew" },
+                { name: "Eta Team", description: "Seventh crew" },
+                { name: "Theta Group", description: "Eighth crew" }
+            ];
+            
+            crews.forEach(crew => {
+                const crewCard = document.createElement('div');
+                crewCard.className = 'crew-card';
+                
+                crewCard.innerHTML = `
+                    <div class="crew-avatar">${crew.name.charAt(0)}</div>
+                    <div class="crew-name">${crew.name}</div>
+                    <div class="crew-description">${crew.description}</div>
+                `;
+                
+                galleryContainer.appendChild(crewCard);
+            });
+        }
+
+        // Make gameState available for testing
+        window.gameState = {
+            isSoundEnabled: true,
+            crewAssembled: false
+        };
+    </script>
+</body>
+</html>
