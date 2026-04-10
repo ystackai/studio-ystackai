@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404: The Elegant Sink</title>
+    <style>
+        /* Brutalist monochrome aesthetic with 1.618 ratio */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #FFFFFF;
+            color: #000000;
+            font-family: 'Courier New', monospace;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Golden ratio layout */
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Frog element */
+        .frog {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            z-index: 10;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Audio visualization */
+        .audio-visualizer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background-color: #000000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Accept entropy checkbox */
+        .accept-entropy {
+            position: absolute;
+            bottom: 50%;
+            transform: translateY(50%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Hide scrollbar */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Prevent text selection */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Animation keyframes for frog sinking */
+        @keyframes sink {
+            0% {
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                transform: translateX(-50%) translateY(calc(100vh - 16px));
+            }
+        }
+
+        /* Animation for checkbox pulse */
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Animation for fade to black */
+        @keyframes fadeToBlack {
+            0% {
+                background-color: #FFFFFF;
+            }
+            100% {
+                background-color: #000000;
+            }
+        }
+
+        /* Animation for fade to white */
+        @keyframes fadeToWhite {
+            0% {
+                background-color: #000000;
+            }
+            100% {
+                background-color: #FFFFFF;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img id="frog" class="frog" src="data:image/png;base64,iVBORw0KGgoA234123" alt="Pixelated Frog">
+        <div class="audio-visualizer" id="audioVisualizer"></div>
+        <input type="checkbox" class="accept-entropy" id="acceptEntropy">
+        <label for="acceptEntropy">I Accept Inevitable Data Entropy</label>
+    </div>
+
+    <script>
+        // Audio context initialization
+        let audioContext;
+        let sawtoothOscillator;
+        let sineOscillator;
+        let gainNode;
+        let subBassGainNode;
+        let startTime;
+
+        // Initialize audio context on first user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                startTime = audioContext.currentTime;
+
+                // Create sawtooth oscillator for main drone
+                sawtoothOscillator = audioContext.createOscillator();
+                sawtoothOscillator.type = 'sawtooth';
+                sawtoothOscillator.frequency.value = 440; // Base frequency
+
+                // Create sine oscillator for sub-bass
+                sineOscillator = audioContext.createOscillator();
+                sineOscillator.type = 'sine';
+                sineOscillator.frequency.value = 16; // 16Hz sub-bass
+
+                // Create gain nodes
+                gainNode = audioContext.createGain();
+                subBassGainNode = audioContext.createGain();
+
+                // Connect nodes
+                sawtoothOscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                sineOscillator.connect(subBassGainNode);
+                subBassGainNode.connect(audioContext.destination);
+
+                // Start oscillators
+                sawtoothOscillator.start();
+                sineOscillator.start();
+
+                // Set initial gain values
+                gainNode.gain.value = 0.1;
+                subBassGainNode.gain.value = 0;
+
+                console.log("Audio initialized with sawtooth drone and sub-bass layer");
+            }
+        }
+
+        // Start the sink animation and audio
+        function startSink() {
+            const frog = document.getElementById('frog');
+            const container = document.querySelector('.container');
+
+            // Start audio on user interaction
+            document.body.addEventListener('click', initAudio, { once: true });
+
+            // Set up frog sinking animation with golden ratio
+            frog.style.animation = `sink 3s cubic-bezier(0.618, 0.0, 0.382, 1.0) forwards`;
+
+            // Fade to black when frog reaches bottom
+            setTimeout(() => {
+                container.style.animation = 'fadeToBlack 0.44s forwards';
+                // Stop audio and fade out gain
+                if (sawtoothOscillator) {
+                    sawtoothOscillator.stop();
+                }
+                if (sineOscillator) {
+                    sineOscillator.stop();
+                }
+                // Show checkbox
+                const checkbox = document.getElementById('acceptEntropy');
+                const label = document.querySelector('label[for="acceptEntropy"]');
+                checkbox.style.opacity = '1';
+                label.style.opacity = '1';
+            }, 3000);
+
+            // Add sub-bass at 3 seconds
+            setTimeout(() => {
+                if (subBassGainNode) {
+                    subBassGainNode.gain.value = 0.1;
+                }
+            }, 3000);
+
+            // Fade to white on checkbox click
+            document.getElementById('acceptEntropy').addEventListener('change', function() {
+                if (this.checked) {
+                    container.style.animation = 'fadeToWhite 0.44s forwards';
+                    // Create "cha-ching" sound
+                    createChaChingSound();
+                    // Redirect to home after fade
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 440);
+                }
+            });
+        }
+
+        // Create the "cha-ching" sound
+        function createChaChingSound() {
+            if (!audioContext) return;
+
+            const chaChingOscillator = audioContext.createOscillator();
+            const chaChingGain = audioContext.createGain();
+
+            chaChingOscillator.type = 'square';
+            chaChingOscillator.frequency.value = 880; // Higher pitch for "cha-ching"
+
+            chaChingGain.gain.value = 0.01; // Very low gain
+
+            chaChingOscillator.connect(chaChingGain);
+            chaChingGain.connect(audioContext.destination);
+
+            // Apply exponential decay
+            chaChingGain.gain.setValueAtTime(0.01, audioContext.currentTime);
+            chaChingGain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.5);
+
+            chaChingOscillator.start(audioContext.currentTime);
+            chaChingOscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', startSink);
+    </script>
+</body>
+</html>
