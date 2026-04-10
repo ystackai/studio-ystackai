@@ -66,6 +66,26 @@
             background: #fff;
             color: #000;
         }
+        
+        #credit-score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 16px;
+            opacity: 0.7;
+        }
+        
+        #pulse-pixel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
@@ -82,33 +102,90 @@
         </div>
         <div id="message">404</div>
         <button id="accept-button">Accept Entropy</button>
+        <div id="credit-score-display">Credit Score: 850</div>
+        <div id="pulse-pixel"></div>
     </div>
 
     <script>
-        // Basic script for frog animation and interaction
+        // Credit score simulation and animation logic
         document.addEventListener('DOMContentLoaded', function() {
             const frog = document.getElementById('frog');
             const button = document.getElementById('accept-button');
             const container = document.getElementById('container');
+            const creditScoreDisplay = document.getElementById('credit-score-display');
+            const pulsePixel = document.getElementById('pulse-pixel');
             
-            // Initial frog position
+            // Initialize credit score
+            let creditScore = 850;
+            let isAnimating = false;
+            
+            // Fibonacci decay parameters (1.333 decay curve)
+            const decayFactor = 1.333;
             let frogY = 0;
+            let initialFrogY = 0;
+            let startTime = null;
             
-            // Animation loop for frog sinking
-            function animateFrog() {
-                frogY += 0.5; // Simple sinking animation
-                frog.style.transform = `translate(-50%, calc(-50% + ${frogY}px))`;
+            // Function to simulate real-time credit score changes
+            function updateCreditScore() {
+                // Simulate credit score dropping over time
+                creditScore = Math.max(300, creditScore - Math.random() * 0.5);
+                creditScoreDisplay.textContent = 'Credit Score: ' + Math.floor(creditScore);
                 
-                requestAnimationFrame(animateFrog);
+                // Update font size based on credit score
+                const fontSize = Math.max(20, 120 - (850 - creditScore) / 10);
+                document.getElementById('message').style.fontSize = fontSize + 'px';
+                
+                // Update frog sinking animation based on credit score
+                if (!isAnimating) {
+                    isAnimating = true;
+                    startTime = performance.now();
+                    animateFrog();
+                }
             }
             
-            animateFrog();
+            // Function to implement Fibonacci decay curve (1.333)
+            function animateFrog() {
+                const now = performance.now();
+                const elapsed = (now - startTime) / 1000; // Convert to seconds
+                
+                // Apply Fibonacci decay curve (1.333)
+                frogY = initialFrogY + Math.pow(elapsed, decayFactor) * 100;
+                
+                // Apply the frog's vertical position
+                frog.style.transform = 'translate(-50%, calc(-50% + ' + frogY + 'px))';
+                
+                // Continue animation if still within bounds
+                if (frogY < 500) { // Prevent excessive sinking
+                    requestAnimationFrame(animateFrog);
+                } else {
+                    isAnimating = false;
+                }
+            }
+            
+            // Set up periodic credit score updates
+            setInterval(updateCreditScore, 100);
             
             // Button click handling
             button.addEventListener('click', function() {
                 // Auto-click trap - immediately click it back
                 button.click();
             });
+            
+            // Golden ratio pulsing pixel effect
+            let pulseState = 0;
+            function pulsePixelEffect() {
+                pulseState = (pulseState + 1) % 100;
+                
+                // Golden ratio (phi) = 1.618
+                const pulseInterval = 1.618 * 100; // Scale to 100ms interval
+                const opacity = Math.abs(Math.sin(pulseState / pulseInterval * Math.PI));
+                
+                pulsePixel.style.opacity = opacity;
+                
+                requestAnimationFrame(pulsePixelEffect);
+            }
+            
+            pulsePixelEffect();
         });
     </script>
 </body>
