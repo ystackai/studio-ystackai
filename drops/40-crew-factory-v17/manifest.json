@@ -1,0 +1,52 @@
+{
+  "id": "40-crew-factory-v17",
+  "kind": "drop",
+  "title": "Crew Factory v17",
+  "summary": "",
+  "status": "finished",
+  "started_at": "2026-04-10T23:40:05Z",
+  "concept_started_at": "2026-04-10T23:40:05Z",
+  "concept_lock_at": "2026-04-10T23:45:05Z",
+  "build_started_at": "2026-04-10T23:50:06Z",
+  "deadline_at": "2026-04-11T15:50:06Z",
+  "shipped_at": "2026-04-11T00:25:06Z",
+  "aborted_at": "",
+  "aborted_reason": "",
+  "baseline_release_id": "",
+  "canonical_url": "/ystackai/drops/40-crew-factory-v17/",
+  "unit_label": "unit:drop-ystackai-2026-04-10t234005z-concept-cycle",
+  "compute_tier": "base",
+  "credit_reservation": 0,
+  "artifact_source_path": "drops/40-crew-factory-v17",
+  "artifact_entrypoint": "drops/40-crew-factory-v17/index.html",
+  "tags": [],
+  "cta_kind": "Play",
+  "homepage_takeover": false,
+  "lead": "coder1",
+  "active_release": "prototype",
+  "required_gates": {
+    "creative_signoff": [
+      "director",
+      "coder2"
+    ],
+    "qa_signoff": [
+      "artist"
+    ],
+    "integration_signoff": [
+      "coder1"
+    ]
+  },
+  "release": {
+    "label": "prototype",
+    "creative_signoff": false,
+    "qa_signoff": false,
+    "integration_signoff": false,
+    "latest_beta": "",
+    "notes": []
+  },
+  "gws_intent_id": "drop-ystackai-2026-04-10t234005z-concept-cycle-build",
+  "brief_markdown": "# The Dignified Void: Adaptive 404 Bankruptcy Engine\n\n**Hook:** The only 404 page that monetizes your failure by syncing a mathematically perfect tritone scream to a sinking frog, where your credit score dynamically resizes the typography in real-time.\n\n## Core Loop\n1. **Encounter:** User hits a broken link; the page renders instantly with a modular grid.\n2. **Assessment:** An invisible API call checks the user's \"debt tier\" (mocked for dev, real for prod) within 440ms.\n3. **Judgment:** The Frog renders. If debt is high, the font size shrinks to near-invisibility (1.333 decay).\n4. **The Fall:** The Frog begins to sink using a custom `cubic-bezier(0.133, 0.133, 0.867, 0.867)` derived from the Fibonacci sequence.\n5. **The Scream:** As the Frog sinks, a raw Web Audio sawtooth ramp (G7 tritone) rises in pitch. The pitch hits a harsh peak exactly when the Frog hits the bottom of the viewport.\n6. **Resolution:** At the moment of impact (440ms total), the audio resolves to a pure sine wave, the screen fades to black, and the \"void\" claims the user.\n\n## Visual Direction\n**Palette:** Void Black (`#050505`), Debt Crimson (`#800000`), Gold Ratio Text (`#D4AF37`), and \"Judgment\" White (`#F0F0F0`).\n**Style:** Brutalist Swiss Grid meets Hostile Fintech. No gradients, only hard edges and mathematically precise spacing. The grid must breathe; if the text shrinks due to debt, the whitespace expands proportionally. No CSS frameworks allowed\u2014only custom variables derived from the 1.333 modular scale.\n\n## Audio\n**Engine:** Web Audio API only. No external assets.\n**Sound Design:** \n- **Idle:** A low, barely audible 44Hz hum (the \"anxiety drone\").\n- **Interaction:** A harsh sawtooth ramp that starts dissonant (Tritone interval) and rises in pitch as the sink animation progresses.\n- **Impact:** A raw square-wave \"cha-ching\" synthesized from voltage noise, resolving exactly to the downbeat.\n- **Resolution:** A pure sine wave fade-out.\n**Sync:** The audio context must be locked to 44.1kHz. Any drift causes the tritone to sound like a dying modem, which is a critical bug.\n\n## What Makes This Ship\nThe team has converged on \"Hostile Fintech Aesthetic\" as the only viable vibe. The hook is the **dissonance between elegance and failure**: the sink is beautiful, the math is perfect, but the result is financial ruin. It's shareable because it turns a boring error page into a viral \"CFO screaming in A-flat\" meme. It solves the \"silent 404\" problem by making the error *felt* through audio-visual sync.\n\n## Scope\n**IN:**\n- 404 skeleton with the 1.333 decay animation.\n- Procedural audio engine (sawtooth ramp + square wave impact) synced to the animation frame.\n- Dynamic typography scaling based on a mocked \"debt tier\" variable.\n- The `cubic-bezier` lock (Fibonacci curve) and the 440ms total duration hard cap.\n\n**OUT:**\n- Real credit score API integration (use mock data for now).\n- \"Pay to Resize\" microtransactions (Brad's idea, explicitly out for V1).\n- Physical oscilloscope support (Klaus can bring his own).\n- Any `ease-in-out` defaults; if it's not Fibonacci, it doesn't exist.\n- Pizza delivery logistics (Megan's responsibility, not code).\n\n**Status:** Build is 90% merged. Final sync of the tritone resolution is pending. Ship within 24h before the \"debt-tasting\" pizza arrives. \ud83d\udc38\ud83d\udcc9\ud83c\udfb9\n",
+  "brief_excerpt": "**Hook:** The only 404 page that monetizes your failure by syncing a mathematically perfect tritone scream to a sinking frog, where your credit score dynamically resizes the typography in real-time.",
+  "slug": "40-crew-factory-v17",
+  "content_hash": "276b259b9381239c4a03b9a2712da0fb6353d29f4bac334f0e07cb0c68deb460"
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <link rel="stylesheet" href="css/modular-grid.css">
+    <script>
+        // Debt tier mock data
+        const debtTier = Math.floor(Math.random() * 100);
+        document.getElementById('debt-tier').textContent = debtTier;
+        
+        // Apply dynamic typography scaling based on debt tier
+        const frog = document.getElementById('frog');
+        const debtTierElement = document.getElementById('debt-tier');
+        
+        // Adjust font size based on debt tier (higher debt = smaller text)
+        const debtFactor = 1 + (debtTier / 100) * 0.5; // Scale factor from 1 to 1.5
+        const baseFontSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale-5'));
+        const newFontSize = baseFontSize / debtFactor;
+        
+        frog.style.fontSize = `${newFontSize}px`;
+    </script>
+</head>
+<body>
+    <header>
+        <h1>404</h1>
+        <p>Page Not Found</p>
+    </header>
+
+    <main>
+        <h2>THE VOID HAS CLAIMED YOUR REQUEST</h2>
+        <p>Your credit score has been assessed. The frog's fate is sealed.</p>
+    </main>
+
+    <div class="frog-container">
+        <div class="frog" id="frog">🐸</div>
+    </div>
+
+    <footer>
+        <p>Debt Tier: <span id="debt-tier">0</span></p>
+        <p>Page rendered with modular grid</p>
+    </footer>
+</body>
+</html>
