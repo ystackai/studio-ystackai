@@ -1,0 +1,102 @@
+/* Modular Grid System with 1.333 Scale */
+:root {
+    --base-unit: 1.333rem;
+    --modular-scale: 1.333;
+    
+    /* 1.333 scale values */
+    --scale-1: var(--base-unit);
+    --scale-2: calc(var(--base-unit) * var(--modular-scale));
+    --scale-3: calc(var(--scale-2) * var(--modular-scale));
+    --scale-4: calc(var(--scale-3) * var(--modular-scale));
+    --scale-5: calc(var(--scale-4) * var(--modular-scale));
+    --scale-6: calc(var(--scale-5) * var(--modular-scale));
+    --scale-7: calc(var(--scale-6) * var(--modular-scale));
+    --scale-8: calc(var(--scale-7) * var(--modular-scale));
+    
+    --void-black: #050505;
+    --debt-crimson: #800000;
+    --gold-ratio-text: #D4AF37;
+    --judgment-white: #F0F0F0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--void-black);
+    color: var(--judgment-white);
+    font-family: 'Courier New', monospace;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: auto 1fr auto;
+    grid-gap: var(--scale-1);
+    padding: var(--scale-1);
+}
+
+header {
+    grid-column: 1 / -1;
+    padding: var(--scale-1);
+}
+
+main {
+    grid-column: 2 / -2;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+footer {
+    grid-column: 1 / -1;
+    padding: var(--scale-1);
+    text-align: center;
+    font-size: var(--scale-2);
+}
+
+.frog-container {
+    grid-column: 6 / 8;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h1 {
+    font-size: var(--scale-5);
+    margin-bottom: var(--scale-1);
+}
+
+h2 {
+    font-size: var(--scale-4);
+    margin-bottom: var(--scale-2);
+}
+
+p {
+    font-size: var(--scale-3);
+    margin-bottom: var(--scale-1);
+}
+
+/* Enhanced Frog Styles */
+.frog {
+    animation: sink 440ms cubic-bezier(0.133, 0.133, 0.867, 0.867) forwards;
+    transform-origin: center;
+    font-size: var(--scale-5);
+}
+
+@keyframes sink {
+    0% {
+        transform: translateY(0);
+        font-size: var(--scale-5);
+    }
+    100% {
+        transform: translateY(100vh);
+        font-size: 0.1rem;
+    }
+}

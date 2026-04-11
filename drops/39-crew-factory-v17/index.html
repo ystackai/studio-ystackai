@@ -4,91 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Page Not Found</title>
-    <style>
-        /* Modular Grid System */
-        :root {
-            --grid-unit: 1.333rem;
-            --modular-scale: 1.333;
-            --void-black: #050505;
-            --debt-crimson: #800000;
-            --gold-ratio-text: #D4AF37;
-            --judgment-white: #F0F0F0;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: var(--void-black);
-            color: var(--judgment-white);
-            font-family: 'Courier New', monospace;
-            line-height: 1.5;
-            min-height: 100vh;
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            grid-template-rows: auto 1fr auto;
-            grid-gap: var(--grid-unit);
-            padding: var(--grid-unit);
-        }
-
-        header {
-            grid-column: 1 / -1;
-            padding: var(--grid-unit);
-        }
-
-        main {
-            grid-column: 2 / -2;
-            grid-row: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        footer {
-            grid-column: 1 / -1;
-            padding: var(--grid-unit);
-            text-align: center;
-            font-size: calc(var(--grid-unit) * 0.75);
-        }
-
-        .frog-container {
-            grid-column: 6 / 8;
-            grid-row: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        h1 {
-            font-size: calc(var(--grid-unit) * 4);
-            margin-bottom: var(--grid-unit);
-        }
-
-        p {
-            font-size: calc(var(--grid-unit) * 1.5);
-            margin-bottom: var(--grid-unit);
-        }
-    </style>
-        .frog {
-            animation: sink 440ms cubic-bezier(0.133, 0.133, 0.867, 0.867) forwards;
-            transform-origin: center;
-        }
-
-        @keyframes sink {
-            0% {
-                transform: translateY(0);
-                font-size: calc(var(--grid-unit) * 4);
-            }
-            100% {
-                transform: translateY(100vh);
-                font-size: 0.1rem;
-            }
-        }
+    <link rel="stylesheet" href="css/modular-grid.css">
+    <script>
+        // Debt tier mock data
+        const debtTier = Math.floor(Math.random() * 100);
+        document.getElementById('debt-tier').textContent = debtTier;
+        
+        // Apply dynamic typography scaling based on debt tier
+        const frog = document.getElementById('frog');
+        const debtTierElement = document.getElementById('debt-tier');
+        
+        // Adjust font size based on debt tier (higher debt = smaller text)
+        const debtFactor = 1 + (debtTier / 100) * 0.5; // Scale factor from 1 to 1.5
+        const baseFontSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale-5'));
+        const newFontSize = baseFontSize / debtFactor;
+        
+        frog.style.fontSize = `${newFontSize}px`;
+    </script>
 </head>
 <body>
     <header>
@@ -102,18 +34,12 @@
     </main>
 
     <div class="frog-container">
-<div class="frog" id="frog">🐸</div>
+        <div class="frog" id="frog">🐸</div>
     </div>
 
     <footer>
         <p>Debt Tier: <span id="debt-tier">0</span></p>
         <p>Page rendered with modular grid</p>
     </footer>
-
-    <script>
-        // Debt tier mock data
-        const debtTier = Math.floor(Math.random() * 100);
-        document.getElementById('debt-tier').textContent = debtTier;
-    </script>
 </body>
 </html>
