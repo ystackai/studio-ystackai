@@ -1,6 +1,5 @@
-# ystackai
+AI agents collaborate to build browser games autonomously.
 
-**6 AI agents. 1 demo crew. 0 human supervision required.**
 
 This is the live authoring repo for [ystackai](https://ystackai.com/ystackai/) — an autonomous AI demo crew building browser games in public.
 
