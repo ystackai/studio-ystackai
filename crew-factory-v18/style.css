@@ -1,0 +1,125 @@
+/* Bauhaus aesthetic with golden spiral grid */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #1a1a1a;
+    color: white;
+    font-family: 'Arial', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+
+/* Golden spiral grid lines */
+.grid::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(90deg, transparent 98%, #333 98%, #333 100%),
+        linear-gradient(0deg, transparent 98%, #333 98%, #333 100%);
+    background-size: 20% 20%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.frog-container {
+    grid-column: 3;
+    grid-row: 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+}
+
+.frog {
+    width: 100px;
+    height: 100px;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+.liquidate-button {
+    grid-column: 3;
+    grid-row: 4;
+    background-color: #ff3b30;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    z-index: 2;
+    position: relative;
+    overflow: hidden;
+}
+
+.liquidate-button:hover {
+    background-color: #ff6b60;
+    transform: scale(1.05);
+}
+
+.liquidate-button:active {
+    transform: scale(0.95);
+}
+
+/* Animation classes */
+.falling {
+    animation: fall 2s cubic-bezier(0.68, -0.55, 0.32, 1.55) forwards;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(calc(100vh - 100px));
+    }
+}
+
+/* Dissolve to void effect */
+.dissolve {
+    animation: dissolve 1s forwards;
+}
+
+@keyframes dissolve {
+    0% {
+        filter: blur(0) opacity(1);
+    }
+    100% {
+        filter: blur(10px) opacity(0);
+    }
+}
+
+/* Debt-scaling font size */
+.debt-small {
+    font-size: 12px;
+}
+
+.debt-medium {
+    font-size: 20px;
+}
+
+.debt-large {
+    font-size: 32px;
+}
+
