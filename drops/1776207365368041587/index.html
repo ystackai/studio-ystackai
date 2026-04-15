@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Semantified Void</title>
+    <style>
+        :root {
+            --surface-warm-800: #8B4513;
+            --surface-warm-900: #5D2906;
+            --surface-warm-1000: #FFA500;
+            --void-bg: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--void-bg);
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.7;
+        }
+
+        #frog {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: var(--surface-warm-800);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(139, 69, 19, 0.5);
+        }
+
+        #frog:hover {
+            transform: scale(1.1);
+        }
+
+        #impact-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: var(--surface-warm-1000);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s ease;
+        }
+
+        #idle-hum {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: var(--void-bg);
+            opacity: 0.1;
+        }
+
+        .frog-trail {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: var(--surface-warm-800);
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            z-index: 20;
+        }
+
+        .status {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            z-index: 20;
+        }
+
+        .tritone {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="grid"></div>
+    <div id="idle-hum"></div>
+    <div id="frog"></div>
+    <div id="impact-effect"></div>
+    <div class="status">Physics Lock: <span id="lock-status">Idle</span></div>
+    <div class="instructions">Hover or click to trigger physics lock</div>
+
+    <script>
+        class PhysicsEngine {
+            constructor() {
+                this.frog = document.getElementById('frog');
+                this.grid = document.getElementById('grid');
+                this.idleHum = document.getElementById('idle-hum');
+                this.impactEffect = document.getElementById('impact-effect');
+                this.lockStatus = document.getElementById('lock-status');
+                this.audioContext = null;
+                this.oscillator = null;
+                this.gainNode = null;
+                this.isLocked = false;
+                this.tritoneTriggered = false;
+
+                // Physics parameters
+                this.tolerance = 2; // 2px tolerance lock
+                this.initialPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+                this.targetPosition = { x: 0, y: 0 };
+                this.currentPosition = { ...this.initialPosition };
+                this.velocity = { x: 0, y: 0 };
+                this.gravity = 0.2;
+                this.friction = 0.98;
+                this.isAnimating = false;
+
+                this.init();
+            }
+
+            init() {
+                this.setupAudio();
+                this.setupEventListeners();
+                this.startIdleHum();
+                this.animate();
+            }
+
+            setupAudio() {
+                // Create audio context if it doesn't exist
+                if (!window.AudioContext) {
+                    console.warn('Web Audio API is not supported in this browser');
+                    return;
+                }
+
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            setupEventListeners() {
+                // Mouse/touch events for physics lock
+                this.frog.addEventListener('mouseenter', () => {
+                    this.lockPhysics();
+                });
+
+                this.frog.addEventListener('click', () => {
+                    this.lockPhysics();
+                });
+
+                // Reset physics when leaving the frog area
+                this.frog.addEventListener('mouseleave', () => {
+                    if (this.isLocked) {
+                        this.resetPhysics();
+                    }
+                });
+            }
+
+            lockPhysics() {
+                if (this.isLocked) return;
+
+                this.isLocked = true;
+                this.lockStatus.textContent = 'Locked';
+                this.lockStatus.style.color = '#FFA500';
+
+                // Set random target position (within bounds)
+                this.targetPosition.x = Math.random() * (window.innerWidth - 100) + 50;
+                this.targetPosition.y = Math.random() * (window.innerHeight - 100) + 50;
+
+                // Calculate initial velocity (overshoot with cubic-bezier curve)
+                const dx = this.targetPosition.x - this.initialPosition.x;
+                const dy = this.targetPosition.y - this.initialPosition.y;
+
+                // Apply cubic-bezier overshoot calculation
+                this.velocity.x = dx * 1.5;
+                this.velocity.y = dy * 1.5;
+
+                this.isAnimating = true;
+                this.tritoneTriggered = false;
+            }
+
+            resetPhysics() {
+                this.isLocked = false;
+                this.lockStatus.textContent = 'Idle';
+                this.lockStatus.style.color = 'rgba(255, 255, 255, 0.9)';
+                this.isAnimating = false;
+                this.velocity = { x: 0, y: 0 };
+                this.currentPosition = { ...this.initialPosition };
+                this.frog.style.left = this.currentPosition.x + 'px';
+                this.frog.style.top = this.currentPosition.y + 'px';
+            }
+
+            startIdleHum() {
+                // Create a 50Hz sine wave for idle hum
+                if (this.audioContext) {
+                    this.oscillator = this.audioContext.createOscillator();
+                    this.gainNode = this.audioContext.createGain();
+
+                    this.oscillator.type = 'sine';
+                    this.oscillator.frequency.value = 50;
+                    this.gainNode.gain.value = 0.1;
+
+                    this.oscillator.connect(this.gainNode);
+                    this.gainNode.connect(this.audioContext.destination);
+
+                    this.oscillator.start();
+                }
+            }
+
+            playTritone() {
+                if (this.audioContext && !this.tritoneTriggered) {
+                    this.tritoneTriggered = true;
+
+                    // Stop the idle hum
+                    if (this.oscillator) {
+                        this.oscillator.stop();
+                    }
+
+                    // Create tritone (A-flat) - approximately 466.16 Hz
+                    const tritoneFreq = 466.16;
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.value = tritoneFreq;
+                    gainNode.gain.value = 0.5;
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+
+                    oscillator.start();
+                    oscillator.stop(this.audioContext.currentTime + 0.2); // 200ms duration
+
+                    // Trigger visual impact effect
+                    this.impactEffect.style.opacity = '0.8';
+                    setTimeout(() => {
+                        this.impactEffect.style.opacity = '0';
+                    }, 100);
+
+                    // Reset after a short delay
+                    setTimeout(() => {
+                        this.resetPhysics();
+                    }, 500);
+                }
+            }
+
+            animate() {
+                if (!this.isAnimating) {
+                    requestAnimationFrame(() => this.animate());
+                    return;
+                }
+
+                // Apply physics
+                this.velocity.y += this.gravity;
+                this.currentPosition.x += this.velocity.x;
+                this.currentPosition.y += this.velocity.y;
+
+                // Apply friction
+                this.velocity.x *= this.friction;
+                this.velocity.y *= this.friction;
+
+                // Update frog position
+                this.frog.style.left = this.currentPosition.x + 'px';
+                this.frog.style.top = this.currentPosition.y + 'px';
+
+                // Check for impact with target (2px tolerance)
+                const dx = this.currentPosition.x - this.targetPosition.x;
+                const dy = this.currentPosition.y - this.targetPosition.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Trigger tritone when within 2px tolerance
+                if (distance <= this.tolerance && !this.tritoneTriggered) {
+                    this.playTritone();
+                }
+
+                // Check if frog has passed the target (overshoot)
+                if (distance > 0 && this.isLocked) {
+                    // Add visual trail effect
+                    const trail = document.createElement('div');
+                    trail.className = 'frog-trail';
+                    trail.style.left = this.currentPosition.x + 'px';
+                    trail.style.top = this.currentPosition.y + 'px';
+                    document.body.appendChild(trail);
+
+                    // Remove trail after a short time
+                    setTimeout(() => {
+                        trail.remove();
+                    }, 500);
+                }
+
+                // Continue animation loop
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize the physics engine when the page loads
+        window.addEventListener('load', () => {
+            const physicsEngine = new PhysicsEngine();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // Update grid background size on resize
+            const grid = document.getElementById('grid');
+            grid.style.backgroundSize = '20px 20px';
+        });
+
+    </script>
+</body>
+</html>
