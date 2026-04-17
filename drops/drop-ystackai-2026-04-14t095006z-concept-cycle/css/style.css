@@ -1,0 +1,93 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #fff;
+}
+
+#container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#frog-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+}
+
+/* Downward fall animation using cubic-bezier(0.22, 0.61, 0.36, 1.0) */
+@keyframes drop-fall {
+     0%    { top: 50%; }
+     100% { top: 95%; }
+}
+
+#frog-container.drop-falling {
+    animation: drop-fall 2s cubic-bezier(0.22, 0.61, 0.36, 1.0) forwards;
+}
+
+#frog {
+    width: 100%;
+    height: 100%;
+    transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+/* Dissolve effect triggered by descent() on impact */
+#frog.drop-landing,
+#message.drop-landing {
+    opacity: 0 !important;
+    filter: blur(2px);
+}
+
+#frog.drop-gone,
+#message.drop-gone {
+    display: none;
+}
+
+#message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    opacity: 0.8;
+    font-size: 120px;
+    transition: font-size 0.1s ease, opacity 0.5s ease;
+}
+
+#accept-button {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background: #000;
+    border: 1px solid #fff;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+}
+
+#accept-button:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* Credit score dependent font scaling */
+#message.credit-0 { font-size: 120px; }
+#message.credit-1 { font-size: 100px; }
+#message.credit-2 { font-size: 80px; }
+#message.credit-3 { font-size: 60px; }
+#message.credit-4 { font-size: 40px; }
+#message.credit-5 { font-size: 30px; }
