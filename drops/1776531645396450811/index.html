@@ -233,12 +233,6 @@
                     this.peakAmplitude,
                     this.audioContext.currentTime + 0.01
                 );
-                 // Continuous exponential decay toward silence (τ ≈ 5.6s)
-                this.gainNode.gain.setTargetAtTime(
-                     0,
-                    this.audioContext.currentTime + 0.01,
-                     5.6
-                  );
 
                 this.oscillator.connect(this.gainNode);
                 this.gainNode.connect(this.audioContext.destination);
@@ -267,6 +261,10 @@
                  // stop early on the exact 0.001 boundary frame)
                 if (envelope > 0.001) {
                      // Continue: frog still bounces, sound plays
+                       // Apply per-frame envelope gain for mathematical continuity.
+                   this.gainNode.gain.setValueAtTime(
+                        envelope * this.peakAmplitude, this.audioContext.currentTime
+                       );
                     return;
                  }
                  // envelope <= 0.001 -- the envelope has decayed to near-zero.
