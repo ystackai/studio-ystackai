@@ -272,8 +272,6 @@
                    // Hard clamp: envelope never interpolates past the zero threshold.
                    // When below cutoff, stop scheduling new gain values — no ramping through.
                 if (envelope <= 0.001) {
-                    this.frameCount += 2;
-                    this.stopFrame++;
                     this.hardStopOscillator();
                     return;
                   }
@@ -295,8 +293,6 @@
                */
             hardStopOscillator() {
                 if (!this.oscillator) return;
-
-                if (this.stopFrame > 0) return;
 
                 const now = this.audioContext.currentTime;
 
@@ -333,6 +329,7 @@
                 this.currentPosition.y = Math.max(0, Math.min(this.currentPosition.y, H - 60));
                 this.velocity.x = 0;
                 this.velocity.y = 0;
+                this.isAnimating = false;
                 this.frog.style.left = this.currentPosition.x + 'px';
                 this.frog.style.top = this.currentPosition.y + 'px';
              }
