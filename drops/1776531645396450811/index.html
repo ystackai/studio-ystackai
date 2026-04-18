@@ -233,6 +233,12 @@
                     this.peakAmplitude,
                     this.audioContext.currentTime + 0.01
                 );
+                 // Continuous exponential decay toward silence (τ ≈ 5.6s)
+                this.gainNode.gain.setTargetAtTime(
+                     0,
+                    this.audioContext.currentTime + 0.01,
+                     5.6
+                  );
 
                 this.oscillator.connect(this.gainNode);
                 this.gainNode.connect(this.audioContext.destination);
@@ -252,11 +258,6 @@
                  // surface-warm-800 decay curve: exponential per-frame
                 this.frameCount++;
                 const envelope = Math.pow(this.decayRate, this.frameCount);
-
-                 // Update gain to match envelope (avoids Web Audio ramp artifacts)
-                if (this.gainNode) {
-                    this.gainNode.gain.value = envelope * this.peakAmplitude;
-                 }
 
                  // Display current envelope value for debugging
                 this.envValue.textContent = envelope.toFixed(4);
@@ -288,7 +289,7 @@
                   // This guarantees smooth mathematical continuity across the
                   // frame boundary where envelope <= 0.001, eliminating any click.
                 try {
-                    this.gainNode.gain.setTargetAtTime(0, now, 0.002);
+                    this.gainNode.gain.exponentialRampToValueAtTime(1e-5, now + 0.004);
                  } catch (_) { /* gainNode may be undefined */ }
 
                   // Stop after the ramp completes; buffer will have decayed to silence.
