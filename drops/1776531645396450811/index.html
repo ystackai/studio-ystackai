@@ -229,6 +229,7 @@
 
                 this.oscillator.type = 'sine';
                 this.oscillator.frequency.value = 440; // A4 tone
+                this.stopFrame = 0;
                 this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
                   // Smooth ramp from 0 to peak to avoid initial click
                 this.gainNode.gain.exponentialRampToValueAtTime(
@@ -253,30 +254,13 @@
             updateEnvelope() {
                 if (!this.isOscillating || !this.oscillator) return;
 
-                    // time-continuous decay from surface-warm-800 curve.
-                // Frame duration for frame-synced envelope: decayRate applies once per frame
-				const halfLifeMs = 1000 / 60; // ~16.67ms per frame at 60fps target
-                    // Clamp elapsedS to zero minimum: prevents audio clock drift from
-                    // producing negative elapsed time that would cause the exponential
-                    // to grow instead of decay (audible clicks/pops).
-                const elapsedS = Math.max(
-                    0,
-                     this.audioContext.currentTime - this.oscillatorStartTime
-                );
-                const envelope = Math.pow(this.decayRate, elapsedS * 1000 / halfLifeMs);
+                // Discrete per-frame decay: decayRate^frameCount — mathematically exact stop.
+                this.stopFrame += 1;
+                const envelope = Math.pow(this.decayRate, this.stopFrame);
 
-                  // Display current envelope value for debugging
+                // Display current envelope value for debugging
                 this.envValue.textContent = envelope.toFixed(6);
                     // --- Frame-synced envelope stop logic ---
-                    // Track elapsed audio time for precise gain scheduling.
-                    // Using actual clock delta instead of fixed 1/60 ensures the
-                    // exponential ramp aligns with real frame boundaries, preventing
-                    // clicks when rAF drifts due to system load or tab throttling.
-                const now = this.audioContext.currentTime;
-                    // Continuous frame delta: only advance lastAudioTime once per call
-                    // so that envelope decays monotonically across rAF gaps.
-                this.lastAudioTime = now;
-
                     // Hard clamp: envelope never interpolates past the zero threshold.
                     // When below cutoff, stop scheduling new gain values — no ramping through.
                 if (envelope <= 0.001) {
@@ -293,6 +277,8 @@
                 const targetGain = Math.max(envelope * this.peakAmplitude, 1e-7);
                  // Frame-synced: cancel any pending per-frame schedules and re-establish
                  // from the true live gain so exponential ramps never overlap or conflict.
+                const now = this.audioContext.currentTime;
+
                 this.gainNode.gain.cancelScheduledValues(now);
                 this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
                 this.gainNode.gain.exponentialRampToValueAtTime(
@@ -301,7 +287,6 @@
                    );
                 return;
               }
-
                /**
                 * Hard-stop the oscillator: ramp gain to zero then stop & disconnect.
                 * Called only when envelope is already <= 0.001; use a short exponential
@@ -342,6 +327,7 @@
                 this.lockStatus.textContent = 'Released';
                 this.lockStatus.style.color = '#8B4513';
                 this.envValue.textContent = '0.0000';
+                this.stopFrame = 0;
                     // Freeze frog sprite simultaneously with audio cut-off:
                     // clamp to final position, then zero velocity so no
                     // further motion can accumulate after the envelope has reached 0.
