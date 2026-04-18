@@ -278,6 +278,10 @@
 
                    // envelope > 0.001: continue oscillating with frame-accurate scheduling.
                 const targetGain = Math.max(envelope * this.peakAmplitude, 1e-7);
+                // Frame-synced: cancel any pending per-frame schedules and re-establish
+                // from the true live gain so exponential ramps never overlap or conflict.
+                this.gainNode.gain.cancelScheduledValues(now);
+                this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
                 this.gainNode.gain.exponentialRampToValueAtTime(
                     targetGain,
                     now + elapsedMs / 1000
@@ -309,8 +313,12 @@
 
                   // Stop after the ramp completes; buffer will have decayed to silence.
                 try { this.oscillator.stop(now + 0.006); } catch (_) { /* already stopped */ }
-                this.oscillator.disconnect();
-                if (this.gainNode) { this.gainNode.disconnect(); }
+                 // Defer disconnect until after the scheduled stop fires (~6 ms); prevents the
+                 // exponential ramp from being killed mid-execution, which causes clicks.
+                const osc = this.oscillator;
+                const gn = this.gainNode;
+                setTimeout(() => { try { osc.disconnect(); } catch (_) {} }, 10);
+                if (gn) { try { gn.disconnect(); } catch (_) {} }
                 this.oscillator = null;
                 this.gainNode = null;
                 this.isOscillating = false;
