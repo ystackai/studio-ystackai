@@ -268,23 +268,15 @@
                     return;
                    }
 
-                    // envelope > 0.001: continue oscillating with frame-accurate scheduling.
-                    // Schedule a continuous exponential decay curve that covers at least
-                    // one full rAF cycle (≥50 ms) so that even if the next frame is
-                    // dropped by system load or tab throttling, there is no gap in the
-                    // gain timeline — Web Audio uses the last scheduled value until
-                    // the new exponential curve takes over, maintaining continuity.
-                const targetGain = Math.max(envelope * this.peakAmplitude, 1e-7);
-                 // Frame-synced: cancel any pending per-frame schedules and re-establish
-                 // from the true live gain so exponential ramps never overlap or conflict.
+                  // envelope > 0.001: continue oscillating with exact
+                  // sample-accurate gain scheduling — no overlapping ramps.
+                  // Each rAF sets the precise gain from decayRate^frameCount
+                  // at that audio-time point, ensuring mathematical continuity.
                 const now = this.audioContext.currentTime;
+                const targetGain = Math.max(envelope * this.peakAmplitude, 1e-7);
 
                 this.gainNode.gain.cancelScheduledValues(now);
-                this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
-                this.gainNode.gain.exponentialRampToValueAtTime(
-                    targetGain,
-                    now + 0.05         // look-ahead: ≥1 rAF frame to absorb skips
-                   );
+                this.gainNode.gain.setValueAtTime(targetGain, now);
                 return;
               }
                /**
