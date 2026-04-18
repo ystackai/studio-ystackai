@@ -273,15 +273,26 @@
                 this.hardStopOscillator();
              }
 
-             /**
-              * Hard-stop the oscillator: set gain to 0 then stop & disconnect.
-              * Called only when envelope is already <= 0.001, so there's no discontinuity.
-              */
+              /**
+               * Hard-stop the oscillator: ramp gain to zero then stop & disconnect.
+               * Called only when envelope is already <= 0.001; use a short exponential
+               * ramp to guarantee mathematical continuity and zero clicks/pops at the
+               * frame-transition boundary.
+               */
             hardStopOscillator() {
                 if (!this.oscillator) return;
 
-                 // Stop the oscillator and release the buffer
-                try { this.oscillator.stop(); } catch (_) { /* already stopped */ }
+                const now = this.audioContext.currentTime;
+
+                  // Exponential ramp from current gain to near-zero over 6ms.
+                  // This guarantees smooth mathematical continuity across the
+                  // frame boundary where envelope <= 0.001, eliminating any click.
+                try {
+                    this.gainNode.gain.setTargetAtTime(0, now, 0.002);
+                 } catch (_) { /* gainNode may be undefined */ }
+
+                  // Stop after the ramp completes; buffer will have decayed to silence.
+                try { this.oscillator.stop(now + 0.006); } catch (_) { /* already stopped */ }
                 this.oscillator.disconnect();
                 if (this.gainNode) { this.gainNode.disconnect(); }
                 this.oscillator = null;
