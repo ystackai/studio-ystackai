@@ -254,7 +254,8 @@
                 if (!this.isOscillating || !this.oscillator) return;
 
                     // time-continuous decay from surface-warm-800 curve.
-                const halfLifeMs = -Math.log(2) / Math.log(this.decayRate);
+                // Frame duration for frame-synced envelope: decayRate applies once per frame
+				const halfLifeMs = 1000 / 60; // ~16.67ms per frame at 60fps target
                     // Clamp elapsedS to zero minimum: prevents audio clock drift from
                     // producing negative elapsed time that would cause the exponential
                     // to grow instead of decay (audible clicks/pops).
