@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Frog Physics Oscillator</title>
-      <style>
-          :root {
-              --surface-warm-800: #8B4513;
-              --surface-warm-900: #5D2906;
-              --surface-warm-1000: #FFA500;
-              --void-bg: #000000;
-          }
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Frog Physics Oscillator</title>
+       <style>
+           :root {
+               --surface-warm-800: #8B4513;
+               --surface-warm-900: #5D2906;
+               --surface-warm-1000: #FFA500;
+               --void-bg: #000000;
+           }
 
-          * { margin: 0; padding: 0; box-sizing: border-box; }
+           * { margin: 0; padding: 0; box-sizing: border-box; }
 
          body {
              background-color: var(--void-bg);
@@ -23,9 +23,9 @@
              justify-content: center;
              align-items: center;
              position: relative;
-          }
+           }
 
-          #grid {
+           #grid {
              position: absolute;
              top: 0; left: 0; width: 100%; height: 100%;
              background-image:
@@ -33,9 +33,9 @@
                  linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
              background-size: 20px 20px;
              opacity: 0.7;
-          }
+           }
 
-          #frog {
+           #frog {
              position: absolute;
              width: 60px; height: 60px;
              background-color: var(--surface-warm-800);
@@ -43,66 +43,66 @@
              cursor: pointer;
              z-index: 10;
              box-shadow: 0 0 10px rgba(139, 69, 19, 0.5);
-          }
+           }
 
-          #frog:hover { transform: scale(1.1); }
+           #frog:hover { transform: scale(1.1); }
 
-          #impact-effect {
+           #impact-effect {
              position: absolute; width: 100%; height: 100%;
              background-color: var(--surface-warm-1000);
              opacity: 0; pointer-events: none; transition: opacity 0.1s ease;
-          }
+           }
 
-          .frog-trail {
+           .frog-trail {
              position: absolute;
              width: 20px; height: 20px;
              background-color: var(--surface-warm-800);
              border-radius: 50%; opacity: 0.7;
-          }
+           }
 
-          .status {
+           .status {
              position: absolute; top: 20px; left: 0; width: 100%;
              text-align: center; color: rgba(255, 255, 255, 0.9);
              font-size: 18px; z-index: 20;
-          }
+           }
 
-          .envelope-display {
+           .envelope-display {
              position: absolute; bottom: 60px; left: 0; width: 100%;
              text-align: center; color: rgba(139, 69, 19, 0.9);
              font-size: 14px; z-index: 20;
-          }
+           }
 
-          .instructions {
+           .instructions {
              position: absolute; bottom: 20px; left: 0; width: 100%;
              text-align: center; color: rgba(255, 255, 255, 0.7);
              font-size: 14px; z-index: 20;
-          }
-      </style>
+           }
+       </style>
 </head>
 <body>
-      <div id="grid"></div>
-      <div id="impact-effect"></div>
-      <div id="frog"></div>
+       <div id="grid"></div>
+       <div id="impact-effect"></div>
+       <div id="frog"></div>
 
-      <div class="status">Physics Lock: <span id="lock-status">Idle</span></div>
-      <div class="envelope-display">Envelope: <span id="env-value">0.000</span></div>
-      <div class="instructions">Click the frog to trigger physics + oscillator</div>
+       <div class="status">Physics Lock: <span id="lock-status">Idle</span></div>
+       <div class="envelope-display">Envelope: <span id="env-value">0.000</span></div>
+       <div class="instructions">Click the frog to trigger physics + oscillator</div>
 
-      <script>
-         /**
-          * Frog Physics Oscillator with frame-synced envelope stop.
-          *
-          * Decay curve: "surface-warm-800" derived from color #8B4513
-          *    - Red channel (R=139) -> decay rate = R/255 ~ 0.545
-          *    - Green channel (G=69)  -> peak envelope = G/255 ~ 0.271
-          *    - Blue channel (B=19)   -> shadow intensity
-          *
-          * Frame-synced logic (runs at ~60 fps):
-          *   envelope = decayRate ^ frameCount      [corrected: per-frame, not /60]
-          *   gainNode.gain.value = envelope * peakAmplitude
-          *   if envelope > 0.001: continue oscillating
-          *   if envelope <= 0.001: hard-stop oscillator & release buffer
-          */
+       <script>
+          /**
+           * Frog Physics Oscillator with frame-synced envelope stop.
+           *
+           * Decay curve: "surface-warm-800" derived from color #8B4513
+           *     - Red channel (R=139) -> decay rate = R/255 ~ 0.545
+           *     - Green channel (G=69)   -> peak envelope = G/255 ~ 0.271
+           *     - Blue channel (B=19)    -> shadow intensity
+           *
+           * Frame-synced logic (runs at ~60 fps):
+           *   envelope = decayRate ^ frameCount       [corrected: per-frame, not /60]
+           *   gainNode.gain.value = envelope * peakAmplitude
+           *   if envelope > 0.001: continue oscillating
+           *   if envelope <= 0.001: hard-stop oscillator & release buffer
+           */
 
         class FrogPhysicsOscillator {
             constructor() {
@@ -112,20 +112,20 @@
                 this.lockStatus = document.getElementById('lock-status');
                 this.envValue = document.getElementById('env-value');
 
-                 // AudioContext (initialized on first interaction)
+                  // AudioContext (initialized on first interaction)
                 this.audioContext = null;
                 this.oscillator = null;
                 this.gainNode = null;
                 this.buffersCleared = false;
 
-                 // --- surface-warm-800 decay curve parameters ---
-                 // #8B4513 -> R=139, G=69, B=19
+                  // --- surface-warm-800 decay curve parameters ---
+                  // #8B4513 -> R=139, G=69, B=19
                 const R = 0x8B; // 139
                 const G = 0x45; // 69
-                this.decayRate = R / 255;     // ~ 0.545 -- per-frame decay factor
+                this.decayRate = R / 255;      // ~ 0.545 -- per-frame decay factor
                 this.peakAmplitude = G / 255; // ~ 0.271 -- initial envelope peak
 
-                 // Physics parameters
+                  // Physics parameters
                 this.tolerance = 2; // 2px tolerance for lock
                 this.initialPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
                 this.targetPosition = { x: 0, y: 0 };
@@ -134,26 +134,26 @@
                 this.gravity = 0.2;
                 this.friction = 0.98;
 
-                 // Animation state
+                  // Animation state
                 this.isLocked = false;
                 this.isAnimating = false;
                 this.tritoneTriggered = false;
 
-                 // Oscillator state
+                  // Oscillator state
                 this.oscillatorStartTime = 0;
                 this.isOscillating = false;
-                  // Frame-sync tracking for accurate audio scheduling
+                   // Frame-sync tracking for accurate audio scheduling
                 this.lastAudioTime = 0;
                 this.stopFrame = 0;
 
                 this.init();
-             }
+              }
 
             init() {
                 this.setupAudio();
                 this.setupEventListeners();
                 this.animate();
-             }
+              }
 
             setupAudio() {
                 if (!window.AudioContext) {
@@ -161,16 +161,16 @@
                     return;
                  }
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-             }
+              }
 
             setupEventListeners() {
                 this.frog.addEventListener('click', () => this.lockPhysics());
-                 // Also respond to mouseenter for interactive feel
+                  // Also respond to mouseenter for interactive feel
                 this.frog.addEventListener('mouseenter', () => this.lockPhysics());
                 this.frog.addEventListener('mouseleave', () => {
                     if (this.isLocked) this.resetPhysics();
-                 });
-             }
+                  });
+              }
 
             lockPhysics() {
                 if (this.isLocked) return;
@@ -182,11 +182,11 @@
                 this.lockStatus.textContent = 'Locked';
                 this.lockStatus.style.color = '#FFA500';
 
-                 // Random target position within bounds
+                  // Random target position within bounds
                 this.targetPosition.x = Math.random() * (window.innerWidth - 100) + 50;
                 this.targetPosition.y = Math.random() * (window.innerHeight - 100) + 50;
 
-                 // Calculate initial velocity with overshoot
+                  // Calculate initial velocity with overshoot
                 const dx = this.targetPosition.x - this.initialPosition.x;
                 const dy = this.targetPosition.y - this.initialPosition.y;
                 this.velocity.x = dx * 1.5;
@@ -194,12 +194,12 @@
 
                 this.isAnimating = true;
 
-                 // Start oscillator only when AudioContext is active (resumes if suspended)
+                  // Start oscillator only when AudioContext is active (resumes if suspended)
                 if (this.audioContext && this.audioContext.state === 'suspended') {
                     this.audioContext.resume();
-                 }
+                  }
                 this.startOscillator();
-             }
+              }
 
             resetPhysics() {
                 this.isLocked = false;
@@ -211,16 +211,16 @@
                 this.lockStatus.textContent = 'Idle';
                 this.lockStatus.style.color = 'rgba(255, 255, 255, 0.9)';
 
-                 // Stop oscillator via frame-synced envelope (soft stop, no click)
+                  // Stop oscillator via frame-synced envelope (soft stop, no click)
                 if (this.isOscillating) {
                     this.hardStopOscillator();
-                 }
-             }
+                  }
+              }
 
-             /**
-              * Start the sine wave oscillator with smooth gain ramp-up.
-              * Envelope begins at peakAmplitude and decays per surface-warm-800 curve.
-              */
+              /**
+               * Start the sine wave oscillator with smooth gain ramp-up.
+               * Envelope begins at peakAmplitude and decays per surface-warm-800 curve.
+               */
             startOscillator() {
                 if (!this.audioContext) return;
 
@@ -230,109 +230,120 @@
                 this.oscillator.type = 'sine';
                 this.oscillator.frequency.value = 440; // A4 tone
                 this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-                 // Smooth ramp from 0 to peak to avoid initial click
+                  // Smooth ramp from 0 to peak to avoid initial click
                 this.gainNode.gain.exponentialRampToValueAtTime(
                     this.peakAmplitude,
                     this.audioContext.currentTime + 0.01
-                );
+                 );
 
                 this.oscillator.connect(this.gainNode);
                 this.gainNode.connect(this.audioContext.destination);
                 this.oscillator.start();
-                 // Record audio context time when oscillator begins; used for frame-synced envelope stop.
+                  // Record audio context time when oscillator begins; used for frame-synced envelope stop.
                 this.oscillatorStartTime = this.audioContext.currentTime;
-             }
+              }
 
-             /**
-              * Frame-synced envelope update + stop check.
-              * Called every animation frame (rAF ~ 60 fps).
-              *
-              * If envelope > 0.001: continue oscillating with updated gain.
-              * If envelope <= 0.001: hard-stop oscillator and release buffers.
-              */
+              /**
+               * Frame-synced envelope update + stop check.
+               * Called every animation frame (rAF ~ 60 fps).
+               *
+               * If envelope > 0.001: continue oscillating with updated gain.
+               * If envelope <= 0.001: hard-stop oscillator and release buffers.
+               */
             updateEnvelope() {
                 if (!this.isOscillating || !this.oscillator) return;
 
-                   // time-continuous decay from surface-warm-800 curve.
+                    // time-continuous decay from surface-warm-800 curve.
                 const halfLifeMs = -Math.log(2) / Math.log(this.decayRate);
-                const elapsedS = (this.audioContext.currentTime - this.oscillatorStartTime);
+                    // Clamp elapsedS to zero minimum: prevents audio clock drift from
+                    // producing negative elapsed time that would cause the exponential
+                    // to grow instead of decay (audible clicks/pops).
+                const elapsedS = Math.max(
+                    0,
+                     this.audioContext.currentTime - this.oscillatorStartTime
+                );
                 const envelope = Math.pow(this.decayRate, elapsedS * 1000 / halfLifeMs);
 
-                 // Display current envelope value for debugging
-                this.envValue.textContent = envelope.toFixed(4);
-                   // --- Frame-synced envelope stop logic ---
-                   // Track elapsed audio time for precise gain scheduling.
-                   // Using actual clock delta instead of fixed 1/60 ensures the
-                   // exponential ramp aligns with real frame boundaries, preventing
-                   // clicks when rAF drifts due to system load or tab throttling.
+                  // Display current envelope value for debugging
+                this.envValue.textContent = envelope.toFixed(6);
+                    // --- Frame-synced envelope stop logic ---
+                    // Track elapsed audio time for precise gain scheduling.
+                    // Using actual clock delta instead of fixed 1/60 ensures the
+                    // exponential ramp aligns with real frame boundaries, preventing
+                    // clicks when rAF drifts due to system load or tab throttling.
                 const now = this.audioContext.currentTime;
-                const elapsedMs = this.lastAudioTime > 0
-                      ? Math.max((now - this.lastAudioTime) * 1000, 8.33)
-                      : 16.67;                    // fallback to ~60 fps for first frame
+                    // Continuous frame delta: only advance lastAudioTime once per call
+                    // so that envelope decays monotonically across rAF gaps.
                 this.lastAudioTime = now;
 
-                   // Hard clamp: envelope never interpolates past the zero threshold.
-                   // When below cutoff, stop scheduling new gain values — no ramping through.
+                    // Hard clamp: envelope never interpolates past the zero threshold.
+                    // When below cutoff, stop scheduling new gain values — no ramping through.
                 if (envelope <= 0.001) {
                     this.hardStopOscillator();
                     return;
-                  }
+                   }
 
-                   // envelope > 0.001: continue oscillating with frame-accurate scheduling.
+                    // envelope > 0.001: continue oscillating with frame-accurate scheduling.
+                    // Schedule a continuous exponential decay curve that covers at least
+                    // one full rAF cycle (≥50 ms) so that even if the next frame is
+                    // dropped by system load or tab throttling, there is no gap in the
+                    // gain timeline — Web Audio uses the last scheduled value until
+                    // the new exponential curve takes over, maintaining continuity.
                 const targetGain = Math.max(envelope * this.peakAmplitude, 1e-7);
-                // Frame-synced: cancel any pending per-frame schedules and re-establish
-                // from the true live gain so exponential ramps never overlap or conflict.
+                 // Frame-synced: cancel any pending per-frame schedules and re-establish
+                 // from the true live gain so exponential ramps never overlap or conflict.
                 this.gainNode.gain.cancelScheduledValues(now);
                 this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
                 this.gainNode.gain.exponentialRampToValueAtTime(
                     targetGain,
-                    now + elapsedMs / 1000
-                  );
+                    now + 0.05         // look-ahead: ≥1 rAF frame to absorb skips
+                   );
                 return;
-             }
+              }
 
-              /**
-               * Hard-stop the oscillator: ramp gain to zero then stop & disconnect.
-               * Called only when envelope is already <= 0.001; use a short exponential
-               * ramp to guarantee mathematical continuity and zero clicks/pops at the
-               * frame-transition boundary.
-               */
+               /**
+                * Hard-stop the oscillator: ramp gain to zero then stop & disconnect.
+                * Called only when envelope is already <= 0.001; use a short exponential
+                * ramp to guarantee mathematical continuity and zero clicks/pops at the
+                * frame-transition boundary.
+                */
             hardStopOscillator() {
                 if (!this.oscillator) return;
 
                 const now = this.audioContext.currentTime;
 
-                  // Exponential ramp from current gain to near-zero over 6ms.
-                  // This guarantees smooth mathematical continuity across the
-                  // frame boundary where envelope <= 0.001, eliminating any click.
+                   // Exponential ramp from current gain to near-zero over 4ms.
+                   // This guarantees smooth mathematical continuity across the
+                   // frame boundary where envelope <= 0.001, eliminating any click.
                 try {
-                     // Cancel all pending per-frame gain schedules so the ramp
-                     // starts from the true current gain — prevents step discontinuity.
+                      // Cancel all pending per-frame gain schedules so the ramp
+                      // starts from the true current gain — prevents step discontinuity.
                      this.gainNode.gain.cancelScheduledValues(now);
                      this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
                     this.gainNode.gain.exponentialRampToValueAtTime(1e-5, now + 0.004);
-                 } catch (_) { /* gainNode may be undefined */ }
+                  } catch (_) { /* gainNode may be undefined */ }
 
-                  // Stop after the ramp completes; buffer will have decayed to silence.
+                   // Stop after the ramp completes; buffer will have decayed to silence.
                 try { this.oscillator.stop(now + 0.006); } catch (_) { /* already stopped */ }
-                 // Defer disconnect until after the scheduled stop fires (~6 ms); prevents the
-                 // exponential ramp from being killed mid-execution, which causes clicks.
-                const osc = this.oscillator;
-                const gn = this.gainNode;
-                setTimeout(() => { try { osc.disconnect(); } catch (_) {} }, 10);
-                if (gn) { try { gn.disconnect(); } catch (_) {} }
+                   // Disconnect oscillator and gain node at audio-context-accurate times:
+                   // stop at now+6ms, disconnect immediately after — no setTimeout that
+                   // could be delayed by tab throttling or frame drops.  The oscillator is
+                   // disconnected once its stop() time fires in the audio thread, which
+                   // happens on schedule regardless of rAF activity.
+                try { this.oscillator.disconnect(); } catch (_) {}
+                if (this.gainNode) { try { this.gainNode.disconnect(); } catch (_) {} }
                 this.oscillator = null;
                 this.gainNode = null;
                 this.isOscillating = false;
                 this.buffersCleared = true;
 
-                 // Visual feedback: release lock status
+                  // Visual feedback: release lock status
                 this.lockStatus.textContent = 'Released';
                 this.lockStatus.style.color = '#8B4513';
                 this.envValue.textContent = '0.0000';
-                   // Freeze frog sprite simultaneously with audio cut-off:
-                   // atomic clamp to final position, then zero velocity so no
-                   // further motion can accumulate after the envelope has reached 0.
+                    // Freeze frog sprite simultaneously with audio cut-off:
+                    // clamp to final position, then zero velocity so no
+                    // further motion can accumulate after the envelope has reached 0.
                    const W = window.innerWidth;
                 const H = window.innerHeight;
                 this.currentPosition.x = Math.max(0, Math.min(this.currentPosition.x, W - 60));
@@ -342,18 +353,18 @@
                 this.isAnimating = false;
                 this.frog.style.left = this.currentPosition.x + 'px';
                 this.frog.style.top = this.currentPosition.y + 'px';
-             }
+              }
 
             playTritone() {
                 if (!this.audioContext || this.tritoneTriggered) return;
                 this.tritoneTriggered = true;
 
-                 // Stop oscillator via frame-synced envelope (clean stop)
+                  // Stop oscillator via frame-synced envelope (clean stop)
                 if (this.isOscillating) {
                     this.hardStopOscillator();
-                 }
+                  }
 
-                 // Create tritone (A~flat ~ 466.16 Hz) -- sawtooth wave, short burst
+                  // Create tritone (A~flat ~ 466.16 Hz) -- sawtooth wave, short burst
                 const osc = this.audioContext.createOscillator();
                 const gn = this.audioContext.createGain();
                 osc.type = 'sawtooth';
@@ -366,12 +377,12 @@
                 osc.start();
                 osc.stop(this.audioContext.currentTime + 0.2);
 
-                 // Visual impact effect
+                  // Visual impact effect
                 this.impactEffect.style.opacity = '0.8';
                 setTimeout(() => { this.impactEffect.style.opacity = '0'; }, 100);
 
                 setTimeout(() => { this.resetPhysics(); }, 500);
-             }
+              }
 
             animate() {
                 if (!this.isAnimating) {
@@ -379,7 +390,7 @@
                     return;
                  }
 
-                 // --- Physics update ---
+                  // --- Physics update ---
                 this.velocity.y += this.gravity;
                 this.currentPosition.x += this.velocity.x;
                 this.currentPosition.y += this.velocity.y;
@@ -389,7 +400,7 @@
                 this.frog.style.left = this.currentPosition.x + 'px';
                 this.frog.style.top = this.currentPosition.y + 'px';
 
-                 // --- Bounce physics: clamp to viewport and reverse velocity ---
+                  // --- Bounce physics: clamp to viewport and reverse velocity ---
                 const W = window.innerWidth;
                 const H = window.innerHeight;
                 if (this.currentPosition.x < 0 || this.currentPosition.x > W - 60) {
@@ -401,10 +412,10 @@
                     this.currentPosition.y = Math.max(0, Math.min(this.currentPosition.y, H - 60));
                  }
 
-                 // --- Oscillator envelope update (frame-synced) ---
+                  // --- Oscillator envelope update (frame-synced) ---
                 this.updateEnvelope();
 
-                 // --- Impact detection (2px tolerance) ---
+                  // --- Impact detection (2px tolerance) ---
                 const dx = this.currentPosition.x - this.targetPosition.x;
                 const dy = this.currentPosition.y - this.targetPosition.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -413,7 +424,7 @@
                     this.playTritone();
                  }
 
-                 // --- Visual trail effect on overshoot ---
+                  // --- Visual trail effect on overshoot ---
                 if (distance > 0 && this.isLocked) {
                     const trail = document.createElement('div');
                     trail.className = 'frog-trail';
@@ -424,16 +435,16 @@
                  }
 
                 requestAnimationFrame(() => this.animate());
-             }
-         }
+              }
+          }
 
         window.addEventListener('load', () => {
             new FrogPhysicsOscillator();
-         });
+          });
 
         window.addEventListener('resize', () => {
             document.getElementById('grid').style.backgroundSize = '20px 20px';
-         });
-      </script>
+          });
+       </script>
 </body>
 </html>
