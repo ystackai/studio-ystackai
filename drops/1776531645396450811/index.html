@@ -281,12 +281,19 @@
             hardStopOscillator() {
                 if (!this.oscillator) return;
 
+                  // Single-visit guard: already stopped — bail early.
+                if (this.oscillator === null) return;
+
                 const now = this.audioContext.currentTime;
 
                   // Exponential ramp from current gain to near-zero over 6ms.
                   // This guarantees smooth mathematical continuity across the
                   // frame boundary where envelope <= 0.001, eliminating any click.
                 try {
+                     // Cancel pending per-frame setValueAtTime calls so the ramp
+                     // starts from the true current gain — prevents step discontinuity.
+                     this.gainNode.gain.cancelScheduledValues(now);
+                     this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
                     this.gainNode.gain.exponentialRampToValueAtTime(1e-5, now + 0.004);
                  } catch (_) { /* gainNode may be undefined */ }
 
@@ -303,14 +310,15 @@
                 this.lockStatus.textContent = 'Released';
                 this.lockStatus.style.color = '#8B4513';
                 this.envValue.textContent = '0.0000';
-                 // Freeze frog sprite simultaneously with audio cut-off
-                 // Zero velocity to halt all motion; clamp position to last valid frame
-                this.velocity.x = 0;
-                this.velocity.y = 0;
-                const W = window.innerWidth;
+                   // Freeze frog sprite simultaneously with audio cut-off:
+                   // atomic clamp to final position, then zero velocity so no
+                   // further motion can accumulate after the envelope has reached 0.
+                   const W = window.innerWidth;
                 const H = window.innerHeight;
                 this.currentPosition.x = Math.max(0, Math.min(this.currentPosition.x, W - 60));
                 this.currentPosition.y = Math.max(0, Math.min(this.currentPosition.y, H - 60));
+                this.velocity.x = 0;
+                this.velocity.y = 0;
                 this.frog.style.left = this.currentPosition.x + 'px';
                 this.frog.style.top = this.currentPosition.y + 'px';
              }
