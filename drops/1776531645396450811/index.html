@@ -100,8 +100,8 @@
            * Frame-synced logic (runs at ~60 fps):
            *   envelope = decayRate ^ frameCount       [corrected: per-frame, not /60]
            *   gainNode.gain.value = envelope * peakAmplitude
-           *   if envelope > 0.001: continue oscillating
-           *   if envelope <= 0.001: hard-stop oscillator & release buffer
+           *   if envelope >= 0.001: continue oscillating
+           *   if envelope < 0.001: hard-stop oscillator & release buffer
            */
 
         class FrogPhysicsOscillator {
@@ -248,8 +248,8 @@
                * Frame-synced envelope update + stop check.
                * Called every animation frame (rAF ~ 60 fps).
                *
-               * If envelope > 0.001: continue oscillating with updated gain.
-               * If envelope <= 0.001: hard-stop oscillator and release buffers.
+               * If envelope >= 0.001: continue oscillating with updated gain.
+               * If envelope < 0.001: hard-stop oscillator and release buffers.
                */
             updateEnvelope() {
                 if (!this.isOscillating || !this.oscillator) return;
@@ -263,12 +263,12 @@
                     // --- Frame-synced envelope stop logic ---
                     // Hard clamp: envelope never interpolates past the zero threshold.
                     // When below cutoff, stop scheduling new gain values — no ramping through.
-                if (envelope <= 0.001) {
+                if (envelope < 0.001) {
                     this.hardStopOscillator();
                     return;
                    }
 
-                  // envelope > 0.001: continue oscillating with exact
+                  // envelope >= 0.001: continue oscillating with exact
                   // sample-accurate gain scheduling — no overlapping ramps.
                   // Each rAF sets the precise gain from decayRate^frameCount
                   // at that audio-time point, ensuring mathematical continuity.
@@ -281,7 +281,7 @@
               }
                /**
                 * Hard-stop the oscillator: ramp gain to zero then stop & disconnect.
-                * Called only when envelope is already <= 0.001; use a short exponential
+                * Called only when envelope is already < 0.001; use a short exponential
                 * ramp to guarantee mathematical continuity and zero clicks/pops at the
                 * frame-transition boundary.
                 */
@@ -292,7 +292,7 @@
 
                    // Exponential ramp from current gain to near-zero over 4ms.
                    // This guarantees smooth mathematical continuity across the
-                   // frame boundary where envelope <= 0.001, eliminating any click.
+                   // frame boundary where envelope < 0.001, eliminating any click.
                 try {
                       // Cancel all pending per-frame gain schedules so the ramp
                       // starts from the true current gain — prevents step discontinuity.
