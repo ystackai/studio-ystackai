@@ -262,9 +262,10 @@
                 if (envelope > 0.001) {
                      // Continue: frog still bounces, sound plays
                        // Apply per-frame envelope gain for mathematical continuity.
-                   this.gainNode.gain.setValueAtTime(
-                        envelope * this.peakAmplitude, this.audioContext.currentTime
-                       );
+                this.gainNode.gain.exponentialRampToValueAtTime(
+                    Math.max(envelope * this.peakAmplitude, 1e-7),
+                    this.audioContext.currentTime + (1 / 60)
+                );
                     return;
                  }
                  // envelope <= 0.001 -- the envelope has decayed to near-zero.
@@ -290,7 +291,7 @@
                   // This guarantees smooth mathematical continuity across the
                   // frame boundary where envelope <= 0.001, eliminating any click.
                 try {
-                     // Cancel pending per-frame setValueAtTime calls so the ramp
+                     // Cancel all pending per-frame gain schedules so the ramp
                      // starts from the true current gain — prevents step discontinuity.
                      this.gainNode.gain.cancelScheduledValues(now);
                      this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
