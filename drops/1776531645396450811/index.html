@@ -142,6 +142,9 @@
                  // Oscillator state
                 this.frameCount = 0;
                 this.isOscillating = false;
+                  // Frame-sync tracking for accurate audio scheduling
+                this.lastAudioTime = 0;
+                this.stopFrame = 0;
 
                 this.init();
              }
@@ -255,22 +258,33 @@
 
                  // Display current envelope value for debugging
                 this.envValue.textContent = envelope.toFixed(4);
+                   // --- Frame-synced envelope stop logic ---
+                   // Track elapsed audio time for precise gain scheduling.
+                   // Using actual clock delta instead of fixed 1/60 ensures the
+                   // exponential ramp aligns with real frame boundaries, preventing
+                   // clicks when rAF drifts due to system load or tab throttling.
+                const now = this.audioContext.currentTime;
+                const elapsedMs = this.lastAudioTime > 0
+                      ? Math.max((now - this.lastAudioTime) * 1000, 8.33)
+                      : 16.67;                    // fallback to ~60 fps for first frame
+                this.lastAudioTime = now;
 
-                 // --- Frame-synced envelope stop logic ---
-                 // Continue while envelope is above threshold (strict > ensures we don't
-                 // stop early on the exact 0.001 boundary frame)
-                if (envelope > 0.001) {
-                     // Continue: frog still bounces, sound plays
-                       // Apply per-frame envelope gain for mathematical continuity.
-                this.gainNode.gain.exponentialRampToValueAtTime(
-                    Math.max(envelope * this.peakAmplitude, 1e-7),
-                    this.audioContext.currentTime + (1 / 60)
-                );
+                   // Hard clamp: envelope never interpolates past the zero threshold.
+                   // When below cutoff, stop scheduling new gain values — no ramping through.
+                if (envelope <= 0.001) {
+                    this.frameCount += 2;
+                    this.stopFrame++;
+                    this.hardStopOscillator();
                     return;
-                 }
-                 // envelope <= 0.001 -- the envelope has decayed to near-zero.
-                 // Hard-stop oscillator here; since gain ~ 0, no audible click occurs.
-                this.hardStopOscillator();
+                  }
+
+                   // envelope > 0.001: continue oscillating with frame-accurate scheduling.
+                const targetGain = Math.max(envelope * this.peakAmplitude, 1e-7);
+                this.gainNode.gain.exponentialRampToValueAtTime(
+                    targetGain,
+                    now + elapsedMs / 1000
+                  );
+                return;
              }
 
               /**
@@ -282,8 +296,7 @@
             hardStopOscillator() {
                 if (!this.oscillator) return;
 
-                  // Single-visit guard: already stopped — bail early.
-                if (this.oscillator === null) return;
+                if (this.stopFrame > 0) return;
 
                 const now = this.audioContext.currentTime;
 
