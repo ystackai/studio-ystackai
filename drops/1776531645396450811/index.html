@@ -293,6 +293,16 @@
                 this.lockStatus.textContent = 'Released';
                 this.lockStatus.style.color = '#8B4513';
                 this.envValue.textContent = '0.0000';
+                 // Freeze frog sprite simultaneously with audio cut-off
+                 // Zero velocity to halt all motion; clamp position to last valid frame
+                this.velocity.x = 0;
+                this.velocity.y = 0;
+                const W = window.innerWidth;
+                const H = window.innerHeight;
+                this.currentPosition.x = Math.max(0, Math.min(this.currentPosition.x, W - 60));
+                this.currentPosition.y = Math.max(0, Math.min(this.currentPosition.y, H - 60));
+                this.frog.style.left = this.currentPosition.x + 'px';
+                this.frog.style.top = this.currentPosition.y + 'px';
              }
 
             playTritone() {
