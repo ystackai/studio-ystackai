@@ -140,7 +140,7 @@
                 this.tritoneTriggered = false;
 
                  // Oscillator state
-                this.frameCount = 0;
+                this.oscillatorStartTime = 0;
                 this.isOscillating = false;
                   // Frame-sync tracking for accurate audio scheduling
                 this.lastAudioTime = 0;
@@ -177,7 +177,6 @@
 
                 this.isLocked = true;
                 this.isOscillating = true;
-                this.frameCount = 0;
                 this.tritoneTriggered = false;
 
                 this.lockStatus.textContent = 'Locked';
@@ -240,6 +239,8 @@
                 this.oscillator.connect(this.gainNode);
                 this.gainNode.connect(this.audioContext.destination);
                 this.oscillator.start();
+                 // Record audio context time when oscillator begins; used for frame-synced envelope stop.
+                this.oscillatorStartTime = this.audioContext.currentTime;
              }
 
              /**
@@ -252,9 +253,10 @@
             updateEnvelope() {
                 if (!this.isOscillating || !this.oscillator) return;
 
-                 // surface-warm-800 decay curve: exponential per-frame
-                this.frameCount++;
-                const envelope = Math.pow(this.decayRate, this.frameCount);
+                   // time-continuous decay from surface-warm-800 curve.
+                const halfLifeMs = -Math.log(2) / Math.log(this.decayRate);
+                const elapsedS = (this.audioContext.currentTime - this.oscillatorStartTime);
+                const envelope = Math.pow(this.decayRate, elapsedS * 1000 / halfLifeMs);
 
                  // Display current envelope value for debugging
                 this.envValue.textContent = envelope.toFixed(4);
