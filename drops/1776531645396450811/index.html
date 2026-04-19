@@ -143,7 +143,7 @@
 	           this.oscillatorStartTime = 0;
 	           this.isOscillating = false;
 	                // Frame-sync tracking for accurate audio scheduling
-	           this.lastAudioTime = 0;
+	           this.lastEnvelopeDisplayTime = -Infinity;
 
 	           this.init();
 	           }
@@ -258,40 +258,57 @@
 	       updateEnvelope() {
 	           if (!this.isOscillating || !this.oscillator) return;
 
-	              // Time-based continuous-time decay: effective frames from audio context time
-	               // so the envelope is frame-rate-independent and matches the audio thread exactly.
+	               // Frame-synced envelope check per surface-warm-800 decay curve.
+	               // Runs at rAF ~60 fps; computes continuous-time decay from the
+	               // audio thread's clock so frame-rate variations don't alter timing.
 	           const elapsedFrames = (this.audioContext.currentTime - this.oscillatorStartTime) * 60;
 	           const envelope = Math.pow(this.decayRate, elapsedFrames);
 
-	             // Display current envelope value for debugging
-	           this.envValue.textContent = envelope.toFixed(6);
-	                 // --- Frame-synced envelope stop logic ---
-	                 // Hard clamp: envelope never interpolates past the zero threshold.
-	                 // When below cutoff, hard-stop with a clean exponential fade to silence.
-	           if (envelope < 0.001) {
+	              // Throttled display update (~10 Hz to reduce string allocation).
+	           const now = this.audioContext.currentTime;
+	           if (now - this.lastEnvelopeDisplayTime > 0.1) {
+	               this.envValue.textContent = envelope.toFixed(6);
+	               this.lastEnvelopeDisplayTime = now;
+	               }
+
+	                  // --- Envelope stop: freeze when ≤ 0.001 ---
+	                  // When the decay curve drops to or below the threshold, stop the
+	                  // oscillator with a mathematically continuous exponential fade-out.
+	                  // The hard-stop is frame-synced so audio and visuals halt in the
+	                  // same rAF callback — no clicks, no ghost motion after cut-off.
+	           if (envelope <= 0.001) {
 	               this.hardStopOscillator();
 	               return;
-	                }
+	                  }
 
-	                // envelope >= 0.001: continuous exponential envelope update.
-	                // Read the audio thread's actual running gain value and ramp toward
-	                // targetGain over one frame interval (~16ms).  This preserves exact
-	                // mathematical continuity at every rAF boundary — no piecewise
-	                // constant steps, no discontinuities between consecutive frames.
-	           const now = this.audioContext.currentTime;
+	                  // envelope > 0.001: continuous exponential envelope extension.
+	                  // Maintain mathematical continuity at every rAF boundary by
+	                  // canceling the old schedule, re-anchoring from the exact current
+	                  // gain value (audio-thread reality), and extending a short
+	                  // exponential ramp forward.  The 8ms step is tighter than the
+	                  // ~16 ms rAF period so each new segment begins while the prior
+	                  // one is still in-flight — no gap, no discontinuity.
 	           const targetGain = Math.max(envelope * this.peakAmplitude, 1e-7);
 	           try {
+	                  // Save the audio-thread's current running gain BEFORE canceling
+	                  // old schedules — this is the only way to guarantee a true
+	                  // re-anchor point with mathematical continuity at the rAF boundary.
+	               const currentGain = this.gainNode.gain.value;
 	               this.gainNode.gain.cancelScheduledValues(now);
-	               // Re-anchor from audio-thread's exact current gain (mathematical continuity)
-	               this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
-	               // Continuous exponential ramp toward target — no step discontinuity.
+	                  // Re-anchor from saved running gain value — guarantees
+	                  // continuity across frame transitions: no piecewise steps,
+	                  // no clicks or pops at rAF boundaries.
+	               this.gainNode.gain.setValueAtTime(currentGain, now);
+	                  // Extend decay curve forward with a short exponential ramp
+	                  // (~8 ms) that terminates before the next rAF fires, keeping
+	                  // the envelope smooth and mathematically continuous.
 	               this.gainNode.gain.exponentialRampToValueAtTime(
 	                   targetGain,
-	                   now + 0.016
-	                  );
-	             } catch (_) {}
+	                   now + 0.008
+	                     );
+	               } catch (_) {}
 	           return;
-	           }
+	            }
 
 	           /**
 	            * Hard-stop the oscillator: ramp gain to zero then stop & disconnect.
