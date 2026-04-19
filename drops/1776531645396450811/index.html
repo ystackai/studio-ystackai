@@ -3,16 +3,16 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Frog Physics Oscillator</title>
+	<title>Frog Physics Oscillator — v0.3 Stable Decay Engine</title>
 	<style>
-			:root {
-				--surface-warm-800: #8B4513;
-				--surface-warm-900: #5D2906;
-				--surface-warm-1000: #FFA500;
-				--void-bg: #000000;
-			}
+		:root {
+			--surface-warm-800: #8B4513;
+			--surface-warm-900: #5D2906;
+			--surface-warm-1000: #FFA500;
+			--void-bg: #000000;
+		}
 
-			* { margin: 0; padding: 0; box-sizing: border-box; }
+		* { margin: 0; padding: 0; box-sizing: border-box; }
 
 		body {
 			background-color: var(--void-bg);
@@ -23,9 +23,10 @@
 			justify-content: center;
 			align-items: center;
 			position: relative;
+			user-select: none;
 		}
 
-			#grid {
+		#grid {
 			position: absolute;
 			top: 0; left: 0; width: 100%; height: 100%;
 			background-image:
@@ -35,7 +36,7 @@
 			opacity: 0.7;
 		}
 
-			#frog {
+		#frog {
 			position: absolute;
 			width: 60px; height: 60px;
 			background-color: var(--surface-warm-800);
@@ -43,14 +44,18 @@
 			cursor: pointer;
 			z-index: 10;
 			box-shadow: 0 0 10px rgba(139, 69, 19, 0.5);
+			transition: box-shadow 0.1s ease;
 		}
 
-		#frog:hover { transform: scale(1.1); }
+		#frog:hover {
+			transform: scale(1.1);
+			box-shadow: 0 0 20px rgba(139, 69, 19, 0.8);
+		}
 
 		#impact-effect {
 			position: absolute; width: 100%; height: 100%;
 			background-color: var(--surface-warm-1000);
-			opacity: 0; pointer-events: none; transition: opacity 0.1s ease;
+			opacity: 0; pointer-events: none;
 		}
 
 		.frog-trail {
@@ -90,158 +95,166 @@
 
 	<script>
 	/**
-	  * Frog Physics Oscillator — frame-synced envelope termination (v0.3).
-	  *
-	  * Frame-Synced Envelope Decay Engine:
-	  *
-	  * Mathematical model — exponential decay curve (--surface-warm-800):
-	  *   envelope(n) = decayRate^n
-	  *   where decayRate = R / 255 = 139/255 ≈ 0.545 per frame
-	  *   peakAmplitude = G / 255 = 69/255 ≈ 0.271 (maximum gain)
-	  *
-	  * Computed stop parameters:
-	  *   ENVELOPE_THRESHOLD = 0.001
-	  *   stopFrames = ceil(log(0.001) / log(decayRate)) = 12 frames at 60 fps
-	  *   stopDuration = stopFrames / 60 Hz ≈ 0.2 s (seconds of audio time)
-	  *
-	  * Frame-synced stop condition (checked each animation frame):
-	  *   if envelope <= 0.001: hard-stop oscillator immediately
-	  *   else: continue physics + oscillator loop
-	  *
-	  * Oscillator scheduling for mathematical continuity (no clicks):
-	  *   gain = peakAmplitude → exponentialRampToValueAtTime(1e-7, stopDuration)
-	  *   The Web Audio API schedules this ramp atomically at sample-level precision.
-	  *   By the time stopDuration has elapsed, gain ≈ 1e-7 (effectively zero).
-	  *   oscillator.stop() is called at exactly stopFrames / 60 — the envelope
-	  *   has already reached near-zero, so no click or discontinuity occurs.
-	  */
+	 * Frog Physics Oscillator — Frame-Synced Envelope Decay Engine v0.3
+	 *
+	 * ─── Mathematical Model ────────────────────────────────────────────────────
+	 *   Exponential decay curve (--surface-warm-800):
+	 *     envelope(n) = decayRate^n
+	 *     where decayRate = R / 255 = 139/255 ≈ 0.545098 per frame
+	 *     peakAmplitude = G / 255 = 69/255 ≈ 0.270588 (maximum gain)
+	 *
+	 *   Stop condition:
+	 *     ENVELOPE_THRESHOLD = 0.001
+	 *     stopFrames = ceil(log(0.001) / log(decayRate)) = 12 frames at 60 fps
+	 *     stopDuration ≈ 0.2 seconds of audio time
+	 *
+	 * ─── Frame-Synced Hard-Stop (per animation frame) ──────────────────────────
+	 *   if envelope(n) <= 0.001: hard-stop oscillator immediately
+	 *     → gain ramps to 1e-7 over last few samples (no click/pops)
+	 *     → physics freeze, frog snaps to final position
+	 *   else: continue animation loop and oscillator processing
+	 *
+	 * ─── No interpolation past zero ────────────────────────────────────────────
+	 *   The Web Audio API schedules gainRamp atomically at sample-level precision.
+	 *   exponentialRampToValueAtTime(1e-7, stopTime) ensures gain is ≈ 10⁻⁷
+	 *   exactly at stopDuration, well below audible threshold (< −130 dB).
+	 *   The oscillator stops precisely when the envelope hits zero — no residual
+	 *   energy, no discontinuity, no click.
+	 */
 
 	(function () {
-	'use strict';
+		'use strict';
 
-	var ENVELOPE_THRESHOLD = 0.001;
-	var FROG_SIZE = 60;
-	var GRID_SPACING = 20;
+		// ─── Envelope decay constants (--surface-warm-800 curve) ──────────────
+		var ENVELOPE_THRESHOLD = 0.001;
+		var FROG_SIZE = 60;
 
-	// -- surface-warm-800 decay curve parameters --
-	// #8B4513 → R=139, G=69
-	var R = 0x8B; // 139
-	var G = 0x45; // 69
+		// Color decomposition of #8B4513: R=139, G=69
+		var R = 0x8B; // 139 — decay factor numerator
+		var G = 0x45; // 69  — peak amplitude numerator
 
-	// Precomputed audio constants
-	var decayRate = R / 255;           // ≈ 0.545 per frame (exponential decay factor)
-	var peakAmplitude = G / 255;       // ≈ 0.271 (peak envelope amplitude)
-	var stopFrames = Math.ceil(Math.log(ENVELOPE_THRESHOLD) / Math.log(decayRate));
-	var fps = 60;
-	var stopDuration = stopFrames / fps; // ≈ 0.2 seconds of audio time
+		// Precomputed audio constants (derived from curve)
+		var decayRate = R / 255;            // ≈ 0.545098 per frame (exponential decay factor)
+		var peakAmplitude = G / 255;        // ≈ 0.270588 (peak envelope amplitude)
+		var stopFrames = Math.ceil(Math.log(ENVELOPE_THRESHOLD) / Math.log(decayRate)); // = 12 at 60 fps
+		var fps = 60;
+		var stopDuration = stopFrames / fps; // ≈ 0.2 s of audio time
 
-	// -- DOM references --
-	var frogEl = document.getElementById('frog');
-	var gridEl = document.getElementById('grid');
-	var impactEffect = document.getElementById('impact-effect');
-	var lockStatus = document.getElementById('lock-status');
-	var envValue = document.getElementById('env-value');
+		// ─── DOM references ───────────────────────────────────────────────────
+		var frogEl = document.getElementById('frog');
+		var gridEl = document.getElementById('grid');
+		var impactEffect = document.getElementById('impact-effect');
+		var lockStatus = document.getElementById('lock-status');
+		var envValue = document.getElementById('env-value');
 
-	// -- Audio engine (initialized on first interaction) --
-	var audioCtx = null;
-	var oscillator = null;
-	var gainNode = null;
+		// ─── Audio engine (initialized lazily on first interaction) ─────────────
+		var audioCtx = null;
+		var oscillator = null;
+		var gainNode = null;
 
-	// -- Physics state --
-	var frogPos = { x: 0, y: 0 };
-	var frogVel = { x: 0, y: 0 };
-	var initialPosition = { x: 0, y: 0 };
-	var targetPosition = { x: 0, y: 0 };
-	var tolerance = 2;
-	var gravity = 0.2;
-	var friction = 0.98;
+		// ─── Physics state ─────────────────────────────────────────────────────
+		var frogPos = { x: 0, y: 0 };
+		var frogVel = { x: 0, y: 0 };
+		var initialPosition = { x: 0, y: 0 };
+		var targetPosition = { x: 0, y: 0 };
 
-	// -- Animation state --
-	var isLocked = false;
-	var isAnimating = false;
-	var isOscillating = false;
-	var animFrameCount = 0;
-	var lastEnvelopeDisplayTime = -Infinity;
-	var tritoneTriggered = false;
+		// ─── Animation / envelope state ─────────────────────────────────────────
+		var isLocked = false;
+		var isAnimating = false;
+		var isOscillating = false;
+		var animFrameCount = 0;
+		var lastEnvelopeDisplayTime = -Infinity;
+		var tritoneTriggered = false;
 
-	/** Ensure AudioContext exists and is running. */
-	function ensureAudio() {
-		if (!audioCtx) {
-			try {
-				audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-			} catch (_) {
-				console.warn('Web Audio API not supported');
-				return false;
+		// ─── Helpers ─────────────────────────────────────────────────────────────
+
+		/** Ensure AudioContext exists and is in running state. */
+		function ensureAudio() {
+			if (!audioCtx) {
+				try {
+					var AC = window.AudioContext || window.webkitAudioContext;
+					if (!AC) return false;
+					audioCtx = new AC();
+				} catch (_) {
+					console.warn('[FrogPhysics] Web Audio API not supported');
+					return false;
+				}
 			}
+			if (audioCtx.state === 'suspended') audioCtx.resume();
+			return audioCtx.state !== 'closed';
 		}
-		if (audioCtx.state === 'suspended') audioCtx.resume();
-		return audioCtx.state !== 'closed';
-	}
 
-	/**
-	  * Start the frog physics jump: create sine oscillator, apply frame-synced
-	  * envelope decay via gain node exponential ramp, and begin animation loop.
-	  */
-	function lockPhysics() {
-		if (isLocked) return;
+		/**
+		 * Start the frog physics jump: create sine oscillator, apply frame-synced
+		 * envelope decay via gain-node exponential ramp, and begin animation loop.
+		 */
+		function lockPhysics() {
+			if (isLocked) return;
 
-		isLocked = true;
-		isOscillating = true;
-		animFrameCount = 0;
-		lastEnvelopeDisplayTime = -Infinity;
-		tritoneTriggered = false;
+			isLocked = true;
+			isOscillating = true;
+			isAnimating = true;
+			animFrameCount = 0;
+			lastEnvelopeDisplayTime = -Infinity;
+			tritoneTriggered = false;
 
-		// -- Read frog center for bounce target --
-		var rect = frogEl.getBoundingClientRect();
-		targetPosition.x = rect.left + rect.width / 2;
-		targetPosition.y = rect.top + rect.height / 2;
-		initialPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-		frogPos = { ...initialPosition };
-		frogVel = { x: (Math.random() - 0.5) * 6, y: -5 - Math.random() * 4 };
+			lockStatus.textContent = 'Locked';
+			lockStatus.style.color = '#FFA500';
 
-		lockStatus.textContent = 'Locked';
+			// Read current frog center for bounce target
+			var rect = frogEl.getBoundingClientRect();
+			frogPos.x = rect.left + rect.width / 2 - FROG_SIZE / 2;
+			frogPos.y = rect.top + rect.height / 2 - FROG_SIZE / 2;
 
-		// -- Create and schedule sine oscillator with exponential envelope decay --
-		if (!ensureAudio()) return;
+			// Bounce velocity: shoot toward target with gravity
+			var dx = targetPosition.x - frogPos.x;
+			var dy = targetPosition.y - frogPos.y;
+			frogVel.x = dx * 0.15 + (Math.random() - 0.5) * 2;
+			frogVel.y = -4.0 + Math.random() * 2;
 
-		var now = audioCtx.currentTime;
+			// ── Sine oscillator with frame-synced envelope decay ───────────
+			if (!ensureAudio()) return;
 
-		oscillator = audioCtx.createOscillator();
-		oscillator.type = 'sine';
-		oscillator.frequency.value = 200; // base frog pitch
+			var now = audioCtx.currentTime;
+			baseFrequency = 200; // base frog pitch at jump onset
 
-		gainNode = audioCtx.createGain();
-		// Envelope decay: peakAmplitude → exponential ramp to near-zero over stopDuration (frame-synced)
-		// By the time duration elapses, gain ≈ 1e-7 (mathematically continuous zero-crossing)
-		gainNode.gain.exponentialRampToValueAtTime(1e-7, now + stopDuration);
+			oscillator = audioCtx.createOscillator();
+			oscillator.type = 'sine';
+			oscillator.frequency.value = baseFrequency;
 
-		oscillator.connect(gainNode).connect(audioCtx.destination);
-		oscillator.start();
+			gainNode = audioCtx.createGain();
+			gainNode.gain.setValueAtTime(peakAmplitude, now);
+			// Exponential ramp to near-zero over stopDuration (frame-synced)
+			// At stopFrames ≈ 12 frames, envelope(n) drops below ENVELOPE_THRESHOLD.
+			// By then gain ≈ 1e-7 (≈ −140 dB) — no audible discontinuity.
+			gainNode.gain.exponentialRampToValueAtTime(1e-7, now + stopDuration);
 
-		// -- Initial envelope display --
-		envValue.textContent = peakAmplitude.toFixed(6);
+			oscillator.connect(gainNode).connect(audioCtx.destination);
+			oscillator.start();
 
-		// Kick off the animation loop
-		requestAnimationFrame(animationLoop);
-	}
+			// ── Initial envelope display ───────────────────────────────────
+			envValue.textContent = peakAmplitude.toFixed(6);
 
-	/** Main animation loop — physics integration + per-frame envelope stop check. */
-	function animationLoop() {
-		if (!isLocked && !isOscillating) return;
+			// Kick off the animation loop
+			requestAnimationFrame(animationLoop);
+		}
 
-		if (isLocked || frogVel.y !== 0) {
-			// --- Physics: integrate velocity under gravity, apply friction ---
-			frogVel.y += gravity;
+		/** Main animation loop — physics integration + per-frame envelope stop check. */
+		function animationLoop() {
+			if (!isOscillating && !isAnimating) return;
+
+			// ── Physics: integrate velocity under gravity, apply friction ─────
+			frogVel.y += 0.2; // gravity
 			frogPos.x += frogVel.x;
 			frogPos.y += frogVel.y;
-			frogVel.x *= friction;
-			frogVel.y *= friction;
+			frogVel.x *= 0.98; // friction
+			frogVel.y *= 0.98; // friction
 
 			// Update visual position
 			frogEl.style.left = frogPos.x + 'px';
 			frogEl.style.top = frogPos.y + 'px';
 
-			// --- Bounce physics: clamp to viewport edges and reverse velocity ---
+			// ── Bounce physics: clamp to viewport edges and reverse velocity ─
 			var W = window.innerWidth;
 			var H = window.innerHeight;
 			if (frogPos.x < 0 || frogPos.x > W - FROG_SIZE) {
@@ -253,38 +266,47 @@
 				frogPos.y = Math.max(0, Math.min(frogPos.y, H - FROG_SIZE));
 			}
 
-			// --- Frame-synced envelope stop condition (per-frame check) ---
+			// ── Frame-synced envelope stop condition (per-frame check) ──────
 			if (isOscillating && audioCtx) {
 				animFrameCount += 1;
 
-				// Compute current envelope value via exponential decay formula
+				// Compute current envelope value via exponential decay:
+				//   envelope(n) = decayRate^n = (R/255)^n
 				var currentEnvelope = Math.pow(decayRate, animFrameCount);
 
-				// Update envelope display at ≤10 Hz throttle
+				// Update envelope display at ≤10 Hz throttle (avoid layout thrash)
 				var now = audioCtx.currentTime;
 				if (now - lastEnvelopeDisplayTime > 0.1) {
 					envValue.textContent = currentEnvelope.toFixed(6);
 					lastEnvelopeDisplayTime = now;
 				}
 
-				// Hard-stop: freeze oscillator + physics when envelope ≤ threshold (0.001)
+				// ── Hard-stop: freeze oscillator + physics when envelope ≤ threshold ──
+				//   envelope has mathematically reached zero → release buffer, no residual audio
 				if (currentEnvelope <= ENVELOPE_THRESHOLD) {
 					freezePhysicsAndAudio();
-					return; // Exit early — no further processing after stop
+					return; // Exit early — no further processing after frame-synced stop
+				}
+
+				// Dynamic pitch modulation: frequency decreases as energy dissipates
+				var freqRamp = baseFrequency * (currentEnvelope / peakAmplitude + 0.3);
+				if (oscillator && oscillator.frequency.value > 60) {
+					oscillator.frequency.value = Math.max(60, freqRamp);
+				}
+
+				// ── Impact detection (2 px tolerance, tritone feedback) ────────
+				var dx = frogPos.x - targetPosition.x;
+				var dy = frogPos.y - targetPosition.y;
+				var distance = Math.sqrt(dx * dx + dy * dy);
+
+				if (distance <= 2 && !tritoneTriggered) {
+					playTritone();
 				}
 			}
 
-			// --- Impact detection (2 px tolerance, tritone feedback) ---
-			var dx = frogPos.x - targetPosition.x;
-			var dy = frogPos.y - targetPosition.y;
-			var distance = Math.sqrt(dx * dx + dy * dy);
-
-			if (distance <= tolerance && !tritoneTriggered) {
-				playTritone();
-			}
-
-			// --- Visual trail effect on overshoot ---
-			if (distance > 0 && isLocked && animFrameCount % 3 === 0) {
+			// ── Visual trail effect on movement ───────────────────────────────
+			var speed = Math.sqrt(frogVel.x * frogVel.x + frogVel.y * frogVel.y);
+			if (speed > 1 && isOscillating && animFrameCount % 3 === 0) {
 				var trail = document.createElement('div');
 				trail.className = 'frog-trail';
 				trail.style.left = frogPos.x + 'px';
@@ -292,108 +314,119 @@
 				document.body.appendChild(trail);
 				setTimeout(function () { trail.remove(); }, 500);
 			}
+
+			requestAnimationFrame(animationLoop);
 		}
 
-		requestAnimationFrame(animationLoop);
-	}
+		/**
+		 * Freeze physics and stop the oscillator at the envelope zero-crossing.
+		 * This is the critical frame-synced hard-stop: no residual audio, no click.
+		 */
+		function freezePhysicsAndAudio() {
+			isOscillating = false;
 
-	/** Freeze physics and stop the oscillator at the envelope zero-crossing. */
-	function freezePhysicsAndAudio() {
-		if (oscillator) {
-			var now = audioCtx.currentTime;
-			try {
-				gainNode.gain.cancelScheduledValues(now);
-				gainNode.gain.setValueAtTime(Math.max(gainNode.gain.value, 1e-7), now);
-				gainNode.gain.exponentialRampToValueAtTime(1e-7, now + 0.003);
-			} catch (_) { /* gain node may be freed already */ }
-			try { oscillator.stop(now + 0.004); } catch (_) {}
-			oscillator.disconnect();
-			oscillator = null;
+			if (oscillator && gainNode && audioCtx) {
+				var now = audioCtx.currentTime;
+
+				// Final gain ramp: ensure gain stays at least 1e-7 to avoid log(0) in Web Audio
+				try {
+					gainNode.gain.cancelScheduledValues(now);
+					gainNode.gain.setValueAtTime(Math.max(gainNode.gain.value, 1e-7), now);
+					// Micro-second ramp-down over 3 ms — well below human hearing threshold
+					gainNode.gain.exponentialRampToValueAtTime(1e-7, now + 0.003);
+				} catch (_) { /* gain node may already be disconnected */ }
+
+				// Schedule oscillator stop at the exact frame-synced time
+				try {
+					oscillator.stop(now + 0.004); // 4 ms after micro-ramp (well within single audio buffer)
+				} catch (_) {}
+
+				oscillator.disconnect();
+				oscillator = null;
+			}
+
+			if (gainNode) {
+				try { gainNode.disconnect(); } catch (_) {}
+				gainNode = null;
+			}
+
+			// ── Freeze physics: snap frog to final position, zero velocity ───
+			frogVel.x = 0;
+			frogVel.y = 0;
+
+			var W = window.innerWidth;
+			var H = window.innerHeight;
+			frogPos.x = Math.max(0, Math.min(frogPos.x, W - FROG_SIZE));
+			frogPos.y = Math.max(0, Math.min(frogPos.y, H - FROG_SIZE));
+			frogEl.style.left = frogPos.x + 'px';
+			frogEl.style.top = frogPos.y + 'px';
+
+			isAnimating = false;
+			lockStatus.textContent = 'Released';
+			lockStatus.style.color = '#8B4513';
+			envValue.textContent = '0.0000';
 		}
-		if (gainNode) {
-			try { gainNode.disconnect(); } catch (_) {}
-			gainNode = null;
-		}
-		isOscillating = false;
 
-		// Freeze physics: snap frog to final position, zero velocity
-		frogVel.x = 0;
-		frogVel.y = 0;
-		var W = window.innerWidth;
-		var H = window.innerHeight;
-		frogPos.x = Math.max(0, Math.min(frogPos.x, W - FROG_SIZE));
-		frogPos.y = Math.max(0, Math.min(frogPos.y, H - FROG_SIZE));
-		frogEl.style.left = frogPos.x + 'px';
-		frogEl.style.top = frogPos.y + 'px';
+		/** Trigger tritone (dissonant) sound when frog reaches target position. */
+		function playTritone() {
+			if (!audioCtx || tritoneTriggered) return;
+			tritoneTriggered = true;
 
-		isLocked = false;
-		isAnimating = false;
-		lockStatus.textContent = 'Released';
-		lockStatus.style.color = '#8B4513';
-		envValue.textContent = '0.0000';
-	}
+			if (isOscillating) freezePhysicsAndAudio();
 
-	/** Trigger tritone (dissonant) sound when frog reaches target position. */
-	function playTritone() {
-		if (!audioCtx || tritoneTriggered) return;
-		tritoneTriggered = true;
+			var osc = audioCtx.createOscillator();
+			var gn = audioCtx.createGain();
+			osc.type = 'sawtooth';
+			osc.frequency.value = 466.16; // Tritone (diminished fifth): F♯/G♭
+			gn.gain.setValueAtTime(0.5, audioCtx.currentTime);
+			gn.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
 
-		if (isOscillating) {
-			freezePhysicsAndAudio();
+			osc.connect(gn).connect(audioCtx.destination);
+			osc.start();
+			osc.stop(audioCtx.currentTime + 0.2);
+
+			// Impact visual feedback
+			impactEffect.style.opacity = '0.8';
+			setTimeout(function () { impactEffect.style.opacity = '0'; }, 100);
+			setTimeout(function () { resetPhysics(); }, 500);
 		}
 
-		var osc = audioCtx.createOscillator();
-		var gn = audioCtx.createGain();
-		osc.type = 'sawtooth';
-		osc.frequency.value = 466.16; // Tritone (diminished fifth): F♯/G♭
-		gn.gain.setValueAtTime(0.5, audioCtx.currentTime);
-		gn.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+		/** Reset the frog to initial state (idle, no audio). */
+		function resetPhysics() {
+			isLocked = false;
+			isOscillating = false;
+			isAnimating = false;
+			tritoneTriggered = false;
+			frogPos = { x: initialPosition.x, y: initialPosition.y };
+			frogVel = { x: 0, y: 0 };
+			frogEl.style.left = frogPos.x + 'px';
+			frogEl.style.top = frogPos.y + 'px';
+			lockStatus.textContent = 'Idle';
+			lockStatus.style.color = '';
+			envValue.textContent = '0.000';
+		}
 
-		osc.connect(gn).connect(audioCtx.destination);
-		osc.start();
-		osc.stop(audioCtx.currentTime + 0.2);
+		// ─── Event listeners ──────────────────────────────────────────────────────
 
-		impactEffect.style.opacity = '0.8';
-		setTimeout(function () { impactEffect.style.opacity = '0'; }, 100);
-		setTimeout(function () { resetPhysics(); }, 500);
-	}
+		frogEl.addEventListener('click', function () { lockPhysics(); });
 
-	/** Reset the frog to initial state. */
-	function resetPhysics() {
-		isLocked = false;
-		isOscillating = false;
-		isAnimating = false;
-		tritoneTriggered = false;
-		frogPos = { ...initialPosition };
-		frogVel = { x: 0, y: 0 };
-		frogEl.style.left = frogPos.x + 'px';
-		frogEl.style.top = frogPos.y + 'px';
-		lockStatus.textContent = 'Idle';
-		lockStatus.style.color = '';
-		envValue.textContent = '0.000';
-	}
+		frogEl.addEventListener('mouseenter', function () {
+			if (!isLocked) lockPhysics();
+		});
 
-	// -- Event listeners --
+		frogEl.addEventListener('mouseleave', function () {
+			if (isLocked) resetPhysics();
+		});
 
-	frogEl.addEventListener('click', function () { lockPhysics(); });
-
-	frogEl.addEventListener('mouseenter', function () {
-		if (!isLocked) lockPhysics();
-	});
-
-	frogEl.addEventListener('mouseleave', function () {
-		if (isLocked) resetPhysics();
-	});
-
-	// -- Initialize position on load --
-	window.addEventListener('load', function () {
-		initialPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-		frogPos = { ...initialPosition };
-		targetPosition.x = initialPosition.x;
-		targetPosition.y = initialPosition.y;
-		frogEl.style.left = frogPos.x + 'px';
-		frogEl.style.top = frogPos.y + 'px';
-	});
+		// ─── Initialize position on load ──────────────────────────────────────────
+		window.addEventListener('load', function () {
+			initialPosition = { x: window.innerWidth / 2 - FROG_SIZE / 2, y: window.innerHeight / 2 - FROG_SIZE / 2 };
+			frogPos = { x: initialPosition.x, y: initialPosition.y };
+			targetPosition.x = initialPosition.x;
+			targetPosition.y = initialPosition.y;
+			frogEl.style.left = frogPos.x + 'px';
+			frogEl.style.top = frogPos.y + 'px';
+		});
 
 	})();
 	</script>
