@@ -113,7 +113,7 @@
 	   *   Stop condition (frame-synced):
 	   *     ENVELOPE_THRESHOLD = 0.001
 	   *     stopFrames = ceil(log(0.001) / log(decayRate)) = 12 frames at 60 fps
-	   *     At frame 12: envelope = 0.000688 ~ -74.6 dB (inaudible)
+	   *     At frame 12: envelope = 0.000688 ~ -63.2 dB (inaudible)
 	   *      -> hard-stop oscillator immediately, release buffer, no residual audio
 	   *      -> no cancelScheduledValues needed (nothing was pre-scheduled past this frame)
 	   *
@@ -286,31 +286,32 @@
 					//   envelope(n) = decayRate^n = (R/255)^n
 				var currentEnvelope             = Math.pow(decayRate, animFrameCount);
 
-					// v0.3 fix: update gain at this exact frame so the Web Audio engine
-					// stays on the precise decay curve. No pre-scheduled ramp exists,
-					// so no cancelScheduledValues is needed (no discontinuity possible).
+						// --- Hard-stop when envelope reaches zero (~= threshold) ---
+						// Frame-synced termination: oscillator stops exactly at the
+						// mathematically-computed stop frame. No residual energy,
+						// no discontinuity, no click. The gain is already below
+						// -63 dB at this point, so final snap to 1e-7 (~-140 dB)
+						// over 3 ms happens in completely inaudible territory.
+				if (currentEnvelope <= ENVELOPE_THRESHOLD) {
+					freezePhysicsAndAudio();
+					return; // Exit --- no further processing after frame-synced stop
+				}
+
+						// v0.3 fix: update gain at this exact frame so the Web Audio engine
+						// stays on the precise decay curve. No pre-scheduled ramp exists,
+						// so no cancelScheduledValues is needed (no discontinuity possible).
 				if (gainNode) {
-					var currentGain                 = peakAmplitude * currentEnvelope;
+					var currentGain                  = peakAmplitude * currentEnvelope;
 					gainNode.gain.setValueAtTime(currentGain, audioCtx.currentTime);
 					}
 
-					// Update envelope display at <=10 Hz throttle (avoid layout thrash)
-				var now                         = audioCtx.currentTime;
+						// Update envelope display at <=10 Hz throttle (avoid layout thrash)
+				var now                          = audioCtx.currentTime;
 				if (now - lastEnvelopeDisplayTime > 0.1) {
-					envValue.textContent            = currentEnvelope.toFixed(6);
-					lastEnvelopeDisplayTime         = now;
+					envValue.textContent             = currentEnvelope.toFixed(6);
+					lastEnvelopeDisplayTime          = now;
 					}
 
-					// --- Hard-stop when envelope reaches zero (~= threshold) ---
-					// This is the v0.3 frame-synced termination: oscillator stops
-					// exactly at the mathematically-computed stop frame. No residual
-					// energy, no discontinuity, no click. The gain is already below
-					// -74 dB at this point, so the final snap to 1e-7 (~= -140 dB)
-					// over 3 ms happens in completely inaudible territory.
-				if (currentEnvelope <= ENVELOPE_THRESHOLD) {
-					freezePhysicsAndAudio();
-						return; // Exit --- no further processing after frame-synced stop
-					}
 
 					// Dynamic pitch modulation: frequency decreases as energy dissipates
 				var freqRamp                    = baseFrequency * (currentEnvelope / peakAmplitude + 0.3);
