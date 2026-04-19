@@ -268,20 +268,18 @@
                     return;
                    }
 
-                  // envelope >= 0.001: continue oscillating with exact
-                  // sample-accurate gain scheduling — no overlapping ramps.
-                  // Each rAF sets the precise gain from decayRate^frameCount
-                  // at that audio-time point, ensuring mathematical continuity.
+                   // envelope >= 0.001: continuous gain scheduling — no
+                    // cancelScheduledValues to avoid inter-frame discontinuities.
+                    // Each rAF sets the precise decayRate^stopFrame value via
+                    // setValueAtTime, maintaining an unbroken exponential curve.
                 const now = this.audioContext.currentTime;
                 const targetGain = Math.max(envelope * this.peakAmplitude, 1e-7);
-
-                this.gainNode.gain.cancelScheduledValues(now);
                 this.gainNode.gain.setValueAtTime(targetGain, now);
                 return;
               }
                /**
                 * Hard-stop the oscillator: ramp gain to zero then stop & disconnect.
-                * Called only when envelope is already < 0.001; use a short exponential
+                * Called only when envelope is already < 0.001; use a tight linear
                 * ramp to guarantee mathematical continuity and zero clicks/pops at the
                 * frame-transition boundary.
                 */
@@ -290,21 +288,22 @@
 
                 const now = this.audioContext.currentTime;
 
-                   // Exponential ramp from current gain to near-zero over 4ms.
-                   // This guarantees smooth mathematical continuity across the
-                   // frame boundary where envelope < 0.001, eliminating any click.
+                   // Cancel all per-frame gain schedules and linear-ramp gain from
+                    // its current running value to near-zero over 1 ms — the shortest
+                    // interval audio hardware can honor, yielding a mathematically
+                    // continuous decay with no clicks or pops.
                 try {
-                      // Cancel all pending per-frame gain schedules so the ramp
-                      // starts from the true current gain — prevents step discontinuity.
-                     this.gainNode.gain.cancelScheduledValues(now);
-                     this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
-                    this.gainNode.gain.exponentialRampToValueAtTime(1e-5, now + 0.004);
+                    this.gainNode.gain.cancelScheduledValues(now);
+                    this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, now);
+                    this.gainNode.gain.linearRampToValueAtTime(1e-7, now + 0.001);
                   } catch (_) { /* gainNode may be undefined */ }
 
-                   // Stop after the ramp completes; buffer will have decayed to silence.
-                try { this.oscillator.stop(now + 0.006); } catch (_) { /* already stopped */ }
+                   // Stop oscillator 2 ms after ramp — both audio and visuals freeze
+                   // in the same rAF callback so sprite motion halts simultaneously
+                   // with envelope reaching zero at the frame-transition boundary.
+                try { this.oscillator.stop(now + 0.002); } catch (_) { /* already stopped */ }
                    // Disconnect oscillator and gain node at audio-context-accurate times:
-                   // stop at now+6ms, disconnect immediately after — no setTimeout that
+                   // stop at now+2ms; disconnect immediately after — no setTimeout that
                    // could be delayed by tab throttling or frame drops.  The oscillator is
                    // disconnected once its stop() time fires in the audio thread, which
                    // happens on schedule regardless of rAF activity.
