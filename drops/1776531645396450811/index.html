@@ -144,7 +144,6 @@
 	           this.isOscillating = false;
 	                // Frame-sync tracking for accurate audio scheduling
 	           this.lastAudioTime = 0;
-	           this.stopFrame = 0;
 
 	           this.init();
 	           }
@@ -229,7 +228,6 @@
 
 	           this.oscillator.type = 'sine';
 	           this.oscillator.frequency.value = 440; // A4 tone
-	           this.stopFrame = 0;
 	           this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
 	               // Smooth ramp from 0 to peak to avoid initial click
 	           this.gainNode.gain.exponentialRampToValueAtTime(
@@ -248,7 +246,7 @@
 	            * Frame-synced envelope update + stop check.
 	            * Called every animation frame (rAF ~60 fps).
 	            *
-	            * Envelope decay: envelope = decayRate ^ stopFrame  [discrete, per-frame]
+	             * Envelope decay: envelope = decayRate ^ elapsedFrames   [continuous-time]
 	            * Gain scheduling: uses exponentialRampToValueAtTime from the audio thread's
 	            *   actual running value toward targetGain over ~16ms, maintaining mathematical
 	            *   continuity of the gain curve across frame transitions — no piecewise steps,
@@ -260,9 +258,10 @@
 	       updateEnvelope() {
 	           if (!this.isOscillating || !this.oscillator) return;
 
-	             // Discrete per-frame decay: decayRate^frameCount — mathematically exact stop.
-	           this.stopFrame += 1;
-	           const envelope = Math.pow(this.decayRate, this.stopFrame);
+	              // Time-based continuous-time decay: effective frames from audio context time
+	               // so the envelope is frame-rate-independent and matches the audio thread exactly.
+	           const elapsedFrames = (this.audioContext.currentTime - this.oscillatorStartTime) * 60;
+	           const envelope = Math.pow(this.decayRate, elapsedFrames);
 
 	             // Display current envelope value for debugging
 	           this.envValue.textContent = envelope.toFixed(6);
@@ -340,7 +339,6 @@
 	           this.lockStatus.textContent = 'Released';
 	           this.lockStatus.style.color = '#8B4513';
 	           this.envValue.textContent = '0.0000';
-	           this.stopFrame = 0;
 		             // Freeze frog sprite simultaneously with audio cut-off:
 		             // clamp to final position, then zero velocity so no
 		             // further motion can accumulate after the envelope has reached 0.
