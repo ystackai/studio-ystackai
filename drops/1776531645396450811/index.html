@@ -234,6 +234,12 @@
 	               this.peakAmplitude,
 	               this.audioContext.currentTime + 0.01
 	              );
+	            // Continuous decay from peakAmplitude to near-silence — single uninterrupted
+	            // exponential gives true mathematical continuity across every rAF frame.
+	           this.gainNode.gain.exponentialRampToValueAtTime(
+	                1e-7,
+	               this.audioContext.currentTime + 0.75
+	    );
 
 	           this.oscillator.connect(this.gainNode);
 	           this.gainNode.connect(this.audioContext.destination);
@@ -281,31 +287,10 @@
 	               return;
 	                  }
 
-	                  // envelope > 0.001: continuous exponential envelope extension.
-	                  // Maintain mathematical continuity at every rAF boundary by
-	                  // canceling the old schedule, re-anchoring from the exact current
-	                  // gain value (audio-thread reality), and extending a short
-	                  // exponential ramp forward.  The 8ms step is tighter than the
-	                  // ~16 ms rAF period so each new segment begins while the prior
-	                  // one is still in-flight — no gap, no discontinuity.
-	           const targetGain = Math.max(envelope * this.peakAmplitude, 1e-7);
-	           try {
-	                  // Save the audio-thread's current running gain BEFORE canceling
-	                  // old schedules — this is the only way to guarantee a true
-	                  // re-anchor point with mathematical continuity at the rAF boundary.
-	               const currentGain = this.gainNode.gain.value;
-	               this.gainNode.gain.cancelScheduledValues(now);
-	                  // Re-anchor from saved running gain value — guarantees
-	                  // continuity across frame transitions: no piecewise steps,
-	                  // no clicks or pops at rAF boundaries.
-	               this.gainNode.gain.setValueAtTime(currentGain, now);
-	                  // Extend decay curve forward with a short exponential ramp
-	                  // (~8 ms) that terminates before the next rAF fires, keeping
-	                  // the envelope smooth and mathematically continuous.
-	               this.gainNode.gain.exponentialRampToValueAtTime(
-	                   targetGain,
-	                   now + 0.008
-	                     );
+	            // envelope > 0.001: no per-frame gain rescheduling needed.
+	            // The single continuous exponential decay from startOscillator already
+	            // provides mathematical continuity at every rAF boundary — zero clicks, zero pops.
+	            // no gain scheduling loop; continuous decay handles itself.
 	               } catch (_) {}
 	           return;
 	            }
