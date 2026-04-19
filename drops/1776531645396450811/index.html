@@ -142,6 +142,7 @@
 	               // Oscillator state
 	           this.oscillatorStartTime = 0;
 	           this.isOscillating = false;
+		        // Tracks audio-context time for continuous per-frame envelope computation
 	                // Frame-sync tracking for accurate audio scheduling
 	           this.lastEnvelopeDisplayTime = -Infinity;
 
@@ -287,11 +288,21 @@
 	               return;
 	                  }
 
-	            // envelope > 0.001: no per-frame gain rescheduling needed.
-	            // The single continuous exponential decay from startOscillator already
-	            // provides mathematical continuity at every rAF boundary — zero clicks, zero pops.
-	            // no gain scheduling loop; continuous decay handles itself.
-	               } catch (_) {}
+	        // --- Per-frame gain scheduling loop for continuous envelope decay ---
+	        // exponentialRampToValueAtTime starts from the audio thread's current
+	        // running gain value so each rAF frame extends the curve seamlessly —
+	        // zero discontinuities, zero clicks at every frame boundary.
+		        const currentGain = Math.pow(this.decayRate, elapsedFrames) * this.peakAmplitude;
+	        const remainingFrames = 60;
+	        this.gainNode.gain.cancelScheduledValues(this.audioContext.currentTime);
+	        this.gainNode.gain.setValueAtTime(
+	            this.gainNode.gain.value,
+	            this.audioContext.currentTime,
+	        );
+	        this.gainNode.gain.exponentialRampToValueAtTime(
+	            Math.max(currentGain, 1e-7),
+	            this.audioContext.currentTime + remainingFrames / 60,
+	        );
 	           return;
 	            }
 
