@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silent Frog Oscillator</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  background: #000000;
+  overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
+  color: #ffffff;
+}
+
+#canvas {
+  position: relative;
+  width: 100%; height: 100%;
+}
+
+#frog {
+  position: absolute;
+  width: 32px; height: 32px;
+  background: #ffffff;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Hard edges only — no gradients, shadows, or blurs */
+}
+
+#status-panel {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+#controls {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+}
+
+#init-btn {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  padding: 10px 20px;
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  cursor: pointer;
+  /* Hard edges only */
+}
+
+#init-btn:hover { opacity: 0.85; }
+#init-btn:disabled { opacity: 0.3; cursor: default; }
+
+#verify-block {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+#drop-line {
+  position: absolute;
+  width: 1px;
+  background: #ffffff;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  opacity: 0.15;
+}
+
+#landing-marker {
+  position: absolute;
+  width: 32px; height: 4px;
+  background: #ffffff;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 100px;
+  opacity: 0.6;
+}
+</style>
+</head>
+<body>
+
+<div id="canvas">
+  <div id="drop-line"></div>
+  <div id="landing-marker"></div>
+  <div id="frog"></div>
+</div>
+
+<div id="status-panel">
+STATUS: IDLE
+VOLTAGE: 0V
+CLICKS: 0
+</div>
+
+<div id="verify-block"></div>
+
+<div id="controls">
+  <button id="init-btn">Initialize Fall</button>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ─── Constants ────────────────────────────────────────────
+  const FROG_SIZE = 32;
+  const START_Y = 64;          // top px offset
+  const LANDING_Y = window.innerHeight - 100 - FROG_SIZE / 2;
+  const TOTAL_DISTANCE = LANDING_Y - START_Y;
+  const FRAME_RATE = 60;
+  const DURATION_MS = 1800;     // fall duration in ms
+  const N = Math.round(DURATION_MS * FRAME_RATE / 1000); // frame count
+
+  // Pre-calculated landing position (before any rounding)
+  const PRECISION_LANDING_Y = START_Y + TOTAL_DISTANCE;
+
+  // ─── DOM refs ─────────────────────────────────────────────
+  const frogEl       = document.getElementById('frog');
+  const statusPanel  = document.getElementById('status-panel');
+  const verifyBlock  = document.getElementById('verify-block');
+  const initBtn      = document.getElementById('init-btn');
+  const landingMarker = document.getElementById('landing-marker');
+
+  // Position landing marker at exact pre-calculated coordinate
+  landingMarker.style.top = PRECISION_LANDING_Y + FROG_SIZE / 2 - 2 + 'px';
+
+  // ─── State ────────────────────────────────────────────────
+  let audioCtx     = null;
+  let gainNode     = null;
+  let oscillator   = null;
+  let fallActive   = false;
+  let landed       = false;
+  let animFrameId  = null;
+
+  // ─── Web Audio: active but hard-muted ─────────────────────
+  function initAudio() {
+    audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+    gainNode  = audioCtx.createGain();
+    oscillator = audioCtx.createOscillator();
+
+    // Hard mute — output is null regardless of signal
+    gainNode.gain.value = 0;
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+
+    console.log('Audio engine: ACTIVE (GAIN MUTED)');
+  }
+
+  function getStatusLines() {
+    if (landed) {
+      return [
+        'STATUS: SEQUENCE_TERMINATED',
+        'VOLTAGE: 0V',
+        'CLICKS: 0'
+      ];
+    }
+    if (fallActive && !landed) {
+      return [
+        'STATUS: FALL_IN_PROGRESS',
+        'VOLTAGE: 0V',
+        'CLICKS: 0'
+      ];
+    }
+    return [
+      'STATUS: IDLE',
+      'VOLTAGE: 0V',
+      'CLICKS: 0'
+    ];
+  }
+
+  function updateStatus() {
+    statusPanel.textContent = getStatusLines().join('\n');
+  }
+
+  // ─── Verification: residual energy ────────────────────────
+  function verifyZeroState() {
+    const currentGain = gainNode ? gainNode.gain.value : null;
+    const energy = (currentGain !== null && Math.abs(currentGain) > 0)
+      ? Math.pow(currentGain, 2)
+      : 0;
+
+    if (energy > 0) {
+      verifyBlock.textContent = 'VERIFY: REJECTED — energy=' + energy.toFixed(6);
+      console.log('Verification FAILED: residual energy=' + energy);
+      return false;
+    }
+
+    verifyBlock.textContent = 'VERIFY: PASSED — energy=0.000000';
+    console.log('Verification PASSED: residual energy=0');
+    return true;
+  }
+
+  // ─── Landing handler ──────────────────────────────────────
+  function onLanding(elapsedMs) {
+    if (landed) return;
+    landed = true;
+    fallActive = false;
+    initBtn.disabled = false;
+    initBtn.textContent = 'Initialize Fall';
+
+    // Freeze frog at exact pre-calculated pixel coordinate
+    frogEl.style.top = PRECISION_LANDING_Y + 'px';
+    frogEl.style.transform = 'translateX(-50%)';
+
+    // Ensure audio is still muted — no release node that allows ringing
+    if (gainNode) {
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    }
+
+    updateStatus();
+
+    // Console output: simultaneous logging of Gain and Frame
+    console.log('Gain: 0.0');
+    console.log('Frame: ' + N);
+    console.log('Landing at exact pixel: ' + PRECISION_LANDING_Y);
+
+    // Verification block
+    verifyZeroState();
+  }
+
+  // ─── Animation loop ───────────────────────────────────────
+  function fallLoop(startTime) {
+    const elapsed = performance.now() - startTime;
+
+    if (elapsed >= DURATION_MS) {
+      onLanding(elapsed);
+      return;
+    }
+
+    // Strict linear function: position advances proportionally with time
+    const progress = elapsed / DURATION_MS;
+    const currentY = START_Y + TOTAL_DISTANCE * progress;
+
+    frogEl.style.top = currentY + 'px';
+    updateStatus();
+
+    animFrameId = requestAnimationFrame(function(ts) { fallLoop(startTime); });
+  }
+
+  // ─── Init handler ─────────────────────────────────────────
+  initBtn.addEventListener('click', function() {
+    if (fallActive || landed) return;
+
+    // Reset state
+    landed = false;
+    fallActive = true;
+    frogEl.style.top = START_Y + 'px';
+    updateStatus();
+    verifyBlock.textContent = '';
+    initBtn.disabled = true;
+    initBtn.textContent = 'FALLING...';
+
+    // Re-init audio each press (new context per user gesture)
+    if (audioCtx) {
+      try { audioCtx.close(); } catch(e) {}
+    }
+    initAudio();
+
+    // Start fall at exact START_Y; land at PRECISION_LANDING_Y
+    const startTime = performance.now();
+    animFrameId = requestAnimationFrame(function(ts) { fallLoop(startTime); });
+  });
+
+  // ─── Initial status ───────────────────────────────────────
+  updateStatus();
+  verifyBlock.textContent = 'FRAME N: ' + N;
+})();
+</script>
+</body>
+</html>
