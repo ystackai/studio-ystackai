@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Zero: Silent Frog Oscillator</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  background-color: #000000;
+  overflow: hidden;
+  font-family: "Courier New", Courier, monospace;
+}
+#canvas {
+  position: relative;
+  width: 100%; height: 100%;
+}
+#frog {
+  position: absolute;
+  width: 40px; height: 40px;
+  background-color: #ffffff;
+  left: 50%; top: 0;
+  transform: translateX(-50%);
+}
+#status-panel {
+  position: absolute;
+  bottom: 24px; left: 24px;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+#trigger {
+  position: absolute;
+  top: 24px; left: 50%;
+  transform: translateX(-50%);
+  background-color: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 12px 24px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+#trigger:hover { background-color: #cccccc; }
+#trigger:disabled { background-color: #333333; color: #666666; cursor: default; }
+</style>
+</head>
+<body>
+<div id="canvas">
+  <div id="frog"></div>
+  <button id="trigger">Initialize Fall</button>
+  <div id="status-panel"></div>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  // ─── Configuration ──────────────────────────────────────
+  const SQUARE_SIZE = 40;
+  const FALL_DISTANCE = 10;          // pixels of acceleration phase (before freeze point)
+  const ACCELERATION = 2;            // pixels per frame^2
+  const TARGET_FRAME = 29;           // Frame N where the frog lands and freezes
+
+  // ─── DOM References ─────────────────────────────────────
+  const frogEl       = document.getElementById("frog");
+  const triggerBtn   = document.getElementById("trigger");
+  const statusPanel  = document.getElementById("status-panel");
+
+  // ─── Audio Context (Hard-Muted) ─────────────────────────
+  let audioCtx   = null;
+  let oscillator = null;
+  let gainNode   = null;
+
+  function initAudio() {
+    audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
+    oscillator = audioCtx.createOscillator();
+    gainNode   = audioCtx.createGain();
+
+    // Internal oscillator runs at a low-frequency sweep — present but unhearing
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+    oscillator.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 1.5);
+
+    // Hard mute: gain locked at exactly zero
+    gainNode.gain.value = 0;
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+  }
+
+  function destroyAudio() {
+    if (oscillator) { try { oscillator.stop(); } catch(e) {} oscillator = null; }
+    if (audioCtx)   { try { audioCtx.close();   } catch(e) {} audioCtx   = null; }
+    gainNode = null;
+  }
+
+  // ─── Physics & Rendering ────────────────────────────────
+  let currentY = 0;
+  let frame    = 0;
+  let running  = false;
+
+  function resetFrog() {
+    frogEl.style.top = "0px";
+    statusPanel.textContent = "";
+  }
+
+  function freezeAt(frameN) {
+    // Calculate exact landing coordinate: y = 0.5 * a * t^2
+    const landingY = 0.5 * ACCELERATION * frameN * frameN;
+    frogEl.style.top = Math.round(landingY) + "px";
+
+    // Hard mute — gain is already 0, but assert it once more at impact
+    if (gainNode) {
+      gainNode.gain.value = 0;
+    }
+
+    // Verify residual energy
+    const residualEnergy = checkResidualEnergy();
+    if (residualEnergy > 0) {
+      console.error("BUILD REJECTED: residual energy", residualEnergy);
+    } else {
+      console.log("Gain: 0.0");
+      console.log("Frame:", frameN);
+    }
+
+    // DOM status
+    statusPanel.innerHTML =
+      "STATUS: SEQUENCE_TERMINATED<br>" +
+      "VOLTAGE: 0V<br>" +
+      "CLICKS: 0";
+
+    running = false;
+    triggerBtn.disabled = false;
+    triggerBtn.textContent = "Reinitialize Fall";
+  }
+
+  function checkResidualEnergy() {
+    // Verify no audio current flows — gain is zero
+    if (gainNode && Math.abs(gainNode.gain.value) > 1e-12) {
+      return Math.abs(gainNode.gain.value);
+    }
+    return 0;
+  }
+
+  function animate() {
+    if (!running) return;
+
+    frame++;
+    if (frame < TARGET_FRAME) {
+      // Linear acceleration: y = 0.5 * a * t^2
+      currentY = 0.5 * ACCELERATION * frame * frame;
+      frogEl.style.top = Math.round(currentY) + "px";
+      requestAnimationFrame(animate);
+    } else {
+      // Landing at exact frame N — instant freeze, no release node
+      freezeAt(TARGET_FRAME);
+    }
+  }
+
+  function drop() {
+    if (running) return;
+    running = true;
+    triggerBtn.disabled = true;
+    triggerBtn.textContent = "Falling…";
+    resetFrog();
+
+    initAudio();
+    requestAnimationFrame(animate);
+  }
+
+  triggerBtn.addEventListener("click", drop);
+})();
+</script>
+</body>
+</html>
