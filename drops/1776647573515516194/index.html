@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zero-Click Frog Oscillator</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: #000000; width: 100%; height: 100%; overflow: hidden; }
+body { display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; color: #ffffff; }
+#canvas { position: relative; width: 400px; height: 500px; border: none; }
+#frog { position: absolute; width: 32px; height: 32px; background: #ffffff; left: 50%; transform: translateX(-50%); top: 16px; }
+#controls { margin-top: 40px; }
+button { font-family: monospace; font-size: 14px; background: #000000; color: #ffffff; border: 2px solid #ffffff; padding: 8px 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
+button:hover { background: #ffffff; color: #000000; }
+#readout { margin-top: 30px; font-size: 14px; line-height: 1.8; white-space: pre-line; text-align: center; min-height: 60px; }
+</style>
+</head>
+<body>
+<div id="canvas">
+  <div id="frog"></div>
+</div>
+<div id="controls"><button id="btn">Initialize Fall</button></div>
+<div id="readout"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById("canvas");
+  var frog   = document.getElementById("frog");
+  var btn    = document.getElementById("btn");
+  var readout = document.getElementById("readout");
+
+  var CANVAS_H    = 500;
+  var FROG_SIZE   = 32;
+  var LAND_Y      = CANVAS_H - FROG_SIZE;
+  var START_Y     = 16;
+  var DURATION_MS = 800;
+  var TARGET_FPS  = 60;
+
+  /* --- Web Audio: oscillator + hard-mute gain (gain.value = 0) --- */
+  var actx = new (window.AudioContext || window.webkitAudioContext)();
+  var osc  = actx.createOscillator();
+  var mute = actx.createGain();
+  osc.type = "sine";
+  osc.frequency.value = 440;
+  mute.gain.value = 0;            // hard mute — no audible output
+  osc.connect(mute);
+  mute.connect(actx.destination);
+  osc.start();
+
+  var landingFrame = null;
+
+  /* --- DOM state setters (zero extra transitions) --- */
+  function setReadout(lines) {
+    readout.textContent = lines.join("\n");
+  }
+
+  function idleState() {
+    frog.style.top = START_Y + "px";
+    btn.disabled   = false;
+    setReadout([
+      "STATUS: IDLE",
+      "VOLTAGE: 0V",
+      "CLICKS: 0"
+    ]);
+  }
+
+  /* --- Main drop sequence via requestAnimationFrame --- */
+  function drop() {
+    btn.disabled = true;
+    var startTime = performance.now();
+
+    function tick(now) {
+      var elapsed = now - startTime;
+      var progress = Math.min(elapsed / DURATION_MS, 1);
+
+      if (progress < 1) {
+        var y = START_Y + (LAND_Y - START_Y) * progress;
+        frog.style.top = y + "px";
+        requestAnimationFrame(tick);
+      } else {
+        /* landing frame N */
+        landingFrame = Math.round(elapsed / 1000 * TARGET_FPS);
+        frog.style.top = LAND_Y + "px";
+        var gainVal = mute.gain.value;
+
+        console.log("Gain: " + gainVal.toFixed(1));
+        console.log("Frame: " + landingFrame);
+
+        setReadout([
+          "STATUS: SEQUENCE_TERMINATED",
+          "VOLTAGE: 0V",
+          "CLICKS: 0"
+        ]);
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  btn.addEventListener("click", function () {
+    drop();
+  });
+
+  /* --- Boot --- */
+  idleState();
+})();
+</script>
+</body>
+</html>
