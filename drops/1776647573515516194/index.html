@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Silent Frog Oscillator — Drop #41</title>
+<style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+        width: 100%; height: 100%;
+        background: #000000;
+        overflow: hidden;
+        font-family: 'Courier New', Courier, monospace;
+        color: #ffffff;
+    }
+
+    /* ── viewport-canvas layer ── */
+    #viewport {
+        position: relative;
+        width: 100%; height: 100%;
+    }
+
+    #frog {
+        position: absolute;
+        left: 50%;
+        top: 24px;
+        width: 48px; height: 48px;
+        background: #ffffff;
+        image-rendering: pixelated;
+        will-change: transform;
+    }
+
+    /* ── trajectory guide (pure white, hard line) ── */
+    #guide {
+        position: absolute;
+        left: calc(50% + 24px);
+        top: 0;
+        width: 1px; height: 100%;
+        background: #ffffff;
+        opacity: 0.15;
+        pointer-events: none;
+    }
+
+    /* ── landing line indicator ── */
+    #landline {
+        position: absolute;
+        left: 0; width: 100%;
+        height: 2px;
+        background: #ffffff;
+        pointer-events: none;
+        opacity: 0;
+    }
+
+    /* ── status terminal panel (fixed-width monospace) ── */
+    #terminal {
+        position: fixed;
+        right: 24px; top: 24px;
+        width: 320px;
+        background: #0a0a0a;
+        border: 1px solid #ffffff;
+        padding: 16px;
+        font-size: 13px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    #terminal .line { white-space: nowrap; }
+    #terminal .label { color: #888888; }
+    #terminal .value { color: #ffffff; }
+    #terminal .value.zero { color: #444444; }
+
+    /* ── controls ── */
+    #controls {
+        position: fixed;
+        bottom: 32px; left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+    }
+
+    #btn-init {
+        background: #000000;
+        color: #ffffff;
+        border: 1px solid #ffffff;
+        padding: 12px 32px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+        letter-spacing: 1px;
+        cursor: pointer;
+        text-transform: uppercase;
+    }
+
+    #btn-init:hover { background: #ffffff; color: #000000; }
+    #btn-init:disabled { opacity: 0.25; cursor: default; }
+    #btn-init:disabled:hover { background: #000000; color: #ffffff; }
+
+    /* ── frame counter (top-left) ── */
+    #frame-count {
+        position: fixed;
+        left: 16px; top: 16px;
+        font-size: 11px;
+        color: #444444;
+        z-index: 10;
+    }
+
+    /* ── silence badge (bottom-left) ── */
+    #silence-badge {
+        position: fixed;
+        left: 16px; bottom: 16px;
+        font-size: 10px;
+        color: #333333;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        z-index: 10;
+    }
+</style>
+</head>
+<body>
+
+<div id="viewport">
+    <div id="frog"></div>
+    <div id="guide"></div>
+    <div id="landline"></div>
+</div>
+
+<div id="frame-count">FRAME: ----0</div>
+<div id="silence-badge">GHOST SILENCE</div>
+
+<div id="terminal">
+    <div class="line"><span class="label">STATUS:</span> <span class="value" id="t-status">IDLE</span></div>
+    <div class="line"><span class="label">VOLTAGE:</span> <span class="value" id="t-voltage">0.0V</span></div>
+    <div class="line"><span class="label">CLICKS:</span> <span class="value" id="t-clicks">0</span></div>
+    <div class="line">&nbsp;</div>
+    <div class="line"><span class="label">FROG_Y:</span> <span class="value" id="t-frog-y">---</span></div>
+    <div class="line"><span class="label">GAIN:</span> <span class="value zero" id="t-gain">0.0</span></div>
+    <div class="line"><span class="label">FREQ:</span> <span class="value" id="t-freq">---</span></div>
+    <div class="line">&nbsp;</div>
+    <div class="line"><span class="label">ENERGY:</span> <span class="value zero" id="t-energy">0.0</span></div>
+    <div class="line"><span class="label">BUILD:</span>   <span class="value" id="t-build">PENDING</span></div>
+</div>
+
+<div id="controls">
+    <button id="btn-init">Initialize Fall</button>
+</div>
+
+<script>
+(() => {
+    'use strict';
+
+    /* ════════ constants ════════ */
+  const FROG_SIZE     = 48;             // px — object dimensions
+  const FALL_DUR_MS   = 2000;           // ms — deterministic fall duration
+  const FPS           = 60;             // frame rate assumption
+  const OSC_FREQ      = 183.75;         // Hz — A#2, inaudible low hum
+
+    /* ════════ DOM references ════════ */
+  const frog        = document.getElementById('frog');
+  const landline    = document.getElementById('landline');
+  const btnInit     = document.getElementById('btn-init');
+  const tStatus     = document.getElementById('t-status');
+  const tVoltage    = document.getElementById('t-voltage');
+  const tClicks     = document.getElementById('t-clicks');
+  const tFrogY      = document.getElementById('t-frog-y');
+  const tGain       = document.getElementById('t-gain');
+  const tFreq       = document.getElementById('t-freq');
+  const tEnergy     = document.getElementById('t-energy');
+  const tBuild      = document.getElementById('t-build');
+  const frameCount = document.getElementById('frame-count');
+
+    /* ════════ runtime state ════════ */
+  let animId       = null;
+  let startedAt    = null;
+  let gainNode     = null;
+  let audioCtx     = null;
+  let osc          = null;
+  let isFlying     = false;
+  let frameN       = 0;                 // landing frame (computed once per drop)
+
+    /* ════════ helpers ════════ */
+  const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+
+  function landY() {
+    return window.innerHeight - FROG_SIZE;
+    }
+
+  function calcFrameN() {
+      // Landing frame N: how many frames at 60fps cover FALL_DUR_MS
+    frameN = Math.round((FALL_DUR_MS / 1000) * FPS);   // = 120
+    return frameN;
+    }
+
+  function lerp(y0, y1, t) {
+    return y0 + (y1 - y0) * t;
+    }
+
+    /* ════════ audio — oscillator always running, never audible ════════ */
+  function initAudio() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    osc        = audioCtx.createOscillator();
+    gainNode   = audioCtx.createGain();
+
+    osc.type       = 'sine';
+    osc.frequency.value = OSC_FREQ;
+
+      // HARD MUTED at destination node — zero output guaranteed
+    gainNode.gain.value = 0;
+
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    osc.start(0);
+
+      // Pin gain to absolute zero from the first sample — no ramp, no release
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+
+    return audioCtx;
+    }
+
+    /* ════════ terminal writes ════════ */
+  function setStatus(s)       { tStatus.textContent     = s; }
+  function setVoltage(v)      { tVoltage.textContent    = v; }
+  function setClicks(n)       { tClicks.textContent     = String(n); }
+  function setFrogY(y)        { tFrogY.textContent      = Math.round(y).toString(); }
+  function setGain(g)         { tGain.textContent       = g.toFixed(1); }
+  function setFreq(f)         { tFreq.textContent       = f >= 0 ? (f.toFixed(1) + 'Hz') : '---'; }
+  function setFrameCount(n)   { frameCount.textContent    = 'FRAME: ' + String(n).padStart(5, '0'); }
+  function setEnergy(e)       { tEnergy.textContent     = e.toFixed(4); }
+  function setBuild(s)        { tBuild.textContent      = s; }
+
+    /* ════════ residual energy check — ship condition ════════ */
+  function checkResidualEnergy() {
+      // gain is the proxy for residual acoustic energy
+    const energy = Math.abs(gainNode.gain.value);
+    setEnergy(energy);
+
+    if (energy > 0) {
+        // build REJECTED — energy leaked
+      setBuild('REJECTED');
+      return false;
+      } else {
+        // build SHIPS — zero energy confirmed
+      setBuild('SHIPPED');
+      return true;
+      }
+    }
+
+    /* ════════ landing sequence (frame N reached) ════════ */
+  function freezeAtLanding() {
+    cancelAnimationFrame(animId);
+    animId = null;
+    isFlying = false;
+
+      // Pin to exact integer pixel — no sub-pixel jitter
+    const finalY = Math.round(landY());
+    frog.style.transform = 'translateY(' + finalY + 'px)';
+    setFrogY(finalY);
+
+      // Show landing line
+    landline.style.top     = (finalY + 2) + 'px';
+    landline.style.opacity = '0.6';
+
+      // Freeze terminal to terminal state
+    setStatus('SEQUENCE_TERMINATED');
+    setVoltage('0V');
+    setClicks(0);
+    setFrameCount(frameN);
+
+      // Enforce zero gain (belt-and-suspenders against any audio glitch)
+    if (gainNode && audioCtx) {
+      gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      setGain(gainNode.gain.value);
+      }
+
+    tFreq.textContent = '---';
+
+      // Residual energy verification (ship condition)
+    checkResidualEnergy();
+
+      // Re-enable button for next drop
+    btnInit.disabled = false;
+
+      // Console — the ship log
+    console.log('Gain: 0.0');
+    console.log('Frame:', frameN);
+    }
+
+    /* ════════ animation loop ════════ */
+  function tick(timestamp) {
+    if (!startedAt) startedAt = timestamp;
+
+    const elapsed = timestamp - startedAt;
+    const t       = clamp01(elapsed / FALL_DUR_MS);
+
+      // Strict linear interpolation: no easing, no acceleration curve
+    const y = lerp(0, landY(), t);
+
+    frog.style.transform = 'translateY(' + y + 'px)';
+    setFrogY(y);
+    setFrameCount(Math.floor(t * frameN));
+
+    if (t < 1) {
+      animId = requestAnimationFrame(tick);
+      } else {
+        // Frame N reached — instant freeze
+      freezeAtLanding();
+      }
+    }
+
+    /* ════════ idle state (suspended object at top) ════════ */
+  function enterIdle() {
+    isFlying = false;
+    if (animId) cancelAnimationFrame(animId);
+    animId = null;
+
+    frog.style.transform = 'translateY(24px)';
+    landline.style.opacity = '0';
+    setStatus('IDLE');
+    setVoltage('0.0V');
+    setClicks(0);
+    setFrameCount(0);
+    setEnergy(0);
+    setBuild('PENDING');
+    tFreq.textContent = '---';
+    setGain(gainNode ? gainNode.gain.value : 0);
+    }
+
+    /* ════════ initialization handler ════════ */
+  function onInit() {
+    if (isFlying) return;
+    isFlying = true;
+
+    btnInit.disabled = true;
+    setStatus('RAMP_INITIATED');
+
+      // Pre-compute landing frame N
+    calcFrameN();
+
+      // Start audio (silent by design — gain forced to zero)
+    initAudio();
+    setFreq(OSC_FREQ);
+
+      // Show trajectory guide
+    landline.style.top     = landY() + 'px';
+    landline.style.opacity = '0.3';
+
+      // Reset frog to top edge before first frame (prevent idle→fall snap)
+    frog.style.transform = 'translateY(0px)';
+
+    startedAt = null;
+    animId    = requestAnimationFrame(tick);
+    }
+
+    /* ════════ wiring ════════ */
+  btnInit.addEventListener('click', onInit);
+
+    // Resize: recalculate and re-idle if not in flight
+  window.addEventListener('resize', () => {
+    if (!isFlying) enterIdle();
+    });
+
+})();
+</script>
+</body>
+</html>
