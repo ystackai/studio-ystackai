@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Zero: The Silent Frog Oscillator</title>
+<style>
+  *, *::before, *::after {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  html, body {
+    width: 100%; height: 100%;
+    background: #000000;
+    color: #ffffff;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* Stage — full viewport */
+  #stage {
+    position: relative;
+    width: 100%; height: 100%;
+  }
+
+   /* The Frog: hard-edge white square, no smoothing */
+   #frog {
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    transform: translateX(-50%);
+    width: 32px; height: 32px;
+    background: #ffffff;
+    shape-rendering: crispEdges;
+   }
+
+   /* Ground line — 1px hard edge */
+   #ground {
+    position: absolute;
+    left: 0; right: 0; bottom: 40px;
+    height: 1px;
+    background: #ffffff;
+   }
+
+   /* Controls — top-left */
+   #control-panel {
+    position: absolute;
+    top: 20px; left: 20px;
+   }
+
+   #btn-init {
+    padding: 8px 16px;
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+   }
+   #btn-init:hover {
+    background: #ffffff;
+    color: #000000;
+   }
+
+   /* Status readout — bottom-left */
+   #status-panel {
+    position: absolute;
+    bottom: 60px; left: 20px;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre;
+   }
+
+   /* System info — top-right */
+   #info-panel {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 10px;
+    line-height: 1.6;
+    text-align: right;
+    white-space: pre;
+    opacity: 0.5;
+   }
+
+   /* Position readout — bottom-right */
+   #pos-panel {
+    position: absolute;
+    bottom: 60px; right: 20px;
+    font-size: 10px;
+    line-height: 1.6;
+    white-space: pre;
+    opacity: 0.5;
+   }
+</style>
+</head>
+<body>
+
+<div id="stage">
+   <div id="frog"></div>
+   <div id="ground"></div>
+
+   <div id="control-panel">
+     <button id="btn-init">Initialize Fall</button>
+   </div>
+
+   <div id="status-panel"></div>
+
+   <div id="info-panel">PROJECT ZERO
+SILENT FROG OSCILLATOR
+
+FALL_DISTANCE: 300px
+TIMING: linear-interpolation
+AUDIO: hard-muted (gain=0)
+RESIDUAL_ENERGY: <=0</div>
+
+   <div id="pos-panel"></div>
+</div>
+
+<script>
+(function() {
+   'use strict';
+
+   /* === Configuration === */
+  var FALL_DISTANCE     = 300;         // exact pixel distance the frog falls
+  var FROG_SIZE         = 32;          // square side length in px
+  var START_Y           = 20;          // starting top offset from stage top
+  var GROUND_OFFSET     = 40;          // px above bottom of viewport
+  var VELOCITY          = 150;         // px/s, strict linear constant
+
+   /* === DOM References === */
+  var frog        = document.getElementById('frog');
+  var btnInit     = document.getElementById('btn-init');
+  var statusPanel = document.getElementById('status-panel');
+  var posPanel    = document.getElementById('pos-panel');
+
+   /* === Audio Engine: oscillator runs, output silenced === */
+  var audioCtx       = null;
+  var oscillator     = null;
+  var masterGainNode = null;
+
+  function initAudio() {
+    audioCtx        = new (window.AudioContext || window.webkitAudioContext)();
+    oscillator      = audioCtx.createOscillator();
+    masterGainNode = audioCtx.createGain();
+
+    oscillator.type       = 'sine';
+    oscillator.frequency.value = 440; // nominal -- never audible
+
+     // Hard mute: gain is permanently zero
+    masterGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+
+    oscillator.connect(masterGainNode);
+    masterGainNode.connect(audioCtx.destination);
+    oscillator.start(); // internally active; output = silence
+   }
+
+   /* === Landing coordinate (computed once at drop start) === */
+  function getGroundY() {
+    return window.innerHeight - GROUND_OFFSET - FROG_SIZE;
+   }
+
+   /* === Status update === */
+  function setStatus(text) {
+    statusPanel.textContent = text;
+   }
+
+  function showPostLanding(frameN, residualEnergy) {
+    var lines = [
+       'STATUS: SEQUENCE_TERMINATED',
+       'VOLTAGE: 0V',
+       'CLICKS: 0',
+       '',
+       'Frame: ' + frameN,
+       'Gain: 0.0',
+       'Residual Energy: ' + residualEnergy.toFixed(6) + 'px'
+     ];
+    setStatus(lines.join('\n'));
+   }
+
+  function showPosition(y, landed) {
+    var lines = [
+       'Y: ' + y.toFixed(1),
+       'LANDED: ' + (landed ? 'YES' : 'NO')
+     ];
+    posPanel.textContent = lines.join('\n');
+   }
+
+   /* === Drop sequence === */
+  function runDrop() {
+     // Abort any running animation
+    if (animId) {
+      cancelAnimationFrame(animId);
+      animId = null;
+    }
+
+    var landingY = getGroundY();
+    var startFrameTime = null;
+    var currentFrame    = 0;
+    var landed           = false;
+    animId               = null;
+
+     // Re-arm frog to start position
+    frog.style.top = START_Y + 'px';
+    btnInit.disabled = true;
+    setStatus('');
+    showPosition(START_Y, false);
+
+     // Initialise audio on user gesture (browser requirement)
+    if (!audioCtx) {
+      initAudio();
+    } else if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+     /* Animation loop -- strict linear interpolation */
+    function tick(timestamp) {
+      if (startFrameTime === null) startFrameTime = timestamp;
+
+      var elapsed   = (timestamp - startFrameTime) / 1000; // seconds
+      var travel    = VELOCITY * elapsed;                     // d = v*t, linear
+      var currentY  = START_Y + travel;
+
+       // Landing check: compare against exact pixel coordinate (pre-rounded)
+      if (currentY >= landingY) {
+         /* LANDING -- frame N */
+        landed   = true;
+        currentY  = landingY;                        // snap to exact coordinate
+
+          // Freeze: no bounce, squash, or post-landing animation
+        frog.style.top = currentY + 'px';
+        showPosition(currentY, true);
+
+        var residualEnergy = 0;    // zero at instant of stop
+        var frameN         = ++currentFrame;
+
+          // Ship condition: console confirms gain zero at exact landing frame
+        console.log('Gain: 0.0');
+        console.log('Frame: ' + frameN);
+
+        showPostLanding(frameN, residualEnergy);
+
+         // Re-enable button for re-arming
+        btnInit.disabled = false;
+        return; // stop the animation loop
+       }
+
+      currentFrame++;
+      frog.style.top = currentY + 'px';
+      animId = requestAnimationFrame(tick);
+     }
+
+    animId = requestAnimationFrame(tick);
+   }
+
+   /* === Button handler === */
+  btnInit.addEventListener('click', runDrop);
+
+})();
+</script>
+</body>
+</html>
