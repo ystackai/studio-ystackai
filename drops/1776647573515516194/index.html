@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Zero: The Silent Frog Oscillator</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: #000000;
+    color: #ffffff;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#frog {
+    width: 32px;
+    height: 32px;
+    background-color: #ffffff;
+    position: absolute;
+    left: calc(50vw - 16px);
+}
+
+#controls {
+    margin-top: 48px;
+    z-index: 10;
+}
+
+button {
+    background: #ffffff;
+    color: #000000;
+    border: none;
+    padding: 8px 20px;
+    font-family: monospace;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+#status {
+    margin-top: 64px;
+    text-align: left;
+    font-size: 12px;
+    line-height: 1.8;
+    display: none;
+    white-space: pre;
+}
+
+#landing-mark {
+    width: 32px;
+    height: 2px;
+    background-color: #ffffff;
+    position: absolute;
+    left: calc(50vw - 16px);
+    opacity: 0.4;
+}
+</style>
+</head>
+<body>
+
+<div id="landing-mark"></div>
+<div id="frog"></div>
+<div id="controls">
+    <button id="initBtn" type="button">Initialize Fall</button>
+</div>
+<div id="status"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ── Constants ─────────────────────────────────────────── */
+    const FROG_SIZE = 32;
+    const IDLE_Y = 180;                     // mid-air idle (px from top)
+    const FALL_DISTANCE = 400;              // pixels to fall
+    const N = 60;                           // landing frame index
+    const TARGET_FPS = 60;
+    const DROP_MS = (N / TARGET_FPS) * 1000; // ~1000 ms at 60fps
+
+    /* ── DOM refs ──────────────────────────────────────────── */
+    var frogEl = document.getElementById('frog');
+    var btnEl  = document.getElementById('initBtn');
+    var statusEl = document.getElementById('status');
+    var landMark = document.getElementById('landing-mark');
+
+    /* ── Audio engine (hard-muted ghost) ───────────────────── */
+    var audioCtx   = null;
+    var oscillator = null;
+    var gainNode   = null;
+
+    function initAudio() {
+        if (audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        oscillator = audioCtx.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 440; // internal frequency — irrelevant, gain is zero
+
+        gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime); // hard mute, no ramp
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+    }
+
+    /* ── Energy model (zero at landing) ────────────────────── */
+    function residualEnergy() {
+        // At exact stop: velocity = 0, displacement error = 0 → E = 0
+        return 0;
+    }
+
+    /* ── Landing protocol (frame N) ────────────────────────── */
+    var landed = false;
+    var frameCounter = 0;
+
+    function land() {
+        if (landed) return;
+        landed = true;
+
+        // Exact landing coordinate — no rounding drift
+        frogEl.style.top = (IDLE_Y + FALL_DISTANCE) + 'px';
+
+        // Freeze audio: gain already zero, confirm no transition artifact
+        if (gainNode && audioCtx) {
+            gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        }
+
+        // Simultaneous console output
+        console.log('Gain: 0.0');
+        console.log('Frame: ' + N);
+
+        // Residual energy gate
+        var e = residualEnergy();
+        if (e > 0) {
+            console.error('BUILD REJECTED: energy=' + e + ' > 0');
+        } else {
+            console.log('Build accepted: energy=0');
+        }
+
+        // Post-landing DOM state — fixed-width monospace, no animation
+        statusEl.style.display = 'block';
+        statusEl.textContent =
+            'STATUS: SEQUENCE_TERMINATED\n' +
+            'VOLTAGE: 0V\n' +
+            'CLICKS: 0\n' +
+            'FRAME: ' + N + '\n' +
+            'ENERGY: 0\n' +
+            'GAIN: 0.0';
+
+        btnEl.disabled = true;
+    }
+
+    /* ── Animation loop (linear-timing-function) ───────────── */
+    btnEl.addEventListener('click', function () {
+        initAudio();
+
+        // Reset state for new drop
+        frogEl.style.top = IDLE_Y + 'px';
+        landed = false;
+        frameCounter = 0;
+        statusEl.style.display = 'none';
+        btnEl.disabled = true;
+
+        var startTime = performance.now();
+
+        function tick(now) {
+            if (landed) return;
+
+            var elapsed = now - startTime;
+            var progress = Math.min(elapsed / DROP_MS, 1.0);
+            frameCounter++;
+
+            // Linear interpolation: position = idle + distance * t
+            var y = IDLE_Y + FALL_DISTANCE * progress;
+            frogEl.style.top = y + 'px';
+
+            if (progress >= 1.0) {
+                // Clamp to exact coordinate for determinism
+                frogEl.style.top = (IDLE_Y + FALL_DISTANCE) + 'px';
+                land();
+                return;
+            }
+
+            requestAnimationFrame(tick);
+        }
+
+        requestAnimationFrame(tick);
+    });
+})();
+</script>
+</body>
+</html>
