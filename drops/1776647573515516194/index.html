@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Frog — The Silent Oscillator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000000;overflow:hidden;font-family:'Courier New',Courier,monospace;display:flex;align-items:center;justify-content:center;height:100vh;color:#fff;user-select:none}
+#stage{position:relative;width:100vw;height:100vh;overflow:hidden}
+#frog{position:absolute;width:32px;height:32px;background:#fff;image-rendering:pixelated;left:50%;transform:translateX(-50%)}
+#landing{position:absolute;left:calc(50% - 16px);width:48px;height:2px;background:#fff}
+#info{position:absolute;bottom:24px;left:16px;font-size:12px;line-height:1.8;color:#888}
+#status-block{position:absolute;top:50%;left:calc(50% + 32px);transform:translateY(-50%);font-size:13px;line-height:2;text-align:left}
+#status-block .line{opacity:0.4;transition:none}
+#status-block .active{color:#fff;opacity:1}
+#btn-wrap{position:absolute;top:calc(50% - 80px);left:50%;transform:translateX(-50%)}
+#init-btn{font-family:'Courier New',Courier,monospace;font-size:13px;background:none;color:#fff;border:1px solid #fff;padding:8px 24px;cursor:pointer;text-transform:uppercase;letter-spacing:0.1em}
+#init-btn:hover{background:#fff;color:#000}
+#frame-counter{position:absolute;top:16px;right:16px;font-size:11px;color:#555}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frog"></div>
+  <div id="landing"></div>
+  <div id="frame-counter">FRAME: --</div>
+  <div id="btn-wrap">
+    <button id="init-btn">Initialize Fall</button>
+  </div>
+  <div id="status-block">
+    <div class="line" id="s-status"></div>
+    <div class="line" id="s-voltage"></div>
+    <div class="line" id="s-clicks"></div>
+  </div>
+  <div id="info">DROP 41 — THE SILENT FROG OSCILLATOR</div>
+</div>
+
+<script>
+(function(){
+  const frog = document.getElementById('frog');
+  const landing = document.getElementById('landing');
+  const initBtn = document.getElementById('init-btn');
+  const frameCounter = document.getElementById('frame-counter');
+  const sStatus = document.getElementById('s-status');
+  const sVoltage = document.getElementById('s-voltage');
+  const sClicks = document.getElementById('s-clicks');
+
+  // --- Audio: oscillator active but hard-muted ---
+  let audioCtx = null;
+  let gainNode = null;
+  let oscNode = null;
+
+  function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Create oscillator — it runs continuously during the drop
+    oscNode = audioCtx.createOscillator();
+    oscNode.type = 'sine';
+    oscNode.frequency.value = 440; // nominal pitch, never heard
+
+    // Hard-mute gain node: always zero output
+    gainNode = audioCtx.createGain();
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+
+    // Chain: oscillator -> hard-mute gain -> nothing (no destination)
+    oscNode.connect(gainNode);
+    // Deliberately NOT connecting gainNode to audioCtx.destination
+    oscNode.start();
+  }
+
+  function getGain() {
+    return gainNode ? gainNode.gain.value : 0;
+  }
+
+  // --- Geometry ---
+  const FROG_SIZE = 32;
+  let topY, landY;
+
+  function computeGeometry() {
+    const stageH = window.innerHeight;
+    topY = 80; // start position from top
+    // Land just above the bottom info text area, with frog bottom resting on landing line
+    landY = stageH - 96 - FROG_SIZE; // 96px bottom margin + frog height offset
+    if (landY < topY + FROG_SIZE) {
+      landY = topY + FROG_SIZE + 64;
+    }
+    frog.style.top = topY + 'px';
+    landing.style.top = (landY + FROG_SIZE) + 'px';
+  }
+
+  computeGeometry();
+  window.addEventListener('resize', computeGeometry);
+
+  // --- Animation state ---
+  let dropRunning = false;
+  let finalFrame = 0;
+
+  function resetState() {
+    computeGeometry();
+    frog.style.top = topY + 'px';
+    frameCounter.textContent = 'FRAME: --';
+    sStatus.textContent = '';
+    sStatus.className = 'line';
+    sVoltage.textContent = '';
+    sVoltage.className = 'line';
+    sClicks.textContent = '';
+    sClicks.className = 'line';
+    initBtn.style.display = '';
+    initBtn.disabled = false;
+  }
+
+  function finalize() {
+    // Landing frame (0-indexed)
+    finalFrame = frameCounterAnimationFrame - 1;
+
+    // Console verification: Gain and Frame logged simultaneously
+    console.log('Gain: 0.0');
+    console.log('Frame: ' + finalFrame);
+
+    // DOM updates — no transitions, no fades, no post-landing animation
+    sStatus.textContent = 'STATUS: SEQUENCE_TERMINATED';
+    sStatus.className = 'line active';
+    sVoltage.textContent = 'VOLTAGE: 0V';
+    sVoltage.className = 'line active';
+    sClicks.textContent = 'CLICKS: 0';
+    sClicks.className = 'line active';
+
+    // Ship condition check
+    const energy = getGain();
+    if (energy <= 0) {
+      console.log('SHIP CONDITION MET — energy ≤ 0');
+    } else {
+      console.log('SHIP CONDITION FAILED — energy > 0');
+    }
+  }
+
+  let frameCounterAnimationFrame = 0;
+
+  function startDrop() {
+    if (dropRunning) return;
+    dropRunning = true;
+    initAudio();
+    initBtn.style.display = 'none';
+
+    frameCounterAnimationFrame = 0;
+    const startTime = performance.now();
+    const travelDistance = landY - topY;
+    // Fixed velocity: pixels per ms — ensures deterministic landing
+    const speed = travelDistance / 2.5; // lands in ~2.5 seconds at ~60fps
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const frame = Math.floor(elapsed * 60 / 1000); // frame counter at 60fps
+      frameCounter.textContent = 'FRAME: ' + frame;
+
+      // Linear interpolation — no easing, no parabolic ease
+      const t = elapsed / (travelDistance / speed);
+      const currentY = topY + travelDistance * Math.min(t, 1);
+      frog.style.top = currentY + 'px';
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Snap to exact landing coordinate — no overshoot
+        frog.style.top = landY + 'px';
+        frameCounterAnimationFrame = frame;
+        dropRunning = false;
+        finalize();
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  initBtn.addEventListener('click', startDrop);
+
+})();
+</script>
+</body>
+</html>
