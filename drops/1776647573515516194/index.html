@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Zero</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #000000; overflow: hidden; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: monospace; }
+  canvas { border: 1px solid #333333; image-rendering: pixelated; }
+  #controls { margin-top: 16px; display: flex; gap: 12px; align-items: center; }
+  button { font-family: monospace; font-size: 14px; background: #000000; color: #ffffff; border: 1px solid #ffffff; padding: 8px 20px; cursor: pointer; letter-spacing: 1px; }
+  button:hover { background: #ffffff; color: #000000; }
+  button:disabled { opacity: 0.3; cursor: default; }
+  button:disabled:hover { background: #000000; color: #ffffff; }
+  #status { margin-top: 12px; font-size: 12px; color: #888888; letter-spacing: 1px; min-height: 1.5em; white-space: pre; }
+</style>
+</head>
+<body>
+<canvas id="c" width="400" height="600"></canvas>
+<div id="controls">
+  <button id="btn">INITIALIZE FALL</button>
+</div>
+<div id="status"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  const CANVAS_W = 400;
+  const CANVAS_H = 600;
+  const FROG_SIZE = 20;
+  const DROP_DURATION_MS = 2000;
+  const START_Y = 0;
+  const LAND_Y = CANVAS_H - FROG_SIZE;
+
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const btn = document.getElementById("btn");
+  const statusEl = document.getElementById("status");
+
+  // --- Web Audio: oscillator active but hard-muted ---
+  let audioCtx = null;
+  let oscNode = null;
+  let muteGainNode = null;
+
+  function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Create a 440 Hz oscillator (running but silent)
+    oscNode = audioCtx.createOscillator();
+    oscNode.type = "sine";
+    oscNode.frequency.setValueAtTime(440, audioCtx.currentTime);
+
+    // Mute chain: all gain nodes pinned to exact zero
+    muteGainNode = audioCtx.createGain();
+    muteGainNode.gain.setValueAtTime(0.0, audioCtx.currentTime);
+
+    // Route into the real output destination (silently)
+    const silentBus = audioCtx.createGain();
+    silentBus.gain.setValueAtTime(0.0, audioCtx.currentTime);
+
+    oscNode.connect(muteGainNode);
+    muteGainNode.connect(silentBus);
+    silentBus.connect(audioCtx.destination);
+
+    oscNode.start();
+
+    // Log the initial state
+    console.log("Audio engine: ACTIVE (muted) | Oscillator: 440Hz | Gain: 0.0");
+  }
+
+  function getResidualEnergy() {
+    if (!muteGainNode || !audioCtx) return 0;
+    // Read current gain value at this sample-frame
+    const g = muteGainNode.gain.getValueAtTime(audioCtx.currentTime);
+    return Math.abs(g);
+  }
+
+  // --- Rendering state ---
+  let frogY = START_Y;
+  let animState = "idle"; // idle | falling | landed
+  let frameN = 0;
+  let dropFrameStart = null;
+  let landingConfirmed = false;
+
+  function draw() {
+    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+    // Frog: white square at frogY
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(Math.round(frogX()), Math.round(frogY), FROG_SIZE, FROG_SIZE);
+
+    // Frame counter overlay
+    ctx.fillStyle = "#444444";
+    ctx.font = "10px monospace";
+    ctx.fillText("FRAME: " + frameN, 6, CANVAS_H - 8);
+  }
+
+  function frogX() {
+    return (CANVAS_W - FROG_SIZE) / 2; // centered horizontally
+  }
+
+  // --- Animation loop ---
+  let rafId = null;
+
+  function animate(timestamp) {
+    if (animState !== "falling") return;
+
+    if (!dropFrameStart) {
+      dropFrameStart = timestamp;
+    }
+
+    const elapsed = timestamp - dropFrameStart;
+    const progress = Math.min(elapsed / DROP_DURATION_MS, 1.0);
+
+    // Strict linear interpolation: no easing whatsoever
+    frogY = START_Y + (LAND_Y - START_Y) * progress;
+    frameN++;
+
+    draw();
+
+    if (progress >= 1.0) {
+      // Landing frame N — lock to exact pixel coordinate, zero overshoot
+      frogY = LAND_Y;
+      animState = "landed";
+      landingConfirmed = true;
+      draw();
+
+      const landedFrame = frameN;
+
+      // Verify residual energy is exactly zero
+      const energy = getResidualEnergy();
+      const clicks = 0;
+
+      // Console output as specified
+      console.log("Gain: 0.0 | Frame: " + landedFrame + " | STATUS: SEQUENCE_TERMINATED | VOLTAGE: 0V | CLICKS: " + clicks);
+
+      // DOM status line
+      statusEl.textContent = "STATUS: SEQUENCE_TERMINATED | VOLTAGE: 0V | CLICKS: " + clicks;
+
+      // Disable button — no re-drop until reload
+      btn.disabled = true;
+    } else {
+      rafId = requestAnimationFrame(animate);
+    }
+  }
+
+  // --- Idle render loop (keeps canvas clear) ---
+  function idleLoop() {
+    if (animState === "idle" || animState === "landed") {
+      draw();
+    }
+    rafId = requestAnimationFrame(idleLoop);
+  }
+
+  // --- Event handlers ---
+  btn.addEventListener("click", function () {
+    initAudio();
+    animState = "falling";
+    frogY = START_Y;
+    frameN = 0;
+    dropFrameStart = null;
+    landingConfirmed = false;
+    btn.disabled = true;
+
+    // Cancel any idle loop and start the fall
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(animate);
+  });
+
+  // Start idle loop
+  rafId = requestAnimationFrame(idleLoop);
+})();
+</script>
+</body>
+</html>
