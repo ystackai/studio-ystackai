@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cycle 04 — The Architecture of Nothing</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: monospace;
+}
+
+/* Static grid overlay */
+#grid {
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Frog silhouette — flat, centered, no animation */
+#frog {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px; height: 48px;
+  z-index: 2;
+}
+#frog svg { display: block; }
+
+/* Attempt Jump button */
+#jump-btn {
+  position: absolute;
+  top: calc(50% + 48px); left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.6);
+  font-family: monospace;
+  font-size: 14px;
+  padding: 8px 20px;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+#jump-btn:hover {
+  border-color: rgba(255,255,255,0.7);
+  color: #fff;
+}
+
+/* STATUS: FIXED — invisible until hover */
+#status {
+  position: fixed;
+  bottom: 16px; right: 16px;
+  z-index: 4;
+  color: #000000;
+  font-size: 12px;
+  cursor: default;
+}
+#status:hover { color: #333333; }
+
+/* Gain readout — flat line at zero */
+#gain-display {
+  position: fixed;
+  top: 16px; left: 16px;
+  z-index: 4;
+  color: rgba(255,255,255,0.2);
+  font-size: 12px;
+}
+</style>
+</head>
+<body>
+
+<div id="grid"></div>
+
+<!-- Flat frog silhouette as inline SVG -->
+<div id="frog">
+  <svg viewBox="0 0 64 48" xmlns="http://www.w3.org/2000/svg">
+    <!-- Body -->
+    <ellipse cx="32" cy="30" rx="20" ry="12" fill="#111" />
+    <!-- Head -->
+    <ellipse cx="32" cy="20" rx="14" ry="10" fill="#111" />
+    <!-- Eyes (two circles on head) -->
+    <circle cx="25" cy="14" r="4" fill="#111" />
+    <circle cx="39" cy="14" r="4" fill="#111" />
+    <circle cx="25" cy="14" r="2" fill="#000" />
+    <circle cx="39" cy="14" r="2" fill="#000" />
+    <!-- Legs — flat, non-animated -->
+    <rect x="8" y="32" width="6" height="10" rx="3" fill="#111" />
+    <rect x="50" y="32" width="6" height="10" rx="3" fill="#111" />
+    <!-- Feet -->
+    <ellipse cx="11" cy="42" rx="5" ry="2" fill="#111" />
+    <ellipse cx="53" cy="42" rx="5" ry="2" fill="#111" />
+  </svg>
+</div>
+
+<button id="jump-btn">Attempt Jump</button>
+
+<div id="gain-display">Gain: 0.00</div>
+
+<!-- Invisible status, visible on hover -->
+<div id="status">STATUS: FIXED</div>
+
+<script>
+/**
+ * Collision callback — disabled. Returns null. Ghost.
+ */
+function collision_callback() {
+  return null;
+}
+
+/**
+ * Frog landing boundary check.
+ * Hard-coded zero gain. Flat termination.
+ */
+function frog_landing() {
+  // Hard-coded boundary check: always inside bounds
+  const inBounds = true;
+
+  if (inBounds) {
+    // Gain is zero — no exceptions, no variance
+    var gain = 0;
+
+    // Update gain display to flat zero
+    document.getElementById('gain-display').textContent = 'Gain: 0.00';
+
+    // Console log per spec
+    console.log('Frog landed. Gain: 0. PR merged.');
+  }
+}
+
+// Wire up both click and keypress (Enter / Space) to trigger
+var btn = document.getElementById('jump-btn');
+btn.addEventListener('click', function () {
+  frog_landing();
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    frog_landing();
+  }
+});
+</script>
+</body>
+</html>
