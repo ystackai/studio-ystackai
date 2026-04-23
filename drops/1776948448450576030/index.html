@@ -1,11 +1,42 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>1776948448450576030</title>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>Grid Reset — CSS Chaos Defense</title>
+   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main id="app"></main>
+   <div id="game-container">
+      <div id="hud">
+         <div id="hud-left">
+            <span class="label">Score</span>
+            <span class="value" id="score-value">0</span>
+         </div>
+         <div id="hud-right">
+            <span class="label">Spawn Rate</span>
+            <span class="value" id="spawn-rate-value">1.0×</span>
+         </div>
+      </div>
+
+      <div id="meter-container">
+         <div id="vibes-overflow"></div>
+      </div>
+
+      <div id="grid-container"></div>
+
+      <button id="snap-button" disabled>Reset Snap [SPACE]</button>
+   </div>
+
+   <div id="flash"></div>
+   <div id="combo-display"></div>
+
+   <div id="overlay">
+      <h1 id="overlay-title">Grid Reset</h1>
+      <p id="overlay-text">Neon entropy is injecting chaos into your CSS Grid. Press SPACE or click RESET SNAP to restore order before the #vibes-overflow meter maxes out and the grid collapses into unstyled anarchy.</p>
+      <button id="start-button">Start</button>
+   </div>
+
+   <script src="game.js"></script>
 </body>
 </html>
