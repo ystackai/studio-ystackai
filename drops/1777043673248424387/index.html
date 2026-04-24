@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>148ms Snap</title>
+    <link rel="stylesheet" href="snap-styles.css">
+</head>
+<body>
+    <main id="app">
+       <div id="snap-grid" aria-label="Snap grid">
+          <div class="snap-cell" data-grid-x="0" data-grid-y="0"></div>
+          <div class="snap-cell" data-grid-x="1" data-grid-y="0"></div>
+          <div class="snap-cell" data-grid-x="2" data-grid-y="0"></div>
+          <div class="snap-cell" data-grid-x="0" data-grid-y="1"></div>
+          <div class="snap-cell" data-grid-x="1" data-grid-y="1"></div>
+          <div class="snap-cell" data-grid-x="2" data-grid-y="1"></div>
+          <div class="snap-cell" data-grid-x="0" data-grid-y="2"></div>
+          <div class="snap-cell" data-grid-x="1" data-grid-y="2"></div>
+          <div class="snap-cell" data-grid-x="2" data-grid-y="2"></div>
+       </div>
+       <div id="snapper" class="snapper">
+          <div class="snapper-dot"></div>
+       </div>
+    </main>
+    <script src="snap-controller.js"></script>
+</body>
+</html>

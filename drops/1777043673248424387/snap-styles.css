@@ -1,0 +1,101 @@
+:root {
+    --snap-duration: 148ms;
+    --snap-easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --grid-cell-size: 80px;
+    --grid-gap: 4px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: #0a0a0f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+#app {
+    position: relative;
+}
+
+#snap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, var(--grid-cell-size));
+    grid-template-rows: repeat(3, var(--grid-cell-size));
+    gap: var(--grid-gap);
+}
+
+.snap-cell {
+    width: var(--grid-cell-size);
+    height: var(--grid-cell-size);
+    background: #12121a;
+    border: 1px solid #1a1a2a;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transform: translate3d(0, 0, 0);
+    transition: transform var(--snap-duration) var(--snap-easing);
+    will-change: transform;
+}
+
+.snap-cell::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    background: transparent;
+    transition: background var(--snap-duration) var(--snap-easing);
+    pointer-events: none;
+}
+
+.snap-cell:hover {
+    border-color: #2a2a4a;
+    background: #16162a;
+}
+
+.snap-cell:active {
+    border-color: #00ffcc;
+    transform: scale(0.96);
+}
+
+.snap-cell.snapped {
+    background: #0d1f3f;
+    border-color: #00ffcc;
+    box-shadow:
+        0 0 8px rgba(0, 255, 204, 0.3),
+        inset 0 0 4px rgba(0, 255, 204, 0.1);
+}
+
+.snap-cell.snapped::after {
+    background: radial-gradient(circle at center, rgba(0, 255, 204, 0.08), transparent 70%);
+}
+
+.snap-cell.snap-animating {
+    animation: snap-in var(--snap-duration) var(--snap-easing);
+}
+
+@keyframes snap-in {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.3;
+    }
+    40% {
+        transform: scale(1.04);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
