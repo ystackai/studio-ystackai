@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decision Engine</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+    <div id="header" class="header">
+      <span class="label">DEPTH</span>
+      <span id="depth-display" class="depth-value">0</span>
+    </div>
+    <div id="grid" class="grid"></div>
+    <div id="visualizer-wrap">
+      <svg id="visualizer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 80" preserveAspectRatio="none">
+        <line id="baseline" x1="0" y1="40" x2="640" y2="40" class="baseline-line"/>
+        <polyline id="waveform" points="" class="waveform-line"/>
+      </svg>
+    </div>
+    <div id="latency-display" class="latency-label"></div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
