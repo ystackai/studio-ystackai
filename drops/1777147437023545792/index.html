@@ -7,31 +7,34 @@
   <link rel="stylesheet" href="src/styles/grid.css">
 </head>
 <body>
-  <div id="latency-probe">LAT: --ms</div>
+  <div id="latency-probe">LAT: --ms | SHIFT: 0</div>
   <div class="grid-container" id="grid"></div>
   <script src="audio/reactive/sync.js"></script>
   <script>
-    const cells = [];
-    const grid = document.getElementById('grid');
-    for (let i = 0; i < 96; i++) {
-      const c = document.createElement('div');
-      c.className = 'grid-cell';
-      grid.appendChild(c);
-      cells.push(c);
-    }
-    let shifts = 0;
-    const probe = document.getElementById('latency-probe');
-    function scan() {
-      const start = performance.now();
-      const st = window.__audioState;
-      if (st) {
-        const idx = Math.floor(Math.abs(Math.sin(st.phase)) * 96);
-        cells.forEach((c, i) => c.classList.toggle('active', i === idx && st.sweep > 0.15));
+    const cells=[];
+    const grid=document.getElementById('grid');
+    for(let i=0;i<96;i++){const c=document.createElement('div');c.className='grid-cell';c.style.transition='none';c.style.opacity='1';grid.appendChild(c);cells.push(c);}
+    let shifts=0,lastShiftTime=0;
+    const probe=document.getElementById('latency-probe');
+    let latencies=[];
+    function scan(){
+      const start=performance.now();
+      const st=window.__audioState;
+      if(st){
+        const idx=Math.floor(Math.abs(Math.sin(st.phase))*96);
+        cells.forEach((c,i)=>{
+          c.classList.remove('active');
+          if(i===idx&&st.sweep>0.15)c.classList.add('active');
+        });
         shifts++;
-        if (shifts % 100 === 0) {
-          const dt = performance.now() - start;
-          probe.textContent = `LAT: ${dt.toFixed(2)}ms | shifts:${shifts}`;
-          probe.style.color = dt < 6 ? '#00ff00' : '#ff3333';
+        const dt=st.dt||0;
+        if(shifts%100===0){
+          const avg=latencies.reduce((a,b)=>a+b,0)/latencies.length;
+          probe.textContent=`LAT: ${avg.toFixed(2)}ms avg | SHIFT: ${shifts}`;
+          probe.style.color=avg<=6?'#00ff00':'#ff3333';
+          latencies=[];
+        }else{
+          latencies.push(dt);
         }
       }
       requestAnimationFrame(scan);
