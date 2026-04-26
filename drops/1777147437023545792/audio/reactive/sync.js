@@ -1,13 +1,25 @@
-const SR=48000,TAU=2*Math.PI,hc=v=>Math.max(-1,Math.min(1,v));
-let phase=0,env=0,stress=0,_t0=0,cutoff=0;
-function tick(now){
-  const dt=Math.max(now-(_t0||now),0.5);stress=Math.max(stress,Math.random()*0.3);
-  env=hc(Math.abs(stress)*0.9);stress*=0.95;_t0=now;
-  const buf=new Float32Array(SR>>7);
-  for(let i=0;i<buf.length;i++){const si=i*TAU/SR;
-    const f=220+Math.abs(env)*4400;phase+=TAU*f/SR;
-    cutoff=hc(Math.exp(-Math.abs(env)*8)*Math.tanh(Math.sin(phase+si)*4));
-    buf[i]=Math.sin(phase)*hc(env)*cutoff;
+class SyncWorklet extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this._phase = 0; this._env = 0; this._stress = 0; this._cutoff = 0; this._t0 = 0;
   }
-  window.__audioState={sample:Math.sin(phase),phase,env,cutoff,stress,dt,rt:performance.now()-now};
-}tick(performance.now());setInterval(tick,5);
+  process(inputs, outputs) {
+    const out = outputs[0][0];
+    const TAU = 6.283185307179586, SR = sampleRate;
+    for (let i = 0; i < out.length; i++) {
+      this._stress = Math.max(this._stress, Math.random() * 0.3);
+      const env = Math.abs(this._stress) * 0.9;
+      const envClipped = Math.max(-1, Math.min(1, env));
+      const f = 220 + Math.abs(envClipped) * 4400;
+      this._phase += TAU * f / SR;
+      this._cutoff = Math.max(-1, Math.min(1, Math.exp(-Math.abs(envClipped) * 8) * Math.tanh(Math.sin(this._phase + i * TAU / SR) * 4)));
+      out[i] = Math.sin(this._phase) * envClipped * this._cutoff;
+      this._stress *= 0.95;
+    }
+    this._env = Math.max(-1, Math.min(1, Math.abs(this._stress) * 0.9));
+    this.port.postMessage({ sample: Math.sin(this._phase), phase: this._phase, env: this._env, cutoff: this._cutoff, stress: this._stress, rt: this._t0 ? performance.now() - this._t0 : 0 });
+    this._t0 = performance.now();
+    return true;
+  }
+}
+registerProcessor('sync-worklet', SyncWorklet);
