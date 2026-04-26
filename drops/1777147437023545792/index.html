@@ -1,62 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Precision meets pulse</title>
-     <link rel="stylesheet" href="src/styles/grid.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Precision meets pulse</title>
+  <link rel="stylesheet" href="src/styles/grid.css">
+  <script src="audio/reactive/sync.js" type="module"></script>
 </head>
 <body>
-     <div id="latency-probe">LAT: --ms | RT: --ms | SHIFT: 0</div>
-     <div class="grid-container" id="grid"></div>
-     <script src="audio/reactive/sync.js"></script>
-     <script>
-        // AudioContext init + worklet load
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const workletNode = new AudioWorkletNode(ctx, 'sync-worklet');
+  <div id="latency-probe">LAT: --ms | RT: --ms | SHIFT: 0</div>
+  <div class="grid-container" id="grid"></div>
+  <script>
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const workletNode = new AudioWorkletNode(ctx, 'sync-worklet');
 
-        // Build 96-cell grid (12 cols x 8 rows)
-        const cells = [], grid = document.getElementById('grid');
-        for (let i = 0; i < 96; i++) {
-          const c = document.createElement('div');
-          c.className = 'grid-cell';
-          grid.appendChild(c);
-          cells.push(c);
-        }
+    ctx.audioWorklet.addModule('audio/reactive/sync.worklet.js').then(function() {
+      ctx.resume();
+      workletNode.connect(ctx.destination);
+    });
 
-        // MessagePort sync: sub-6ms, zero phase drift
-        let shifts = 0, probe = document.getElementById('latency-probe');
-        let rtSamples = [], dtSamples = [];
+    const cells = [], grid = document.getElementById('grid');
+    for (let i = 0; i < 96; i++) {
+      const c = document.createElement('div');
+      c.className = 'grid-cell';
+      grid.appendChild(c);
+      cells.push(c);
+    }
 
-        workletNode.port.onmessage = function(e) {
-          const st = e.data;
-          const startPerf = performance.now();
+    let shifts = 0, probe = document.getElementById('latency-probe');
+    let rtSamples = [], dtSamples = [];
 
-          // Snap cell to phase-derived index on 8px baseline
-          const idx = Math.floor(Math.abs(Math.sin(st.phase)) * 96);
-          for (let i = 0; i < 96; i++) {
-            cells[i].classList.toggle('active', i === idx && st.stress > 0.15);
-          }
+    workletNode.port.onmessage = function(e) {
+      const st = e.data;
+      const startPerf = performance.now();
 
-          shifts++;
-          dtSamples.push(st.dt || 0);
-          rtSamples.push(st.rt !== undefined ? st.rt : performance.now() - startPerf);
+      const idx = Math.floor(Math.abs(Math.sin(st.phase)) * 96);
+      for (let i = 0; i < 96; i++) {
+        cells[i].classList.toggle('active', i === idx && st.stress > 0.15);
+      }
 
-          // Report every 100 shifts
-          if (shifts % 100 === 0) {
-            const avgDt = dtSamples.reduce((a, b) => a + b, 0) / dtSamples.length;
-            const avgRt = rtSamples.reduce((a, b) => a + b, 0) / rtSamples.length;
-            probe.textContent = 'LAT: ' + avgDt.toFixed(2) + 'ms | RT: ' + avgRt.toFixed(2) + 'ms | SHIFT: ' + shifts;
-            probe.style.color = (avgRt <= 6 && avgDt <= 6) ? '#0f0' : '#f33';
-            dtSamples = [];
-            rtSamples = [];
-          }
-        };
+      shifts++;
+      dtSamples.push(st.dt || 0);
+      rtSamples.push(st.rt !== undefined ? st.rt : performance.now() - startPerf);
 
-        // Initialize worklet
-        ctx.audioWorklet.addModule('audio/reactive/sync.worklet.js').then(function() {
-          ctx.resume();
-        });
-     </script>
+      if (shifts % 100 === 0) {
+        const avgDt = dtSamples.reduce((a, b) => a + b, 0) / dtSamples.length;
+        const avgRt = rtSamples.reduce((a, b) => a + b, 0) / rtSamples.length;
+        probe.textContent = 'LAT: ' + avgDt.toFixed(2) + 'ms | RT: ' + avgRt.toFixed(2) + 'ms | SHIFT: ' + shifts;
+        probe.style.color = (avgRt <= 6 && avgDt <= 6) ? '#0f0' : '#f33';
+        dtSamples = [];
+        rtSamples = [];
+      }
+    };
+  </script>
 </body>
 </html>
