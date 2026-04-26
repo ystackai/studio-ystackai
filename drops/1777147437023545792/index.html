@@ -1,45 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Precision meets pulse</title>
-  <link rel="stylesheet" href="src/styles/grid.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precision meets pulse</title>
+    <link rel="stylesheet" href="src/styles/grid.css">
 </head>
 <body>
-  <div id="latency-probe">LAT: --ms | SHIFT: 0</div>
-  <div class="grid-container" id="grid"></div>
-  <script src="audio/reactive/sync.js"></script>
-  <script>
-    const cells=[];
-    const grid=document.getElementById('grid');
-    for(let i=0;i<96;i++){const c=document.createElement('div');c.className='grid-cell';c.style.transition='none';c.style.opacity='1';grid.appendChild(c);cells.push(c);}
-    let shifts=0,lastShiftTime=0;
-    const probe=document.getElementById('latency-probe');
-    let latencies=[];
-    function scan(){
-      const start=performance.now();
-      const st=window.__audioState;
-      if(st){
-        const idx=Math.floor(Math.abs(Math.sin(st.phase))*96);
-        cells.forEach((c,i)=>{
-          c.classList.remove('active');
-          if(i===idx&&st.sweep>0.15)c.classList.add('active');
-        });
-        shifts++;
-        const dt=st.dt||0;
-        if(shifts%100===0){
-          const avg=latencies.reduce((a,b)=>a+b,0)/latencies.length;
-          probe.textContent=`LAT: ${avg.toFixed(2)}ms avg | SHIFT: ${shifts}`;
-          probe.style.color=avg<=6?'#00ff00':'#ff3333';
-          latencies=[];
-        }else{
-          latencies.push(dt);
-        }
-      }
-      requestAnimationFrame(scan);
-    }
-    requestAnimationFrame(scan);
-  </script>
+    <div id="latency-probe">LAT: --ms | RT: --ms | SHIFT: 0</div>
+    <div class="grid-container" id="grid"></div>
+    <script src="audio/reactive/sync.js"></script>
+    <script>
+        const cells=[],grid=document.getElementById('grid');
+        for(let i=0;i<96;i++){const c=document.createElement('div');c.className='grid-cell';grid.appendChild(c);cells.push(c);}
+        let shifts=0,probe=document.getElementById('latency-probe');
+        let rtSamples=[],dtSamples=[];
+        setInterval(()=>{
+            const st=window.__audioState,startPerf=performance.now();
+            if(st){
+                const idx=Math.floor(Math.abs(Math.sin(st.phase))*96);
+                for(let i=0;i<96;i++){
+                    cells[i].classList.toggle('active',i===idx&&st.sweep>0.15);
+                }
+                shifts++;
+                dtSamples.push(st.dt||0);
+                rtSamples.push((st.rt!==undefined)?st.rt:performance.now()-startPerf);
+                if(shifts%100===0){
+                    const avgDt=dtSamples.reduce((a,b)=>a+b,0)/dtSamples.length;
+                    const avgRt=rtSamples.reduce((a,b)=>a+b,0)/rtSamples.length;
+                    probe.textContent=`LAT: ${avgDt.toFixed(2)}ms | RT: ${avgRt.toFixed(2)}ms | SHIFT: ${shifts}`;
+                    probe.style.color=(avgRt<=6&&avgDt<=6)?'#0f0':'#f33';
+                    dtSamples=[];rtSamples=[];
+                }
+            }
+        },5);
+    </script>
 </body>
 </html>
