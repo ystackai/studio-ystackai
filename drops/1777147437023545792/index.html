@@ -20,7 +20,7 @@
             if(st){
                 const idx=Math.floor(Math.abs(Math.sin(st.phase))*96);
                 for(let i=0;i<96;i++){
-                    cells[i].classList.toggle('active',i===idx&&st.sweep>0.15);
+                    cells[i].classList.toggle('active',i===idx&&st.stress>0.15);
                 }
                 shifts++;
                 dtSamples.push(st.dt||0);
