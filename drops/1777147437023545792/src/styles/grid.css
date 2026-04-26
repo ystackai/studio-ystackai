@@ -11,6 +11,18 @@
   --palette-border: #333333;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+  transition: none !important;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--palette-bg);
+}
+
 .grid-container {
   display: grid;
   grid-template-columns: repeat(12, var(--grid-cell-size));
@@ -29,10 +41,12 @@
   background: var(--palette-base);
   border: 1px solid var(--palette-border);
   box-sizing: border-box;
+  opacity: 1;
 }
 
 .grid-cell.active {
   background: var(--palette-active);
+  opacity: 1;
 }
 
 #latency-probe {
@@ -42,4 +56,6 @@
   background: var(--palette-bg);
   color: var(--palette-active);
   overflow: hidden;
+  opacity: 1;
+  transition: none !important;
 }
