@@ -1,0 +1,71 @@
+:root {
+   --ratio-helvetica: 2;
+   --grid-fracture-scale: calc(100vh / var(--ratio-helvetica));
+   --type-scale-fluid: clamp(1rem, 2vw + 0.5rem, 3rem);
+   --space-fibonacci: 0.618;
+   --color-monolith-bg: #000;
+   --color-monolith-fg: #fff;
+   --color-monolith-grid: rgba(255, 255, 255, 0.1);
+}
+
+* {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+}
+
+body {
+   font-size: var(--type-scale-fluid);
+   background-color: var(--color-monolith-bg);
+   color: var(--color-monolith-fg);
+   min-height: 100vh;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+#monolith {
+   width: 100%;
+   max-width: 1200px;
+   padding: 2rem;
+}
+
+.grid-container {
+   display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   grid-template-rows: repeat(3, 1fr);
+   gap: calc(1rem * var(--space-fibonacci));
+   aspect-ratio: 4 / 3;
+   will-change: transform;
+   transform: translateZ(0);
+}
+
+.grid-cell {
+   background: var(--color-monolith-grid);
+   border: 1px solid rgba(255, 255, 255, 0.05);
+   aspect-ratio: 1;
+   will-change: transform, opacity;
+   transform: translateZ(0);
+   transition: none;
+}
+
+.grid-cell.fractured {
+   transform: rotate(calc(var(--cell-index) * 10deg)) scale(var(--grid-fracture-scale, 1));
+   opacity: 0.5;
+}
+
+.sync-trigger {
+   font-size: calc(var(--type-scale-fluid) * 0.5);
+   padding: 1rem 2rem;
+   background: transparent;
+   color: var(--color-monolith-fg);
+   border: 1px solid var(--color-monolith-fg);
+   cursor: pointer;
+   margin-top: calc(2rem * var(--space-fibonacci));
+   will-change: opacity;
+   transform: translateZ(0);
+}
+
+.sync-trigger:hover {
+   background: rgba(255, 255, 255, 0.1);
+}
