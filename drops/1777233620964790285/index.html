@@ -1,30 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Y is for Yolo — Grid Fracture Drop Engine</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Y is for Yolo — Grid Fracture Drop Engine</title>
+    <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <canvas id="grid-canvas"></canvas>
-  <div id="helmet"></div>
-  <div id="grain"></div>
+   <canvas id="grid-canvas"></canvas>
+   <div id="helmet"></div>
+   <div id="grain"></div>
 
-  <div id="drop-page">
-    <div id="narrative">
-      <h1>Y is for Yolo</h1>
-      <p class="subtitle">THE GRID IS A CONTRACT. YOU CELEBRATE THE LOCK, BUT THE SYSTEM MUST FRACTURE.</p>
-      <p class="status" id="status">GRID STANDBY</p>
-    </div>
+   <div id="drop-page">
+      <div id="narrative">
+         <h1>Y is for Yolo</h1>
+         <p class="subtitle">THE GRID IS A CONTRACT. YOU CELEBRATE THE LOCK, BUT THE SYSTEM MUST FRACTURE.</p>
+         <div id="meter-row">
+            <div id="stress-meter">
+               <span class="meter-label">STRESS</span>
+               <div class="meter-track">
+                  <div class="meter-fill" id="stress-fill"></div>
+               </div>
+            </div>
+            <div id="beat-indicator">
+               <span class="beat-dot" data-beat="0"></span>
+               <span class="beat-dot" data-beat="1"></span>
+               <span class="beat-dot" data-beat="2"></span>
+               <span class="beat-dot" data-beat="3"></span>
+            </div>
+         </div>
+         <p class="status" id="status">GRID STANDBY</p>
+      </div>
 
-    <div id="controls">
-      <button class="btn btn-accent" id="btn-lock">Lock</button>
-      <button class="btn" id="btn-stress" disabled>Stress</button>
-      <button class="btn btn-accent" id="btn-fracture" disabled>Fracture</button>
-    </div>
-  </div>
+      <div id="controls">
+         <button class="btn btn-accent" id="btn-lock">Lock</button>
+         <button class="btn" id="btn-stress" disabled>Stress</button>
+         <button class="btn btn-accent" id="btn-fracture" disabled>Fracture</button>
+      </div>
+   </div>
 
-  <script src="game.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>

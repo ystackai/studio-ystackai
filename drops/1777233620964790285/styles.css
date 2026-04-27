@@ -363,13 +363,97 @@ body::after {
       50% { opacity: 0.3; }
    }
 
-   /* ─── Responsive ─── */
-   @media (max-width: 480px) {
-    #drop-page {
-     padding: var(--space-fibonacci-21);
+    /* ─── Stress Meter ─── */
+   #meter-row {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     gap: var(--space-fibonacci-34);
+     margin-bottom: var(--space-fibonacci-13);
+     opacity: 0;
+     transition: opacity 0.3s ease;
+    }
+   body:not(.standby) #meter-row {
+     opacity: 1;
     }
 
-    #narrative h1 {
-     font-size: calc(var(--type-scale-fluid) * 1.2);
+   #stress-meter {
+     display: flex;
+     flex-direction: column;
+     align-items: flex-start;
+     min-width: 120px;
     }
-   }
+
+   .meter-label {
+     font-size: calc(var(--type-scale-fluid) * 0.45);
+     text-transform: uppercase;
+     letter-spacing: 0.15em;
+     color: var(--fg);
+     opacity: 0.5;
+     margin-bottom: var(--space-fibonacci-5);
+    }
+
+   .meter-track {
+     width: 120px;
+     height: 3px;
+     background: rgba(255, 255, 255, 0.08);
+     border-radius: 1px;
+     overflow: hidden;
+    }
+
+   .meter-fill {
+     height: 100%;
+     width: 0%;
+     background: var(--accent);
+     box-shadow: 0 0 6px var(--accent-glow);
+     transition: width 0.25s var(--ease-lock);
+    }
+
+    /* ─── Beat Indicator ─── */
+   #beat-indicator {
+     display: flex;
+     gap: var(--space-fibonacci-5);
+     align-items: center;
+    }
+
+   .beat-dot {
+     display: block;
+     width: 6px;
+     height: 6px;
+     border-radius: 50%;
+     background: rgba(255, 255, 255, 0.1);
+     transition: background 0.08s ease, box-shadow 0.08s ease;
+    }
+
+   .beat-dot.active {
+     background: var(--accent);
+     box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+   .beat-dot.downbeat {
+     width: 8px;
+     height: 8px;
+    }
+
+   .beat-dot.downbeat.active {
+     box-shadow: 0 0 14px var(--accent-glow), 0 0 24px rgba(255, 42, 95, 0.2);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 480px) {
+     #drop-page {
+     padding: var(--space-fibonacci-21);
+     }
+
+     #narrative h1 {
+     font-size: calc(var(--type-scale-fluid) * 1.2);
+     }
+
+     .meter-track {
+     width: 80px;
+     }
+
+     #stress-meter {
+     min-width: 80px;
+     }
+    }
