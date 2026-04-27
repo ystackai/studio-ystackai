@@ -1,0 +1,73 @@
+:root {
+  --ratio-helvetica: 2.618;
+  --type-scale-fluid: clamp(1rem, 0.8vw + 0.5rem, 2.5rem);
+  --space-fibonacci: 1.618;
+  --grid-fracture-scale: calc(100vh / var(--ratio-helvetica));
+  --monolith-black: #0a0a0a;
+  --monolith-white: #f0f0f0;
+  --grid-line-width: 1px;
+  --fracture-offset-max: 80px;
+  --snapback-easing: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --fracture-duration: 0.08s;
+  --snapback-duration: 0.6s;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--monolith-black);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--monolith-white);
+  -webkit-font-smoothing: antialiased;
+}
+
+#monolith-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  width: 80vw;
+  height: 80vh;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  gap: 0;
+}
+
+.grid-cell {
+  background: var(--monolith-black);
+  border: var(--grid-line-width) solid rgba(240, 240, 240, 0.15);
+  transition: transform var(--snapback-duration) var(--snapback-easing),
+              border-color var(--fracture-duration) step-end;
+  will-change: transform;
+  transform-origin: center center;
+  position: relative;
+}
+
+.grid-cell.fractured {
+  border-color: rgba(240, 240, 240, 0.8);
+}
+
+#sync-debug {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  gap: 24px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  opacity: 0.4;
+  text-transform: uppercase;
+}
+
+#sync-debug span {
+  white-space: nowrap;
+}
