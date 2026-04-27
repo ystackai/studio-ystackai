@@ -1,0 +1,221 @@
+:root {
+  /* ─── Fluid Type Scale ─── */
+  --type-scale-fluid: clamp(1.25rem, 0.85vw + 1rem, 2.5rem);
+
+  /* ─── Fibonacci-based spacing ─── */
+  --space-fibonacci-1: 1px;
+  --space-fibonacci-2: 1px;
+  --space-fibonacci-3: 2px;
+  --space-fibonacci-5: 3px;
+  --space-fibonacci-8: 5px;
+  --space-fibonacci-13: 8px;
+  --space-fibonacci-21: 13px;
+  --space-fibonacci-34: 21px;
+  --space-fibonacci-55: 34px;
+  --space-fibonacci: var(--space-fibonacci-13);
+
+  /* ─── Grid Fracture Scale ─── */
+  --grid-fracture-scale: 1;
+  --grid-fracture-max: 1.08;
+
+  /* ─── Palette — "Cult Movie" dark aesthetic ─── */
+  --bg: #0a0a0f;
+  --fg: #e0dcd4;
+  --accent: #ff2a5f;
+  --accent-glow: rgba(255, 42, 95, 0.45);
+  --grid-color: rgba(255, 255, 255, 0.06);
+  --grid-locked: rgba(255, 42, 95, 0.18);
+  --grid-fractured: rgba(255, 180, 40, 0.25);
+
+  /* ─── Easing ─── */
+  --ease-lock: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-fracture: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Courier New', monospace;
+  font-size: var(--type-scale-fluid);
+  line-height: 1.4;
+  overflow-x: hidden;
+  min-height: 100vh;
+  width: 100vw;
+}
+
+/* ───── Layout Shell ───── */
+#drop-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-fibonacci-55);
+  z-index: 1;
+}
+
+/* ───── Grid Canvas ───── */
+#grid-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  transform-origin: center center;
+  will-change: transform;
+  transition: transform 0.15s var(--ease-lock);
+}
+
+/* ───── Helmet overlay ───── */
+#helmet {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: transparent;
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-lock);
+}
+
+#helmet.active {
+  opacity: 1;
+  background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 70%);
+}
+
+#helmet.pulse {
+  animation: helmet-pulse 0.12s ease-out forwards;
+}
+
+@keyframes helmet-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* ───── Narrative text block ───── */
+#narrative {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  max-width: 42rem;
+  letter-spacing: 0.04em;
+}
+
+#narrative h1 {
+  font-size: calc(var(--type-scale-fluid) * 1.6);
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent-glow);
+  margin-bottom: var(--space-fibonacci-21);
+  line-height: 1.1;
+}
+
+#narrative .subtitle {
+  font-size: var(--type-scale-fluid);
+  opacity: 0.7;
+  margin-bottom: var(--space-fibonacci-34);
+}
+
+#narrative .status {
+  font-size: calc(var(--type-scale-fluid) * 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--fg);
+  opacity: 0.5;
+  margin-bottom: var(--space-fibonacci-13);
+}
+
+/* ───── Controls ───── */
+#controls {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  gap: var(--space-fibonacci-13);
+  margin-top: var(--space-fibonacci-34);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  background: transparent;
+  border: 1px solid var(--fg);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: calc(var(--type-scale-fluid) * 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: var(--space-fibonacci-8) var(--space-fibonacci-21);
+  cursor: pointer;
+  transition: all 0.12s var(--ease-lock);
+  outline: none;
+}
+
+.btn:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-accent:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ───── Fracture overlay ───── */
+.fracture-slice {
+  position: fixed;
+  z-index: 3;
+  background: var(--bg);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ─── Scanline grain ─── */
+#grain {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.03) 2px,
+    rgba(255, 255, 255, 0.03) 4px
+  );
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 480px) {
+  #drop-page {
+    padding: var(--space-fibonacci-21);
+  }
+
+  #narrative h1 {
+    font-size: calc(var(--type-scale-fluid) * 1.2);
+  }
+}
