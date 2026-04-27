@@ -11,10 +11,11 @@
     FRACTURING: "fracturing",
   });
 
-  let state = State.STANDBY;
-  let fractureScale = 1;
-  let stressLevel = 0;
-  let breathPhase = 0;
+   let state = State.STANDBY;
+   let fractureScale = 1;
+   let stressLevel = 0;
+   let breathPhase = 0;
+   const bodyEl = document.body;
 
   // ─── Canvas & Grid ───
   const canvas = document.getElementById("grid-canvas");
@@ -53,7 +54,9 @@
     btnLock.disabled = state === State.LOCKED;
     btnStress.disabled = state !== State.LOCKED;
     btnFracture.disabled = state !== State.STRESSING;
-  }
+
+    bodyEl.classList.toggle("fracturing", next === State.FRACTURING);
+    }
 
   // ─── Audio Kernel ───
   let audioCtx = null;
@@ -76,6 +79,8 @@
   // Fracture callback scheduling
   let fractureScheduled = false;
   let fractureCallback = null;
+  let fractureSliceEls = [];
+  let fractureActive = false;
 
   // ─── Audio init ───
   function initAudio() {
@@ -144,9 +149,21 @@
     syncGain.gain.setValueAtTime(0.15, time);
     syncGain.gain.exponentialRampToValueAtTime(0.001, time + BEAT_DUR * 0.6);
 
-    // Visual callback: helmet pulse on kick
+      // Visual callback: helmet pulse on kick
     const beatDelay = (time - audioCtx.currentTime) * 1000;
     setTimeout(() => pulseHelmet(), Math.max(0, beatDelay));
+
+      // Fracture noise burst on downbeat when fracturing
+    if (fractureActive && noiseBuffer) {
+      const src2 = audioCtx.createBufferSource();
+      src2.buffer = noiseBuffer;
+      const g2 = audioCtx.createGain();
+      g2.gain.setValueAtTime(0.4, time);
+      g2.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
+      src2.connect(g2);
+      g2.connect(masterGain);
+      src2.start(time);
+     }
   }
 
   // ─── Schedule beats ───
@@ -225,52 +242,81 @@
   }
 
   // ─── Render Loop ───
-  let lastTime = 0;
+   let lastTime = 0;
 
-  function render(now) {
-    requestAnimationFrame(render);
+   function renderLoop(now) {
+    requestAnimationFrame(renderLoop);
 
     const dt = Math.min((now - lastTime) / 1000, 0.05);
     lastTime = now;
 
-    // Breathing phase (slow oscillation)
+     // ─── Clamp feedback path BEFORE any render ───
+    // Prevents aliasing and ensures visual callback fires exactly on buffer flush
+    fractureScale = clamp(fractureScale, 1, 1.08);
+    stressLevel = clamp(stressLevel, 0, 1);
+
+     // Breathing phase (slow oscillation)
     if (state === State.LOCKED || state === State.STRESSING) {
       breathPhase += dt * (0.6 + stressLevel * 1.2);
-    }
+     }
 
-    // ─── Grid cell physics ───
+     // Fracture breathing: accelerated phase
+    if (state === State.FRACTURING) {
+      breathPhase += dt * 2.4;
+      // Fracture velocity decay for controlled chaos
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = grid[r][c];
+          cell.vx *= 0.985;
+          cell.vy *= 0.985;
+           // Clamp feedback: hard boundary to prevent aliasing
+          cell.ox = clamp(cell.ox, -FIB[7], FIB[7]);
+          cell.oy = clamp(cell.oy, -FIB[7], FIB[7]);
+          cell.ox += cell.vx * dt * 60;
+          cell.oy += cell.vy * dt * 60;
+           // Re-clamp after integration
+          cell.ox = clamp(cell.ox, -FIB[7], FIB[7]);
+          cell.oy = clamp(cell.oy, -FIB[7], FIB[7]);
+          }
+        }
+       }
+
+     // ─── Grid cell physics ───
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const cell = grid[r][c];
 
-        // Center gravity for snap-back
+          // Skip during fracture (handled above for velocity decay)
+        if (state === State.FRACTURING) continue;
+
+          // Center gravity for snap-back
         cell.vx += -cell.ox * 6 * dt;
         cell.vy += -cell.oy * 6 * dt;
 
-        // Damping
+          // Damping
         const damping = state === State.FRACTURING ? 0.92 : 0.85;
         cell.vx *= damping;
         cell.vy *= damping;
 
-        // Breathing displacement
+          // Breathing displacement
         if (state === State.LOCKED || state === State.STRESSING) {
           const breatheAmp = FIB[4] * (0.5 + stressLevel * 0.5);
           const bx = Math.sin(breathPhase + c * 0.3) * breatheAmp * dt;
           const by = Math.cos(breathPhase + r * 0.3) * breatheAmp * dt;
           cell.vx += bx;
           cell.vy += by;
-        }
+          }
 
-        // Update position
+          // Update position
         cell.ox += cell.vx * dt * 60;
         cell.oy += cell.vy * dt * 60;
 
-        // Boundary clamp: prevent aliasing / unanchored drift
-        const maxDrift = FIB[7] / fractScale || FIB[7];
+          // Boundary clamp: prevent aliasing / unanchored drift
+        const maxDrift = FIB[7] / fractureScale || FIB[7];
         cell.ox = clamp(cell.ox, -maxDrift, maxDrift);
         cell.oy = clamp(cell.oy, -maxDrift, maxDrift);
+        }
       }
-    }
 
     // ─── CSS var for fracture scale ───
     document.documentElement.style.setProperty("--grid-fracture-scale", fractureScale.toFixed(3));
@@ -341,26 +387,57 @@
     }
   }
 
-  // ─── Fracture function ───
+    // ─── Fracture-slice DOM generation ───
+  function createFractureSlices() {
+    // Tear out old slices
+    fractureSliceEls.forEach(el => el.remove());
+    fractureSliceEls = [];
+    // Build 3-5 slice overlays that will run CSS keyframes
+    const count = 3 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < count; i++) {
+      const slice = document.createElement("div");
+      slice.className = "fracture-slice";
+      const isHorizontal = Math.random() < 0.5;
+      if (isHorizontal) {
+        slice.style.top = (Math.random() * 100) + "%";
+        slice.style.left = "0";
+        slice.style.width = "100vw";
+        slice.style.height = (FIB[5] + Math.random() * FIB[8]) + "px";
+      } else {
+        slice.style.top = "0";
+        slice.style.left = (Math.random() * 100) + "%";
+        slice.style.width = (FIB[5] + Math.random() * FIB[8]) + "px";
+        slice.style.height = "100vh";
+      }
+      slice.dataset.delay = (i * 0.06).toFixed(3);
+      slice.style.animationDelay = `${i * 0.06}s, ${0.3 + i * 0.06}s`;
+      slice.style.setProperty("--rand-x", (Math.random() * 100).toFixed(1));
+      slice.style.setProperty("--rand-y", (Math.random() * 100).toFixed(1));
+      document.body.appendChild(slice);
+      fractureSliceEls.push(slice);
+    }
+  }
+
   function triggerFracture() {
     updateState(State.FRACTURING);
     helmet.classList.add("active");
+    fractureActive = true;
 
-    // Apply chaotic displacement to random cells
+     // Apply chaotic displacement to random cells
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if (Math.random() < 0.45) {
           const cell = grid[r][c];
           cell.vx += (Math.random() - 0.5) * FIB[8];
           cell.vy += (Math.random() - 0.5) * FIB[8];
-        }
-      }
-    }
+         }
+       }
+     }
 
-    // Increase fracture scale
+     // Increase fracture scale
     fractureScale = clamp(fractureScale + 0.03, 1, 1.08);
 
-    // Fracture noise burst
+     // Fracture noise burst
     if (audioCtx && noiseBuffer) {
       const src = audioCtx.createBufferSource();
       src.buffer = noiseBuffer;
@@ -369,17 +446,30 @@
       src.connect(g);
       g.connect(masterGain);
       src.start();
-    }
+     }
 
-    // Snap-back after 1.5s
+     // Schedule visual callback on next downbeat via hard-sync
+    scheduleFractureCallback(() => {
+      createFractureSlices();
+    });
+
+     // Snap-back after 1.5s
     setTimeout(() => {
+      fractureActive = false;
       fractureScale = clamp(fractureScale - 0.015, 0.98, 1.08);
       if (fractureScale <= 1.005) {
         fractureScale = 1;
         updateState(State.STRESSING);
         helmet.classList.remove("active");
-      }
-    }, 1500);
+        fractureSliceEls.forEach(el => el.remove());
+        fractureSliceEls = [];
+       }
+     }, 1500);
+  }
+
+  function scheduleFractureCallback(cb) {
+    fractureScheduled = true;
+    fractureCallback = cb;
   }
 
   // ─── Event bindings ───
@@ -416,6 +506,6 @@
     triggerFracture();
   });
 
-  // ─── Boot ───
-  requestAnimationFrame(render);
+   // ─── Boot ───
+   requestAnimationFrame(renderLoop);
 })();
