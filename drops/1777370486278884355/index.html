@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Espresso Machine Calibration</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="ui-layer">
+      <h1 class="title">ESPRESSO<span class="dot">.</span>CAL</h1>
+       <div id="status-bar">
+         <span id="timer">TAP TO START — 28.0s</span>
+         <div style="display:flex;gap:6px;align-items:center;">
+           <span id="counter" class="cell-counter">0 / 14</span>
+           <button id="reset-btn" class="btn-reset" aria-label="Reset Calibration">↺</button>
+           <button id="mute-btn" class="btn-mute" aria-label="Toggle Sound">♪</button>
+         </div>
+       </div>
+      <div id="target-zone">
+        <div class="target-label">TARGET</div>
+        <div id="target-marker"></div>
+      </div>
+      <div id="result-overlay" class="hidden">
+        <div id="result-text"></div>
+        <div id="result-sub"></div>
+      </div>
+    </div>
+
+    <div id="machine-container">
+      <div id="steam-container"></div>
+      <div id="grid-wrapper">
+        <div id="grid"></div>
+      </div>
+        <div id="cup-container">
+          <div id="spout"></div>
+          <div id="cup">
+            <div id="liquid-fill"></div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
