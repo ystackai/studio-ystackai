@@ -177,6 +177,7 @@ function playKnobClick() {
 
 /* Clamp bass thud */
 function playClampThud() {
+  if (!audioCtx) return;
   const now = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
   const g = audioCtx.createGain();
@@ -208,6 +209,7 @@ function playDriftWarning() {
 
 /* Success triad chime */
 function playSuccessChime() {
+  if (!audioCtx) return;
   const now = audioCtx.currentTime;
   [523.25, 659.25, 783.99].forEach((f, i) => {
     const osc = audioCtx.createOscillator();
@@ -226,6 +228,7 @@ function playSuccessChime() {
 
 /* Clock out chime for break room */
 function playClockOutChime() {
+  if (!audioCtx) return;
   const now = audioCtx.currentTime;
   [261.63, 329.63, 392.00, 523.25].forEach((f, i) => {
     const osc = audioCtx.createOscillator();
@@ -244,6 +247,7 @@ function playClockOutChime() {
 
 /* Ship bar ascending tone */
 function playShipTone(noteIdx) {
+  if (!audioCtx) return;
   const scale = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00];
   const freq = scale[noteIdx % scale.length];
   const now = audioCtx.currentTime;
