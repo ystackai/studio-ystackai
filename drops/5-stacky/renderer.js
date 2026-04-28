@@ -35,7 +35,7 @@
   var holdCanvas = document.getElementById('hold-canvas');
   var holdCtx = holdCanvas ? holdCanvas.getContext('2d') : null;
   var nextCanvas = document.getElementById('next-canvas');
-  var nextCtx = nextCanvas.getContext('2d');
+  var nextCtx = nextCanvas ? nextCanvas.getContext('2d') : null;
 
   function setupSmallCanvas(c, cx) {
     var w = c.width; var h = c.height;
@@ -45,7 +45,7 @@
     return { w: w, h: h };
   }
   var holdSize = holdCanvas ? setupSmallCanvas(holdCanvas, holdCtx) : {w:0,h:0};
-  var nextSize = setupSmallCanvas(nextCanvas, nextCtx);
+  var nextSize = nextCanvas && nextCtx ? setupSmallCanvas(nextCanvas, nextCtx) : {w:0,h:0};
 
   // ── Responsive scaling ─────────────────────────────────────────────────
 
