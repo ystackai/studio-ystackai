@@ -261,7 +261,10 @@
         }
 
         // Handle checkbox interaction
-        acceptCheckbox.addEventListener('change', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+          acceptCheckbox = acceptCheckbox || document.getElementById('acceptEntropy');
+          if (!acceptCheckbox) return;
+          acceptCheckbox.addEventListener('change', function() {
             if (this.checked) {
                 // Play cha-ching sound
                 playChaChing();
@@ -277,6 +280,7 @@
                 // If unchecked, remain in black silence forever
                 document.body.style.backgroundColor = '#000000';
             }
+          });
         });
 
         // Play the cha-ching sound

@@ -161,6 +161,7 @@ function playKickRef(time) {
 
 /* Knob click */
 function playKnobClick() {
+  if (!audioCtx) return;
   const now = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
   const g = audioCtx.createGain();
@@ -191,6 +192,7 @@ function playClampThud() {
 
 /* Drift warning — detuned square wave pulse */
 function playDriftWarning() {
+  if (!audioCtx) return;
   const now = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
   const g = audioCtx.createGain();

@@ -935,6 +935,7 @@
   // ── Side panels ────────────────────────────────────────────────────────
 
   function drawPiecePreview(context, size, type) {
+    if (!context || !size) return;
     context.clearRect(0, 0, size.w, size.h);
     context.fillStyle = '#1a1a2e';
     context.fillRect(0, 0, size.w, size.h);
@@ -965,7 +966,7 @@
   }
 
   function drawHoldPanel() { if (holdCtx) drawPiecePreview(holdCtx, holdSize, state.heldPiece); }
-  function drawNextPanel() { drawPiecePreview(nextCtx, nextSize, state.nextPiece); }
+  function drawNextPanel() { if (nextCtx) drawPiecePreview(nextCtx, nextSize, state.nextPiece); }
 
   // ── Input setup ────────────────────────────────────────────────────────
 

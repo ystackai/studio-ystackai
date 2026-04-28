@@ -102,7 +102,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Connect to master output
         subBassOscillator.connect(audioContext.destination);
-        subBassOscillator.start();
     }
     
     function createScream() {

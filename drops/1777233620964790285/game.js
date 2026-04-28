@@ -514,8 +514,9 @@
             ctx.beginPath();
             for (let r = 0; r <= ROWS; r++) {
                 const rr = clamp(r, 0, ROWS - 1);
-                const x = c * cellW + (grid[rr][c].ox || 0);
-                const y = r * cellH + (grid[rr][c].oy || 0);
+                const cc = clamp(c, 0, COLS - 1);
+                const x = c * cellW + (grid[rr][cc].ox || 0);
+                const y = r * cellH + (grid[rr][cc].oy || 0);
                 r === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
             }
             ctx.stroke();
@@ -525,8 +526,10 @@
         for (let r = 0; r <= ROWS; r++) {
             ctx.beginPath();
             for (let c = 0; c <= COLS; c++) {
-                const x = c * cellW + (grid[r][c].ox || 0);
-                const y = r * cellH + (grid[r][c].oy || 0);
+                const rr = clamp(r, 0, ROWS - 1);
+                const cc = clamp(c, 0, COLS - 1);
+                const x = c * cellW + (grid[rr][cc].ox || 0);
+                const y = r * cellH + (grid[rr][cc].oy || 0);
                 c === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
             }
             ctx.stroke();

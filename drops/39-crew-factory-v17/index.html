@@ -6,20 +6,20 @@
     <title>404 - Page Not Found</title>
     <link rel="stylesheet" href="css/modular-grid.css">
     <script>
-        // Debt tier mock data
-        const debtTier = Math.floor(Math.random() * 100);
-        document.getElementById('debt-tier').textContent = debtTier;
-        
-        // Apply dynamic typography scaling based on debt tier
-        const frog = document.getElementById('frog');
-        const debtTierElement = document.getElementById('debt-tier');
-        
-        // Adjust font size based on debt tier (higher debt = smaller text)
-        const debtFactor = 1 + (debtTier / 100) * 0.5; // Scale factor from 1 to 1.5
-        const baseFontSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale-5'));
-        const newFontSize = baseFontSize / debtFactor;
-        
-        frog.style.fontSize = `${newFontSize}px`;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Debt tier mock data
+            const debtTier = Math.floor(Math.random() * 100);
+            const frog = document.getElementById('frog');
+            const debtTierElement = document.getElementById('debt-tier');
+            if (debtTierElement) debtTierElement.textContent = debtTier;
+
+            // Adjust font size based on debt tier (higher debt = smaller text)
+            const debtFactor = 1 + (debtTier / 100) * 0.5; // Scale factor from 1 to 1.5
+            const baseFontSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale-5')) || 48;
+            const newFontSize = baseFontSize / debtFactor;
+
+            if (frog) frog.style.fontSize = `${newFontSize}px`;
+        });
     </script>
 </head>
 <body>

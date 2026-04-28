@@ -384,23 +384,23 @@
             }, 440);
 
             // Handle button hover
-            const termsButton = document.getElementById(termsButton);
-            termsButton.addEventListener(mouseenter, function() {
+            const termsButton = document.getElementById('termsButton');
+            termsButton.addEventListener('mouseenter', function() {
                 // Calculate debt tier for hover effect
                 const debtTier = getDebtTier();
                 let hoverScale;
 
                 switch(debtTier) {
-                    case low:
+                    case 'low':
                         hoverScale = 1.2;
                         break;
-                    case medium:
+                    case 'medium':
                         hoverScale = 1.1;
                         break;
-                    case high:
+                    case 'high':
                         hoverScale = 1.05;
                         break;
-                    case extreme:
+                    case 'extreme':
                         hoverScale = 1.02;
                         break;
                     default:
@@ -410,23 +410,23 @@
                 this.style.transform = `scale(${hoverScale})`;
             });
 
-            termsButton.addEventListener(mouseleave, function() {
+            termsButton.addEventListener('mouseleave', function() {
                 // Reset button size on mouse leave
                 const debtTier = getDebtTier();
                 const baseButtonSize = 1;
                 let buttonScale;
 
                 switch(debtTier) {
-                    case low:
+                    case 'low':
                         buttonScale = baseButtonSize;
                         break;
-                    case medium:
+                    case 'medium':
                         buttonScale = baseButtonSize * 0.8;
                         break;
-                    case high:
+                    case 'high':
                         buttonScale = baseButtonSize * 0.6;
                         break;
-                    case extreme:
+                    case 'extreme':
                         buttonScale = baseButtonSize * 0.4;
                         break;
                     default:

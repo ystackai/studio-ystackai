@@ -12,9 +12,11 @@
   <div class="grid-container" id="grid"></div>
   <script>
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const workletNode = new AudioWorkletNode(ctx, 'sync-worklet');
+    let workletNode = null;
 
     ctx.audioWorklet.addModule('audio/reactive/sync.worklet.js').then(function() {
+      workletNode = new AudioWorkletNode(ctx, 'sync-worklet');
+      workletNode.port.onmessage = handleWorkletMessage;
       ctx.resume();
       workletNode.connect(ctx.destination);
     });
@@ -30,7 +32,7 @@
     let shifts = 0, probe = document.getElementById('latency-probe');
     let rtSamples = [], dtSamples = [];
 
-    workletNode.port.onmessage = function(e) {
+    function handleWorkletMessage(e) {
       const st = e.data;
       const startPerf = performance.now();
 
@@ -51,7 +53,7 @@
         dtSamples = [];
         rtSamples = [];
       }
-    };
+    }
   </script>
 </body>
 </html>
