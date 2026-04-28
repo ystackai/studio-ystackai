@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rhythm Quantizer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <h1 id="state-label">IDLE</h1>
+    </header>
+    <main id="grid-container">
+      <div id="grid" class="grid-12">
+      </div>
+      <div id="oscillator-node" class="oscillator">
+        <div class="pulse-ring"></div>
+        <div class="core"></div>
+      </div>
+    </main>
+    <div id="ship-bar-container">
+      <div id="ship-bar"></div>
+    </div>
+    <div id="overlay" class="hidden">
+      <p>Phase Locked | Break Room Open</p>
+    </div>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
