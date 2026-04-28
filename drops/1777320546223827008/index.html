@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grid-Locked Rhythm Syncer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <div id="grid-overlay"></div>
+
+  <header id="hud">
+    <div id="state-label">GRID</div>
+    <div id="bpm-display">120 BPM</div>
+    <div id="sync-label">SYNC: <span id="sync-value">0</span>%</div>
+  </header>
+
+  <div id="main-grid">
+    <!-- 12-column visual grid cells -->
+    <div class="grid-cell" data-col="1"></div>
+    <div class="grid-cell" data-col="2"></div>
+    <div class="grid-cell" data-col="3"></div>
+    <div class="grid-cell" data-col="4"></div>
+    <div class="grid-cell" data-col="5"></div>
+    <div class="grid-cell" data-col="6"></div>
+    <div class="grid-cell" data-col="7"></div>
+    <div class="grid-cell" data-col="8"></div>
+    <div class="grid-cell" data-col="9"></div>
+    <div class="grid-cell" data-col="10"></div>
+    <div class="grid-cell" data-col="11"></div>
+    <div class="grid-cell" data-col="12"></div>
+  </div>
+
+  <div id="espresso-container">
+    <canvas id="espresso-canvas"></canvas>
+  </div>
+
+  <div id="sync-meter-track">
+    <div id="sync-meter-fill"></div>
+  </div>
+
+  <canvas id="oscilloscope"></canvas>
+
+  <div id="knobs">
+    <div class="knob-wrapper">
+      <canvas class="knob-canvas" id="knob-freq" width="120" height="120"></canvas>
+      <label>Frequency (Hz)</label>
+      <span id="freq-val">110</span>
+    </div>
+    <div class="knob-wrapper">
+      <canvas class="knob-canvas" id="knob-atk" width="120" height="120"></canvas>
+      <label>Attack (ms)</label>
+      <span id="atk-val">50</span>
+    </div>
+    <div class="knob-wrapper">
+      <canvas class="knob-canvas" id="knob-clamp" width="120" height="120"></canvas>
+      <label>Clamp</label>
+      <span id="clamp-val">30</span>
+    </div>
+  </div>
+
+  <div id="drift-warning" class="hidden">DRIFT</div>
+
+  <footer id="ship-area">
+    <div id="ship-bar-track">
+      <div id="ship-bar-fill"></div>
+      <div id="ship-col-markers"></div>
+    </div>
+    <button id="ship-btn" disabled>SHIP</button>
+  </footer>
+
+  <div id="breakroom" class="hidden">
+    <canvas id="breakroom-canvas"></canvas>
+    <div id="breakroom-text">CLOCKED OUT</div>
+    <button id="reset-btn">RESET</button>
+  </div>
+
+  <div id="start-overlay">
+    <h1>GRID-LOCKED RHYTHM SYNCER</h1>
+    <p>Calibrate the oscillator to the 4/4 kick.</p>
+    <button id="start-btn">START</button>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
