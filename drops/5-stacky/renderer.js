@@ -820,6 +820,7 @@
     var oompaCanvas = document.getElementById('oompa-canvas');
     if (!oompaCanvas) return;
     var octx = oompaCanvas.getContext('2d');
+    if (!octx) return;
     octx.clearRect(0, 0, oompaCanvas.width, oompaCanvas.height);
     // Draw centered
     var scale = Math.min(oompaCanvas.width / img.width, oompaCanvas.height / img.height) * 0.9;
