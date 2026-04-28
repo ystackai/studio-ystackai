@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grid Sync — Audio Engine</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="start-overlay" class="overlay">
+      <div class="overlay-content">
+        <h1>GRID SYNC</h1>
+        <p>Click anywhere to initialize the audio engine</p>
+        <div class="pulse-ring"></div>
+      </div>
+    </div>
+
+    <header id="hud">
+      <div class="hud-left">
+        <span class="hud-label">BPM <span id="bpm-display">120</span></span>
+        <span class="hud-label">BEAT <span id="beat-display">0</span></span>
+      </div>
+      <div class="hud-center">
+        <span id="phase-indicator" class="phase-idle">PHASE: IDLE</span>
+      </div>
+      <div class="hud-right">
+        <span class="hud-label">HOLD <span id="hold-count">0</span>/8</span>
+        <span class="hud-label">MOMENTUM <span id="momentum-display">0</span></span>
+      </div>
+    </header>
+
+    <main id="grid-container">
+      <div id="grid" class="grid-12c"></div>
+      <div id="grid-scanline" class="scanline"></div>
+    </main>
+
+    <footer id="ship-footer">
+      <div class="ship-bar-container">
+        <div class="ship-bar-track">
+          <div id="ship-bar-fill" class="ship-bar-fill"></div>
+        </div>
+        <div id="ship-label" class="ship-label">SHIP</div>
+      </div>
+    </footer>
+
+    <div id="break-room" class="break-room hidden">
+      <h2>BREAK ROOM UNLOCKED</h2>
+      <p>Momentum threshold reached. Grid locked.</p>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
