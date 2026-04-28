@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Break Room — Y is for Yolo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="tagline">
+      <h1>Y is for Yolo</h1>
+    </header>
+
+    <main id="break-room" class="break-room">
+      <div class="grid-overlay" id="grid-overlay"></div>
+
+      <section class="panel espresso-panel" id="espresso-panel">
+        <div class="machine-icon">☕</div>
+        <div id="extraction-timer" class="extraction-timer">0.00s</div>
+        <div id="drift-meter" class="drift-meter">
+          <div class="drift-meter-fill" id="drift-fill"></div>
+        </div>
+        <div id="beat-indicators" class="beat-indicators">
+          <span class="beat-dot" data-beat="0"></span>
+          <span class="beat-dot" data-beat="1"></span>
+          <span class="beat-dot" data-beat="2"></span>
+          <span class="beat-dot" data-beat="3"></span>
+          <span class="beat-dot" data-beat="4"></span>
+          <span class="beat-dot" data-beat="5"></span>
+          <span class="beat-dot" data-beat="6"></span>
+          <span class="beat-dot" data-beat="7"></span>
+        </div>
+        <p class="status-text" id="espresso-status">Hold to sync grid</p>
+      </section>
+
+      <section class="panel karaoke-panel" id="karaoke-panel">
+        <div class="mic-icon">🎤</div>
+        <p class="status-text" id="karaoke-status">Locked</p>
+      </section>
+
+      <section class="panel snacks-panel" id="snacks-panel">
+        <div class="snack-item">🍿</div>
+        <div class="snack-item">🍩</div>
+        <div class="snack-item">🍪</div>
+      </section>
+    </main>
+
+    <footer id="ship-bar" class="ship-bar">
+      <p id="ship-text">Hold 8 beats to unlock ship bar</p>
+      <button id="ship-btn" class="ship-btn" disabled>Ship to Bar</button>
+    </footer>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
