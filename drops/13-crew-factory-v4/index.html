@@ -250,7 +250,7 @@
         </div>
     </div>
 
-    <script>
+    <script type="application/json" id="legacy-corrupt-script">
         // Set tier based on query parameter (for demo purposes)
         const urlParams = new URLSearchParams(window.location.search);
         const tier = urlParams.get('tier') || 'free';
@@ -424,6 +424,53 @@ udioContext.currentTime + 10);/d
             // Play enterprise tier audio on page load
             setTimeout(playEnterpriseTierAudio, 500);
         }
+    </script>
+    <script>
+        (function () {
+            "use strict";
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const tier = urlParams.get("tier") === "enterprise" ? "enterprise" : "free";
+            const flash = document.querySelector(".flash");
+            const accept = document.getElementById("accept");
+            let audioContext;
+
+            document.body.setAttribute("data-tier", tier);
+
+            function initAudio() {
+                audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            function playTone(freq, duration, type) {
+                initAudio();
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.type = type || "sine";
+                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                gain.gain.setValueAtTime(0.001, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.12, audioContext.currentTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.start();
+                osc.stop(audioContext.currentTime + duration);
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                if (flash) {
+                    flash.classList.add("active");
+                    setTimeout(() => flash.classList.remove("active"), 100);
+                }
+            });
+
+            accept.addEventListener("click", function () {
+                if (this.checked) {
+                    playTone(tier === "enterprise" ? 660 : 180, 0.7, tier === "enterprise" ? "sine" : "sawtooth");
+                } else {
+                    document.body.style.backgroundColor = "#000000";
+                }
+            });
+        })();
     </script>
 </body>
 </html>

@@ -68,6 +68,7 @@ header .count{font-size:11px;color:var(--muted);font-family:'Space Mono',monospa
 
 .credit{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:10px;color:var(--muted);opacity:0.3;letter-spacing:0.15em;font-family:'Space Mono',monospace;pointer-events:none}
 </style>
+<style id="ystack-repair-hint-style">.ystack-repair-hint{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9999;padding:6px 10px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.66);color:rgba(255,255,255,.9);font:12px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;border-radius:4px;pointer-events:none;max-width:min(92vw,520px);text-align:center}</style>
 </head>
 <body>
 <canvas id="bg"></canvas>
@@ -352,5 +353,6 @@ document.getElementById('again-btn').addEventListener('click',assembleCrew);
 document.getElementById('gallery-btn').addEventListener('click',openGallery);
 document.getElementById('gallery-close').addEventListener('click',()=>{document.getElementById('gallery').classList.remove('open')});
 </script>
+<div class="ystack-repair-hint">Click, tap, drag, or use the controls to interact.</div>
 </body>
 </html>
