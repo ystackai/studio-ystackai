@@ -1,38 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ystackai — Audio-Reactive Sweep</title>
-  <link rel="stylesheet" href="style.css" />
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>ystackai — Audio-Reactive Grid</title>
+   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="grid" role="main">
-    <div class="center-col">
-      <h1 class="title" aria-live="polite">Sine Sweep</h1>
-      <p class="subtitle" aria-live="polite">Click to trigger the sweep</p>
-    </div>
+   <div class="app" role="application" aria-label="Audio-reactive grid experience">
 
-    <div class="center-col button-row">
+      <!-- Header / title area -->
+      <header class="header">
+         <h1 class="title" aria-live="polite">Sine Sweep</h1>
+         <p class="subtitle">Click to trigger the sweep</p>
+      </header>
+
+      <!-- Audio-reactive grid cells - 5x5 -->
+      <div class="grid" id="reactiveGrid" aria-hidden="true">
+         <div></div><div></div><div></div><div></div><div></div>
+         <div></div><div></div><div></div><div></div><div></div>
+         <div></div><div></div><div></div><div></div><div></div>
+         <div></div><div></div><div></div><div></div><div></div>
+         <div></div><div></div><div></div><div></div><div></div>
+      </div>
+
+      <!-- Wave rings for visual feedback -->
+      <div class="wave-ring" id="ring1"></div>
+      <div class="wave-ring" id="ring2"></div>
+      <div class="wave-ring" id="ring3"></div>
+
+      <!-- Controls -->
+      <div class="controls">
+         <button
+            id="sweepBtn"
+            class="cta"
+            aria-label="Trigger sine sweep and kick drum"
+         >
+            DROP IT
+         </button>
+
+         <button id="resetBtn" class="reset" aria-label="Reset to idle state" hidden>
+            RESET
+         </button>
+      </div>
+
+      <!-- State display -->
+      <div class="state-panel">
+         <div id="stateLabel" class="state-label" aria-live="assertive" aria-atomic="true">IDLE</div>
+         <div
+            id="phaseBar"
+            class="phase-bar"
+            role="progressbar"
+            aria-valuenow="0"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-label="Sweep progress"
+         ></div>
+      </div>
+
+      <!-- Mute toggle -->
       <button
-        id="sweepBtn"
-        class="cta"
-        aria-label="Trigger sine sweep and kick drum"
+         class="mute-toggle"
+         id="muteBtn"
+         aria-label="Toggle mute"
+         title="Toggle mute"
       >
-        DROP IT
+         <span aria-hidden="true" id="muteIcon">🔊</span>
       </button>
-    </div>
 
-    <div class="center-col state-row">
-      <div id="stateLabel" class="state-label" aria-live="assertive" aria-atomic="true">IDLE</div>
-      <div id="phaseBar" class="phase-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Sweep progress"></div>
-    </div>
+      <!-- Footer / attribution -->
+      <footer class="footer">
+         <span class="footer-text">ystackai studio</span>
+      </footer>
+   </div>
 
-    <div class="center-col reset-row">
-      <button id="resetBtn" class="reset" aria-label="Reset to idle state" hidden>RESET</button>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
+   <script src="script.js"></script>
 </body>
 </html>
