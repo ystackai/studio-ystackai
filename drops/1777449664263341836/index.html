@@ -10,6 +10,7 @@
   --accent:#6366f1;--accent-glow:#818cf8;--text:#e2e8f0;--muted:#64748b;
   --f1:1px;--f2:1px;--f3:2px;--f5:3px;--f8:5px;--f13:8px;--f21:13px;--f34:21px;
   --space-fibonacci-5:8px;
+  --cell-w:42px;--cell-h:28px;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -19,7 +20,7 @@ body{
   overflow-x:hidden;-webkit-tap-highlight-color:transparent;
 }
 
-/* ── Header band ───────────────────────────────────────────────── */
+/* ── Hero band ─────────────────────────────────────────── */
 .hero{
   width:100%;text-align:center;
   padding:calc(var(--f21) * 2) calc(var(--f13));
@@ -29,11 +30,33 @@ body{
 .hero h1{
   font-size:clamp(1.4rem,3.5vw,2rem);font-weight:900;letter-spacing:-0.04em;
   background:linear-gradient(135deg,#a5b4fc,#c084fc);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
 }
 .hero .tagline{font-size:.8rem;color:var(--muted);margin-top:var(--f5)}
 
-/* ── Controls bar ──────────────────────────────────────────────── */
+/* ── Clamp meter ───────────────────────────────────────── */
+.clamp-section{width:100%;max-width:680px;padding:var(--f13) var(--f8)}
+.clamp-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:var(--f3)}
+.clamp-bar{
+  width:100%;height:6px;border-radius:999px;background:rgba(99,102,241,0.08);overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(99,102,241,0.1);
+}
+.clamp-fill{
+  height:100%;width:0%;border-radius:999px;
+  background:linear-gradient(90deg,#6366f1,#a855f7);
+}
+.clamp-fill.clip{background:linear-gradient(90deg,#ef4444,#f97316)}
+.clamp-fill.drop{background:linear-gradient(90deg,#22c55e,#67e8f9)}
+
+/* ── Drop counter ──────────────────────────────────────── */
+.drop-row{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;max-width:680px;padding:0 var(--f8);margin-top:var(--f5);
+}
+.drop-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.drop-count{font-size:.85rem;font-weight:800;color:var(--accent-glow);font-variant-numeric:tabular-nums}
+
+/* ── Controls ───────────────────────────────────────────── */
 .ctrl-bar{
   display:flex;align-items:center;gap:var(--f8);justify-content:center;
   padding:var(--f13) calc(var(--f8));flex-wrap:wrap;width:100%;
@@ -45,24 +68,44 @@ body{
 }
 .btn:hover{opacity:.9;transform:translateY(-1px)}
 .btn:active{opacity:1;transform:translateY(0)}
-.btn.outline{
-  background:transparent;border:1px solid var(--border);color:var(--accent-glow);
+.btn.outline{background:transparent;border:1px solid var(--border);color:var(--accent-glow)}
+.btn.drop-btn{
+  background:linear-gradient(135deg,#22c55e,#14b8a6);
+  box-shadow:0 2px 16px rgba(34,197,94,0.2);
+  padding:var(--f8) calc(var(--f21));font-size:.9rem;letter-spacing:.04em;
+}
+.btn.drop-btn:hover:not(:disabled){
+  box-shadow:0 4px 28px rgba(34,197,94,0.4);
+}
+.btn.drop-btn:disabled{opacity:.35;cursor:default;box-shadow:none}
+.btn.drop-btn.pulse{animation:drop-pulse 1.2s ease-in-out infinite alternate}
+@keyframes drop-pulse{
+  from{box-shadow:0 0 8px rgba(34,197,94,0.2);transform:scale(1)}
+  to{box-shadow:0 0 24px rgba(34,197,94,0.5);transform:scale(1.03)}
 }
 .sr-wrap{display:flex;align-items:center;gap:var(--f5)}
 .sr-wrap label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
 .sr-val{font-size:.85rem;font-weight:800;color:var(--accent-glow);min-width:2.5ch;text-align:center;font-variant-numeric:tabular-nums}
 
-/* ── Grid wrapper ──────────────────────────────────────────────── */
+/* ── Preset buttons ────────────────────────────────────── */
+.preset-row{display:flex;gap:var(--f5);justify-content:center;padding:0 var(--f8);margin-top:var(--f5)}
+.btn.preset{
+  font-size:.7rem;padding:var(--f3) var(--f8);
+  background:transparent;border:1px solid rgba(99,102,241,0.12);color:var(--muted);
+}
+.btn.preset:hover{border-color:var(--border);color:var(--accent-glow)}
+.btn.preset.active{border-color:var(--accent);color:var(--accent-glow);background:rgba(99,102,241,0.08)}
+
+/* ── Sequencer grid ─────────────────────────────────────── */
 .grid-wrap{
   width:100%;max-width:760px;overflow-x:auto;padding:var(--f8);
   display:flex;justify-content:center;
 }
 .seq-grid{
   display:inline-grid;
-  grid-template-columns:auto repeat(16,var(--cell-w,42px));
+  grid-template-columns:auto repeat(16,var(--cell-w));
   gap:2px;
 }
-
 
 .cell-head{
   display:flex;align-items:center;justify-content:flex-end;
@@ -70,24 +113,21 @@ body{
   min-width:52px;color:var(--muted);
 }
 .beat-col-head{
-  width:var(--cell-w,42px);text-align:center;font-size:.55rem;color:#334155;font-weight:600;
+  width:var(--cell-w);text-align:center;font-size:.55rem;color:#334155;font-weight:600;
   padding-bottom:2px;
 }
 .beat-col-head.down{color:#475569}
 
 .cell{
-  width:var(--cell-w,42px);height:var(--cell-h,28px);
+  width:var(--cell-w);height:var(--cell-h);
   border-radius:3px;cursor:pointer;
   background:rgba(30,30,46,0.4);border:1px solid rgba(30,30,46,0.6);
   transition:background .08s,box-shadow .08s,transform .06s;
-  -webkit-user-select:none;user-select:none;
+   -webkit-user-select:none;user-select:none;
 }
 .cell:hover{background:rgba(99,102,241,0.08);border-color:rgba(99,102,241,0.25)}
 
-.cell.on{
-  border-color:rgba(129,140,248,0.5);
-  box-shadow:0 0 6px rgba(99,102,241,0.25);
-}
+.cell.on{border-color:rgba(129,140,248,0.5);box-shadow:0 0 6px rgba(99,102,241,0.25)}
 .cell.kick.on{background:rgba(250,204,21,0.45)}
 .cell.kick.on.here{background:#facc15;box-shadow:0 0 16px rgba(250,204,21,0.6)}
 
@@ -105,28 +145,38 @@ body{
 /* 4-beat grouping */
 .beat-col-head:nth-child(4n+2){color:#475569}
 
-/* ── Hard clamp indicator ─────────────────────────────────────── */
-.clamp-bar{
-  width:100%;max-width:680px;margin:var(--f5) 0 var(--f8);
-  height:6px;border-radius:999px;background:rgba(99,102,241,0.08);overflow:hidden;
-  box-shadow:inset 0 0 0 1px rgba(99,102,241,0.1);
-  transition:height .05s;
+/* ── Flash overlay ─────────────────────────────────────── */
+.flash-overlay{
+  position:fixed;inset:0;pointer-events:none;z-index:100;
+  opacity:0;transition:opacity .3s;
 }
-.clamp-fill{
-  height:100%;width:0%;border-radius:999px;
-  background:linear-gradient(90deg,#6366f1,#a855f7);
-  transition:width .08s;
+.flash-overlay.active{
+  opacity:1;
+  background:radial-gradient(circle at 50% 40%,rgba(34,197,94,0.15),transparent 60%);
 }
-.clamp-fill.clip{background:linear-gradient(90deg,#ef4444,#f97316)}
+.drop-text{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:clamp(2rem,6vw,3.5rem);font-weight:900;letter-spacing:-0.03em;
+  color:#fff;opacity:0;pointer-events:none;z-index:101;text-align:center;
+  text-shadow:0 0 40px rgba(99,102,241,0.6),0 0 80px rgba(192,132,252,0.3);
+}
+.drop-text.active{animation:drop-text-in 1.5s forwards}
+@keyframes drop-text-in{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0.7)}
+  15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}
+  40%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1)}
+}
 
-/* ── Footer ───────────────────────────────────────────────────── */
+/* ── Footer ─────────────────────────────────────────────── */
 .footer{text-align:center;padding:var(--f13);font-size:.65rem;color:#1e293b;border-top:1px solid rgba(255,255,255,0.03)}
 
-/* ── Responsive ────────────────────────────────────────────────── */
+/* ── Responsive ─────────────────────────────────────────── */
 @media(max-width:600px){
   :root{--cell-w:calc((100vw - 72px)/16);--cell-h:24px}
   .cell-head{min-width:36px;font-size:.5rem}
   .hero{padding:var(--f13) var(--f8)}
+  .btn.drop-btn{padding:var(--f5) var(--f13);font-size:.8rem}
 }
 @media(min-width:800px){
   :root{--cell-w:42px;--cell-h:30px}
@@ -135,37 +185,59 @@ body{
 </head>
 <body>
 
+<div class="flash-overlay" id="flash-overlay"></div>
+<div class="drop-text" id="drop-text">DROP IT</div>
+
 <header class="hero">
   <h1>Beat Grid</h1>
-  <p class="tagline">Tap to sequence. Let the oscillator breathe.</p>
+  <p class="tagline">Tap to sequence. Press DROP IT to feel it.</p>
 </header>
 
-<!-- Controls -->
+<!-- Clamp meter -->
+<div class="clamp-section">
+  <div class="clamp-label" id="clamp-state">System nominal</div>
+  <div class="clamp-bar" role="img" aria-label="Audio level meter">
+    <span class="clamp-fill" id="clamp-fill"></span>
+  </div>
+</div>
+
+<!-- Drop counter -->
+<div class="drop-row">
+  <span class="drop-label">Drops triggered</span>
+  <span class="drop-count" id="drop-count">0</span>
+</div>
+
+<!-- Controls row 1: Play / Drop It -->
 <div class="ctrl-bar">
   <button class="btn" id="btn-play" aria-label="Play/Pause">▶ Play</button>
-  <button class="btn outline" id="btn-clear" aria-label="Clear grid">Clear</button>
-  <button class="btn outline" id="btn-mute" aria-label="Mute/Unmute">🔊</button>
+  <button class="btn drop-btn" id="btn-drop" aria-label="Trigger the drop" disabled>DROP IT</button>
+</div>
+
+<!-- Controls row 2: BPM + Mute + Clear -->
+<div class="ctrl-bar" style="gap:var(--f13)">
   <div class="sr-wrap">
     <label for="sr-val">BPM</label>
     <button class="btn outline" id="btn-sr-down" aria-label="Decrease BPM">−</button>
     <span class="sr-val" id="sr-val" aria-live="polite">120</span>
     <button class="btn outline" id="btn-sr-up" aria-label="Increase BPM">+</button>
   </div>
+  <button class="btn outline" id="btn-clear" aria-label="Clear grid">Clear</button>
+  <button class="btn outline" id="btn-mute" aria-label="Mute/Unmute">🔊</button>
 </div>
 
-<!-- Hard clamp visual -->
-<div class="clamp-bar" role="img" aria-label="Audio level meter">
-  <span class="clamp-fill" id="clamp-fill"></span>
+<!-- Presets -->
+<div class="preset-row">
+  <button class="btn preset" data-preset="classic">Classic</button>
+  <button class="btn preset" data-preset="half">Half-Time</button>
+  <button class="btn preset" data-preset="buildup">Build-Up</button>
 </div>
 
 <!-- Sequencer grid -->
 <div class="grid-wrap">
-  <div class="seq-grid" id="grid" role="grid" aria-label="16-step beat sequencer">
-    <!-- Rendered by JS -->
-  </div>
+  <div class="seq-grid" id="grid" role="grid" aria-label="16-step beat sequencer"></div>
 </div>
 
-<footer class="footer">ystackai · procedural audio · zero dependencies</footer>
+<footer class="footer">ystackai · procedural audio · zero dependencies · the pipeline's inevitable</footer>
 
 <script>
 (function(){
@@ -182,19 +254,23 @@ body{
   const MIN_BPM = 60, MAX_BPM = 240;
 
   /* ── State ──────────────────────────────────────────────── */
-  let grid = {};        // grid[trackIdx][step] = boolean
-  let playing = false;
-  let currentStep = -1;
-  let bpm = 120;
-  let muted = false;
-  let timerID = null;
-  let audioCtx = null;
+  var grid = {};
+  var playing = false;
+  var currentStep = -1;
+  var bpm = 120;
+  var muted = false;
+  var timerID = null;
+  var audioCtx = null;
+  var phaseStep = 0;
+  var dropCount = 0;
+  var dropReady = false;
+  var dropCooldown = false;
 
-  /* ── DOM refs (resolved on init) ───────────────────────── */
-  let elGrid, elPlay, elSrv, elClamp;
+  /* ── DOM refs ───────────────────────────────────────────── */
+  var elGrid, elPlay, elSrv, elClamp, elClampState, elFlash, elDropText, elDropCount, elBtnDrop;
 
   /* ══════════════════════════════════════════════════════════
-   *  Audio engine — procedural, gated with hard clamp
+   *  Audio engine — procedural, hard-clamped, phase-safe
    * ══════════════════════════════════════════════════════════ */
 
   function ensureAudioCtx(){
@@ -204,16 +280,15 @@ body{
     if(audioCtx.state === 'suspended') audioCtx.resume();
   }
 
-  // Hard clamp: limits gain to prevent clipping
-  const HARD_CLAMP_MAX = 0.85;
+  var HARD_CLAMP_MAX = 0.85;
   function safeGain(g){ return Math.min(g, HARD_CLAMP_MAX); }
 
-  // ─ Kick ──────────────────────────────────────────────────
+  /* ─ Kick ─────────────────────────────────────────────────── */
   function playKick(time){
     if(!audioCtx || muted) return 0;
-    const t = time || audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const g   = audioCtx.createGain();
+    var t = time || audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var g   = audioCtx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(160, t);
     osc.frequency.exponentialRampToValueAtTime(30, t + 0.12);
@@ -224,17 +299,17 @@ body{
     return 0.8;
   }
 
-  // ─ Hi-Hat ────────────────────────────────────────────────
+  /* ─ Hi-Hat ───────────────────────────────────────────────── */
   function playHihat(time){
     if(!audioCtx || muted) return 0;
-    const t = time || audioCtx.currentTime;
-    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.15, audioCtx.sampleRate);
-    const d = buf.getChannelData(0);
-    for(let i=0;i<d.length;i++) d[i] = (Math.random()*2 - 1);
-    const src = audioCtx.createBufferSource(); src.buffer = buf;
-    const filt = audioCtx.createBiquadFilter();
+    var t = time || audioCtx.currentTime;
+    var buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.15, audioCtx.sampleRate);
+    var d = buf.getChannelData(0);
+    for(var i=0;i<d.length;i++) d[i] = (Math.random()*2 - 1);
+    var src = audioCtx.createBufferSource(); src.buffer = buf;
+    var filt = audioCtx.createBiquadFilter();
     filt.type='highpass'; filt.frequency.value = 8000;
-    const g = audioCtx.createGain();
+    var g = audioCtx.createGain();
     g.gain.setValueAtTime(safeGain(0.3), t);
     g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
     src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
@@ -242,25 +317,23 @@ body{
     return 0.3;
   }
 
-  // ─ Snare ─────────────────────────────────────────────────
+  /* ─ Snare ────────────────────────────────────────────────── */
   function playSnare(time){
     if(!audioCtx || muted) return 0;
-    const t = time || audioCtx.currentTime;
-    // Tone
-    const osc = audioCtx.createOscillator();
-    const tg = audioCtx.createGain();
+    var t = time || audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var tg = audioCtx.createGain();
     osc.type='triangle'; osc.frequency.value=220;
     tg.gain.setValueAtTime(safeGain(0.5), t);
     tg.gain.exponentialRampToValueAtTime(0.001, t+0.15);
     osc.connect(tg); tg.connect(audioCtx.destination);
     osc.start(t); osc.stop(t+0.15);
-    // Noise sweep
-    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate*0.2, audioCtx.sampleRate);
-    const d = buf.getChannelData(0);
-    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
-    const ns = audioCtx.createBufferSource(); ns.buffer=buf;
-    const nf = audioCtx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=4000; nf.Q.value=1.2;
-    const ng = audioCtx.createGain();
+    var buf = audioCtx.createBuffer(1, audioCtx.sampleRate*0.2, audioCtx.sampleRate);
+    var d = buf.getChannelData(0);
+    for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
+    var ns = audioCtx.createBufferSource(); ns.buffer=buf;
+    var nf = audioCtx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=4000; nf.Q.value=1.2;
+    var ng = audioCtx.createGain();
     ng.gain.setValueAtTime(safeGain(0.45), t);
     ng.gain.exponentialRampToValueAtTime(0.001, t+0.2);
     ns.connect(nf); nf.connect(ng); ng.connect(audioCtx.destination);
@@ -268,17 +341,15 @@ body{
     return 0.55;
   }
 
-  // ─ Synth / Oscillator ────────────────────────────────────
+  /* ─ Synth / Oscillator ───────────────────────────────────── */
   function playOsc(time){
     if(!audioCtx || muted) return 0;
-    const t = time || audioCtx.currentTime;
-    // Dual oscillator for body
-    const o1 = audioCtx.createOscillator();
-    const o2 = audioCtx.createOscillator();
-    const g  = audioCtx.createGain();
-    o1.type='sawtooth'; o1.frequency.value=261.63; // C5
-    o2.type='square';   o2.frequency.value=392;     // G5
-    // Phase callback simulation via slight detune
+    var t = time || audioCtx.currentTime;
+    var o1 = audioCtx.createOscillator();
+    var o2 = audioCtx.createOscillator();
+    var g  = audioCtx.createGain();
+    o1.type='sawtooth'; o1.frequency.value=261.63;
+    o2.type='square';   o2.frequency.value=392;
     o2.detune.value = 8 + Math.random()*-16;
     g.gain.setValueAtTime(safeGain(0.15), t);
     g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
@@ -288,17 +359,43 @@ body{
     return 0.15;
   }
 
-  const soundMap = [playKick, playHihat, playSnare, playOsc];
+  /* ─ Drop chord: the big moment ───────────────────────────── */
+  function playDrop(time){
+    if(!audioCtx || muted) return;
+    var t = time || audioCtx.currentTime;
+    var notes = [130.81, 164.81, 196, 261.63, 329.63, 392];
+    notes.forEach(function(freq, i){
+      var osc = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      osc.type = i < 2 ? 'sawtooth' : 'sine';
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(safeGain(i < 2 ? 0.2 : 0.12), t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 1.2 + i * 0.1);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 1.5);
+    });
+    var buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.5, audioCtx.sampleRate);
+    var d = buf.getChannelData(0);
+    for(var i=0;i<d.length;i++) d[i] = (Math.random()*2 - 1);
+    var src = audioCtx.createBufferSource(); src.buffer = buf;
+    var filt = audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=2000;
+    var g = audioCtx.createGain();
+    g.gain.setValueAtTime(safeGain(0.3), t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
+    src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+    src.start(t); src.stop(t + 1);
+  }
+
+  var soundMap = [playKick, playHihat, playSnare, playOsc];
 
   /* ══════════════════════════════════════════════════════════
    *  Grid UI
    * ══════════════════════════════════════════════════════════ */
 
-   function initGrid(){
+  function initGrid(){
     elGrid = document.getElementById('grid');
     elGrid.innerHTML = '';
 
-    // Step number header row
     var corner = document.createElement('div');
     corner.className = 'cell-head';
     elGrid.appendChild(corner);
@@ -309,7 +406,6 @@ body{
       elGrid.appendChild(h);
     }
 
-    // Track rows
     TRACKS.forEach(function(tr, ti){
       grid[ti] = new Array(STEPS).fill(false);
       var lbl = document.createElement('div');
@@ -335,27 +431,23 @@ body{
     });
   }
 
-   function onCellTap(e){
-    var cell   = e.currentTarget;
-    var ti     = +cell.dataset.track;
-    var step   = +cell.dataset.step;
+  function onCellTap(e){
+    var cell    = e.currentTarget;
+    var ti      = +cell.dataset.track;
+    var step    = +cell.dataset.step;
     grid[ti][step] = !grid[ti][step];
     cell.classList.toggle('on', grid[ti][step]);
     cell.setAttribute('aria-label', TRACKS[ti].label + ' step '+(step+1)+(grid[ti][step]?' on':' off'));
 
-     // Immediate sonic feedback
     ensureAudioCtx();
     var level = soundMap[ti](audioCtx.currentTime);
-
-     // Clamp flash
     flashClamp(level || 0);
-   }
+    updateDropReadiness();
+  }
 
   /* ══════════════════════════════════════════════════════════
    *  Playback — phase-locked step scheduler
-   * ═════════───────────────────────────────────────────────── */
-
-  let phaseStep = 0;
+   * ═════════────────────────────────────────────────────────── */
 
   function scheduleStep(){
     var step = phaseStep % STEPS;
@@ -369,11 +461,15 @@ body{
       }
     }
     flashClamp(peak);
-
-    // Visual playhead
     updatePlayhead(step);
-
     phaseStep++;
+
+      // Check if we've completed a full loop = drop ready
+    if(phaseStep > 0 && phaseStep % STEPS === 0){
+      dropReady = true;
+      elBtnDrop.disabled = false;
+      elBtnDrop.classList.add('pulse');
+    }
   }
 
   function updatePlayhead(step){
@@ -388,7 +484,7 @@ body{
     if(audioCtx.state === 'suspended') audioCtx.resume();
     playing = true;
     phaseStep = 0;
-    var intervalMs = (60 / bpm / 4) * 1000; // 16th notes
+    var intervalMs = (60 / bpm / 4) * 1000;
     scheduleStep();
     timerID = setInterval(scheduleStep, intervalMs);
     elPlay.textContent = '⏸ Pause';
@@ -399,17 +495,75 @@ body{
     clearInterval(timerID);
     timerID = null;
     elPlay.textContent = '▶ Play';
-    // Clear playhead
     elGrid.querySelectorAll('.cell.here').forEach(function(c){ c.classList.remove('here'); });
     currentStep = -1;
+    elBtnDrop.disabled = true;
+    elBtnDrop.classList.remove('pulse');
+    dropReady = false;
+  }
+
+  function updateDropReadiness(){
+    var hasAny = false;
+    for(var ti=0; ti<TRACKS.length; ti++){
+      for(var s=0; s<STEPS; s++){
+        if(grid[ti][s]){ hasAny = true; break; }
+        if(hasAny) break;
+      }
+      if(hasAny) break;
+    }
+    if(hasAny && !playing){
+      elBtnDrop.disabled = false;
+      elBtnDrop.classList.remove('pulse');
+    } else if(!hasAny){
+      elBtnDrop.disabled = true;
+      elBtnDrop.classList.remove('pulse');
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+   *  Drop mechanism — the big audiovisual moment
+   * ══════════════════════════════════════════════════════════ */
+
+  function triggerDrop(){
+    if(dropCooldown) return;
+    dropCooldown = true;
+    dropCount++;
+    elDropCount.textContent = dropCount;
+
+      // Audio: big chord + impact
+    ensureAudioCtx();
+    playDrop(audioCtx.currentTime);
+
+      // Visual: flash + text
+    elFlash.classList.add('active');
+    elDropText.classList.add('active');
+    elClamp.classList.add('drop');
+
+      // Clamp meter: spike to max
+    flashClamp(HARD_CLAMP_MAX);
+
+      // Reset after animation
+    setTimeout(function(){
+      elFlash.classList.remove('active');
+      elDropText.classList.remove('active');
+      elClamp.classList.remove('drop');
+    }, 1500);
+
+    setTimeout(function(){
+      dropCooldown = false;
+    }, 2000);
+
+    elBtnDrop.disabled = true;
+    elBtnDrop.classList.remove('pulse');
+    dropReady = false;
   }
 
   /* ══════════════════════════════════════════════════════════
    *  Clamp meter
    * ══════════════════════════════════════════════════════════ */
 
-  let clampVal = 0;
-  let clampAnim = null;
+  var clampVal = 0;
+  var clampAnim = null;
 
   function flashClamp(value){
     clampVal = value;
@@ -422,6 +576,19 @@ body{
       var pct = Math.min(clampVal / HARD_CLAMP_MAX * 100, 100);
       elClamp.style.width = pct + '%';
       elClamp.classList.toggle('clip', pct > 95);
+
+        // Update clamp state label
+      if(clampVal > HARD_CLAMP_MAX * 0.9){
+        elClampState.textContent = 'Hard clamp engaged';
+        elClampState.style.color = '#ef4444';
+      } else if(clampVal > 0.1){
+        elClampState.textContent = 'Gain envelope holding';
+        elClampState.style.color = '#22c55e';
+      } else {
+        elClampState.textContent = 'System nominal';
+        elClampState.style.color = '';
+      }
+
       if(clampVal > 0.01){
         animateClamp();
       } else {
@@ -447,15 +614,15 @@ body{
   }
 
   /* ══════════════════════════════════════════════════════════
-   *  Persistence — localStorage
+   *  Persistence
    * ══════════════════════════════════════════════════════════ */
 
-  var STORAGE_KEY = 'beatgrid-data';
+  var STORAGE_KEY = 'beatgrid-data-v2';
 
   function savePattern(){
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ grid: grid, bpm: bpm }));
-    } catch(e){ /* quota exceeded, ignore */ }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ grid: grid, bpm: bpm, dropCount: dropCount }));
+    } catch(e){}
   }
 
   function loadPattern(){
@@ -466,6 +633,8 @@ body{
       if(d.grid && d.bpm){
         bpm = Math.max(MIN_BPM, Math.min(MAX_BPM, d.bpm));
         elSrv.textContent = bpm;
+        if(d.dropCount) dropCount = d.dropCount;
+        elDropCount.textContent = dropCount;
         for(var ti=0; ti<TRACKS.length; ti++){
           for(var s=0; s<STEPS; s++){
             var v = !!d.grid[ti][s];
@@ -477,12 +646,12 @@ body{
         }
         return true;
       }
-    } catch(e){ /* corrupt data, ignore */ }
+    } catch(e){}
     return false;
   }
 
   /* ══════════════════════════════════════════════════════════
-   *  Presets — a few starting patterns
+   *  Presets
    * ══════════════════════════════════════════════════════════ */
 
   var PRESETS = {
@@ -498,29 +667,35 @@ body{
       snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1],
       synth: [0,0,0,0, 0,0,0,1, 0,0,0,0, 0,1,0,0],
     },
+    buildup: {
+      kick:  [1,0,0,0, 1,0,1,0, 1,0,1,0, 1,1,1,1],
+      hihat: [0,0,1,0, 0,1,0,1, 1,0,1,0, 1,1,1,1],
+      snare: [0,0,0,0, 0,0,0,0, 0,0,0,0, 1,0,1,1],
+      synth: [0,0,0,1, 0,0,1,0, 0,1,0,1, 0,1,0,1],
+    },
   };
 
   function loadPreset(name){
     var p = PRESETS[name]; if(!p) return;
-    // Reset grid
     for(var ti=0; ti<TRACKS.length; ti++){
       for(var s=0; s<STEPS; s++){ grid[ti][s] = false; }
     }
-    // Apply preset
     TRACKS.forEach(function(tr, ti){
       var arr = p[tr.id]; if(!arr) return;
       arr.forEach(function(v, s){
-        if(v){
-          grid[ti][s] = true;
-        }
+        if(v){ grid[ti][s] = true; }
       });
     });
-    // Re-render all cells
     var cells = elGrid.querySelectorAll('.cell');
     cells.forEach(function(c){
       var ti = +c.dataset.track, s = +c.dataset.step;
       c.classList.toggle('on', !!grid[ti][s]);
     });
+      // Highlight active preset button
+    document.querySelectorAll('.btn.preset').forEach(function(b){
+      b.classList.toggle('active', b.dataset.preset === name);
+    });
+    updateDropReadiness();
     savePattern();
   }
 
@@ -531,18 +706,32 @@ body{
   function init(){
     initGrid();
 
-    elPlay  = document.getElementById('btn-play');
-    elSrv   = document.getElementById('sr-val');
-    elClamp = document.getElementById('clamp-fill');
+    elPlay       = document.getElementById('btn-play');
+    elSrv        = document.getElementById('sr-val');
+    elClamp      = document.getElementById('clamp-fill');
+    elClampState  = document.getElementById('clamp-state');
+    elFlash      = document.getElementById('flash-overlay');
+    elDropText   = document.getElementById('drop-text');
+    elDropCount  = document.getElementById('drop-count');
+    elBtnDrop    = document.getElementById('btn-drop');
 
-    // Check localStorage
+      // Check localStorage; fall back to classic preset
     var loaded = loadPattern();
     if(!loaded){
       loadPreset('classic');
+    } else {
+        // Clear preset highlights if loaded from storage
+      document.querySelectorAll('.btn.preset').forEach(function(b){ b.classList.remove('active'); });
+      updateDropReadiness();
     }
 
     elPlay.addEventListener('click', function(){
       if(playing) stopPlayback(); else startPlayback();
+    });
+
+    elBtnDrop.addEventListener('click', function(){
+      ensureAudioCtx();
+      triggerDrop();
     });
 
     document.getElementById('btn-clear').addEventListener('click', function(){
@@ -550,7 +739,9 @@ body{
         for(var s=0; s<STEPS; s++){ grid[ti][s] = false; }
       }
       elGrid.querySelectorAll('.cell.on').forEach(function(c){ c.classList.remove('on'); });
+      document.querySelectorAll('.btn.preset').forEach(function(b){ b.classList.remove('active'); });
       if(playing) stopPlayback();
+      updateDropReadiness();
       savePattern();
     });
 
@@ -562,16 +753,22 @@ body{
     document.getElementById('btn-sr-down').addEventListener('click', function(){ setBpm(bpm - 5); savePattern(); });
     document.getElementById('btn-sr-up').addEventListener('click',   function(){ setBpm(bpm + 5); savePattern(); });
 
-    // Preset buttons via keyboard shortcuts
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'p' && !e.ctrlKey && !e.metaKey && document.activeElement === document.body){
-        if(playing) stopPlayback(); else startPlayback();
-      }
-      if(e.key === '1' && document.activeElement === document.body) loadPreset('classic');
-      if(e.key === '2' && document.activeElement === document.body) loadPreset('half');
+      // Preset buttons
+    document.querySelectorAll('.btn.preset').forEach(function(b){
+      b.addEventListener('click', function(){ loadPreset(this.dataset.preset); });
     });
 
-    // Save on any grid change
+      // Keyboard
+    document.addEventListener('keydown', function(e){
+      if(document.activeElement !== document.body) return;
+      if(e.key === 'p') { if(playing) stopPlayback(); else startPlayback(); }
+      if(e.key === 'd') { ensureAudioCtx(); triggerDrop(); }
+      if(e.key === '1') loadPreset('classic');
+      if(e.key === '2') loadPreset('half');
+      if(e.key === '3') loadPreset('buildup');
+    });
+
+      // Save on grid interaction
     elGrid.addEventListener('pointerdown', function(){ setTimeout(savePattern, 50); });
   }
 
