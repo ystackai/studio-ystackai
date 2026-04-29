@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sine Sweep — ystackai</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="grid-overlay"></div>
+
+    <main class="sweep-scene">
+        <header class="sweep-header">
+            <h1 class="sweep-title">Sine Sweep</h1>
+            <p class="sweep-subtitle">Verify the gain envelope holds against the hard clamp.</p>
+        </header>
+
+        <div class="sweep-stage">
+            <canvas id="sweepCanvas" aria-label="Sine sweep waveform visualization"></canvas>
+
+            <div class="clamp-indicator" id="clampIndicator">
+                <div class="clamp-line" id="clampLine"></div>
+                <span class="clamp-label">HARD_CLAMP</span>
+            </div>
+
+            <div class="phase-display" id="phaseDisplay">
+                <span class="phase-value" id="phaseValue">0.000</span>
+                <span class="phase-unit">radians</span>
+            </div>
+        </div>
+
+        <div class="sweep-controls">
+            <button class="sweep-btn" id="sweepBtn" aria-label="Run sine sweep">Run Sweep</button>
+            <button class="mute-btn" id="muteBtn" aria-label="Toggle mute" title="Mute">♪</button>
+        </div>
+
+        <div class="sweep-status" id="sweepStatus" aria-live="polite">Ready.</div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
