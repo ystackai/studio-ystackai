@@ -8,15 +8,18 @@
 var CONFIG = {
     cols: 12,
     baseFreq: 110,
-    attackTime: 0.005,
-    decayTime: 0.15,
+    attackTime: 0.003,
+    decayTime: 0.12,
     sustainLevel: 0.01,
-    releaseTime: 0.3,
+    releaseTime: 0.25,
     waveFreq: 2.5,
     amp: 40,
     maxPhase: 1,
     shiftInterval: 2000,
     phasesPerCycle: 4,
+    subGain: 0.45,
+    noiseDuration: 0.08,
+    distortionAmount: 3,
 };
 
 // ── State ───────────────────────────────────────────
@@ -32,48 +35,80 @@ var state = {
 };
 
 // ── Audio ───────────────────────────────────────────
-var ctx       = null;
-var osc       = null;
-var gain      = null;
-var oscFreq   = null;
-var oscGain   = null;
-var phaseTime = 0;
+var ctx        = null;
+var osc        = null;
+var gain       = null;
+var oscFreq    = null;
+var oscGain    = null;
+var subOsc     = null;
+var subGain     = null;
+var distortion  = null;
+var phaseTime   = 0;
+var kickPhase   = 0; // 0..1, driven by kick envelope
+
+function makeDistortionCurve(amount) {
+    var n = 44100;
+    var curve = new Float32Array(n);
+    var deg = Math.PI / 180;
+    for (var i = 0; i < n; i++) {
+        var x = (i * 2) / n - 1;
+        curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
+    }
+    return curve;
+}
 
 function initAudio() {
     if (ctx) return;
     ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-     // Kick oscillator chain
-    osc   = ctx.createOscillator();
-    gain  = ctx.createGain();
-    oscFreq = ctx.createOscillator();
-    oscGain = ctx.createGain();
+      // Distortion node — phase callback routed here
+    distortion = ctx.createWaveShaper();
+    distortion.curve = makeDistortionCurve(CONFIG.distortionAmount);
+    distortion.oversample = '4x';
 
-     // Modulation: oscFreq drives osc pitch
+      // Main kick oscillator chain
+    osc       = ctx.createOscillator();
+    gain      = ctx.createGain();
+    oscFreq   = ctx.createOscillator();
+    oscGain   = ctx.createGain();
+
+      // Modulation: oscFreq drives osc pitch
     oscFreq.type = 'sine';
     oscFreq.frequency.value = CONFIG.waveFreq;
     oscGain.gain.value = 15;
     oscFreq.connect(oscGain);
     oscGain.connect(osc.frequency);
 
-     // Main voice
+      // Sub-oscillator for low-end punch
+    subOsc  = ctx.createOscillator();
+    subGain = ctx.createGain();
+    subOsc.type = 'sine';
+    subOsc.frequency.value = 55;
+    subOsc.connect(subGain);
+    subGain.gain.value = 0;
+    subGain.connect(distortion);
+
+      // Main voice through distortion
     osc.type = 'triangle';
     osc.frequency.value = CONFIG.baseFreq;
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(distortion);
+    distortion.connect(ctx.destination);
 
     gain.gain.value = 0;
     osc.start();
     oscFreq.start();
+    subOsc.start();
 }
 
 // ── Kick envelope (phase callback) ──────────────────
 function playKick() {
     if (!ctx || state.muted) return;
     var now = ctx.currentTime;
-    var at  = CONFIG.attackTime;
-    var dt  = CONFIG.decayTime;
+    var at   = CONFIG.attackTime;
+    var dt   = CONFIG.decayTime;
 
+       // Main voice kick envelope
     gain.gain.cancelScheduledValues(now);
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(0.5, now + at);
@@ -82,6 +117,21 @@ function playKick() {
         now + at + dt
     );
     gain.gain.exponentialRampToValueAtTime(0.01, now + at + dt + CONFIG.releaseTime);
+
+       // Sub-oscillator kick envelope — deeper attack
+    subGain.gain.cancelScheduledValues(now);
+    subGain.gain.setValueAtTime(0, now);
+    subGain.gain.linearRampToValueAtTime(CONFIG.subGain, now + at * 1.5);
+    subGain.gain.exponentialRampToValueAtTime(0.01, now + at * 1.5 + dt + 0.05);
+
+       // Phase callback: kickPhase drives waveform distortion strength
+    kickPhase = 1;
+    setTimeout(function() {
+        kickPhase = 0;
+    }, (at + dt + CONFIG.releaseTime) * 1000);
+
+       // Transient noise click for attack definition
+    playNoise(at * 6);
 }
 
 // ── Sonic feedback tokens ───────────────────────────
@@ -97,6 +147,24 @@ function playTone(freq, duration, vol) {
     g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
     o.start(ctx.currentTime);
     o.stop(ctx.currentTime + duration);
+}
+
+function playNoise(duration) {
+    if (!ctx || state.muted) return;
+    var bufferSize = ctx.sampleRate * (duration || CONFIG.noiseDuration);
+    var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    var data = buffer.getChannelData(0);
+    for (var i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+     }
+    var src = ctx.createBufferSource();
+    src.buffer = buffer;
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(0.15, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (duration || CONFIG.noiseDuration));
+    src.connect(g);
+    g.connect(ctx.destination);
+    src.start(ctx.currentTime);
 }
 
 // ── Visual system ───────────────────────────────────
@@ -152,28 +220,31 @@ function drawWave(t) {
         c.stroke();
     }
 
-     // Draw waveform — phase-modulated sine
-    var amp    = state.currentAmplitude * (1 + state.phase * 2);
-    var freq   = state.currentFreq;
+       // Draw waveform — phase-modulated sine with kick-phase distortion
+    var amp     = state.currentAmplitude * (1 + state.phase * 2);
+    var freq    = state.currentFreq;
     var centerY = H / 2;
+    var kickDistort = kickPhase * 20; // displacement amplitude from kick
 
     c.beginPath();
-    c.lineWidth = 2.5;
-    var hueShift = 245 + state.phase * 40;
-    c.strokeStyle = 'hsl(' + hueShift + ', 70%, 65%)';
-    c.shadowColor  = 'hsl(' + hueShift + ', 70%, 65%)';
-    c.shadowBlur   = 8 + state.phase * 16;
+    c.lineWidth = 2.5 + state.phase * 1.5;
+    var hueShift = 245 + state.phase * 40 + kickPhase * 15;
+    c.strokeStyle = 'hsl(' + hueShift + ', 70%, ' + (55 + state.phase * 15) + '%)';
+    c.shadowColor   = 'hsl(' + hueShift + ', 70%, ' + (55 + state.phase * 15) + '%)';
+    c.shadowBlur    = 8 + state.phase * 16 + kickPhase * 24;
 
     for (var x = 0; x <= W; x++) {
         var tNorm = x / W;
-         // Composite wave: base sine + phase-locked kick
+          // Composite wave: base sine + phase-locked kick distortion
         var y = centerY
-            + Math.sin(tNorm * Math.PI * 4 + t * freq * 0.01) * amp
-            + Math.sin(tNorm * Math.PI * 2 + state.phase * 6.28) * amp * 0.3;
+             + Math.sin(tNorm * Math.PI * 4 + t * freq * 0.01) * amp
+             + Math.sin(tNorm * Math.PI * 2 + state.phase * 6.28) * amp * 0.3
+             + Math.sin(tNorm * Math.PI * 8 + t * 0.05) * kickDistort
+             + (Math.random() - 0.5) * kickPhase * 4;
 
         if (x === 0) c.moveTo(x, y);
         else c.lineTo(x, y);
-    }
+     }
     c.stroke();
     c.shadowBlur = 0;
 
