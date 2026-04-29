@@ -1,0 +1,91 @@
+:root {
+  --bg: #0a0a0a;
+  --fg: #fafafa;
+  --accent: #ff4d4d;
+  --subtle: #555;
+  --space-fibonacci-5: 5px;
+  --clamp-threshold: 0.78;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: monospace; overflow: hidden; }
+#app { position: relative; width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#hud { position: absolute; top: 0; left: 0; right: 0; padding: calc(var(--space-fibonacci-5) * 3); display: flex; justify-content: space-between; align-items: baseline; z-index: 2; }
+#title { font-size: clamp(14px, 3vw, 22px); font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; }
+#sub { font-size: clamp(10px, 2vw, 14px); color: var(--subtle); margin-left: auto; padding-left: 2rem; }
+
+#grid {
+  width: min(90vw, 90vh, 480px);
+  height: min(90vw, 90vh, 480px);
+  cursor: pointer;
+  z-index: 1;
+}
+
+#phase-bar {
+  position: absolute;
+  bottom: calc(var(--space-fibonacci-5) * 2);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(80vw, 360px);
+  height: 4px;
+  background: #222;
+  border-radius: 2px;
+  overflow: hidden;
+  z-index: 2;
+}
+#phase-fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.08s linear;
+}
+#phase-fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.08s linear;
+}
+
+#clamp {
+  position: absolute;
+  bottom: calc(var(--space-fibonacci-5) * 8);
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  border: 1px solid var(--fg);
+  color: var(--fg);
+  font-family: monospace;
+  font-size: clamp(11px, 1.6vw, 14px);
+  letter-spacing: 0.2em;
+  padding: calc(var(--space-fibonacci-5) * 2) calc(var(--space-fibonacci-5) * 4);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  z-index: 3;
+  -webkit-tap-highlight-color: transparent;
+}
+#clamp:hover, #clamp:focus { background: var(--fg); color: var(--bg); outline: none; }
+#clamp.clamped { border-color: var(--accent); animation: clampFlash 1.2s ease-out; }
+
+@keyframes clampFlash {
+  0% { background: var(--accent); color: #fff; box-shadow: 0 0 20px var(--accent); }
+  100% { background: transparent; box-shadow: none; }
+}
+
+.icon-btn {
+  position: absolute;
+  top: calc(var(--space-fibonacci-5) * 3);
+  right: calc(var(--space-fibonacci-5) * 3);
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 3;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 400px) {
+  #title { font-size: 14px; }
+  #sub { font-size: 11px; }
+  #clamp { font-size: 11px; padding: 8px 20px; }
+}
