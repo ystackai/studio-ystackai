@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Phase Patch — ystackai</title>
+   <style>
+     :root {
+       --c-bg: #0c0e14;
+       --c-surface: #141720;
+       --c-border: #1e2230;
+       --c-text: #e2e8f0;
+       --c-muted: #64748b;
+       --c-accent: #cbd5e1;
+       --c-chroma-1: #ef4444;
+       --c-chroma-2: #f97316;
+       --c-chroma-3: #eab308;
+       --c-chroma-4: #22c55e;
+       --c-chroma-5: #3b82f6;
+       --c-chroma-6: #a855f7;
+       --c-sync: #e2e8f0;
+       --c-drift: #f43f5e;
+       --c-success: #22c55e;
+       --space-1: 4px;
+       --space-2: 8px;
+       --space-3: 12px;
+       --space-4: 20px;
+       --space-6: 32px;
+       --space-8: 48px;
+       --ratio: 1.333;
+       --type-xs: 0.65rem;
+       --type-sm: 0.87rem;
+       --type-base: 1.16rem;
+       --type-lg: 1.55rem;
+     }
+     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+     body {
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-family: -apple-system, 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+     }
+     #app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-6);
+      max-width: 560px;
+      width: 100%;
+     }
+     #label {
+      font-size: var(--type-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--c-muted);
+      font-weight: 700;
+     }
+     #phase-display {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      font-size: var(--type-base);
+      font-variant-numeric: tabular-nums;
+     }
+     #phase-value {
+      font-weight: 800;
+      font-size: var(--type-lg);
+      transition: color 0.3s ease;
+     }
+     #phase-value.sync { color: var(--c-success); }
+     #phase-value.drift { color: var(--c-drift); }
+     #phase-value.locked { color: var(--c-accent); }
+
+     #grid-canvas-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-width: 400px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+     }
+     #grid-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+     }
+
+     #controls {
+      display: flex;
+      gap: var(--space-3);
+      width: 100%;
+      max-width: 400px;
+     }
+     .btn {
+      flex: 1;
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--c-border);
+      border-radius: 8px;
+      background: var(--c-surface);
+      color: var(--c-text);
+      font-size: var(--type-sm);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+     }
+     .btn:hover { border-color: var(--c-accent); }
+     .btn:active { transform: scale(0.97); }
+     .btn--patch { border-color: var(--c-success); color: var(--c-success); }
+     .btn--patch:hover { background: rgba(34,197,94,0.1); }
+     .btn--fracture { border-color: var(--c-drift); color: var(--c-drift); }
+     .btn--fracture:hover { background: rgba(244,63,94,0.1); }
+     .btn--reset { border-color: var(--c-muted); color: var(--c-muted); }
+
+     #score-row {
+      display: flex;
+      gap: var(--space-6);
+      font-size: var(--type-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--c-muted);
+     }
+     #score-row strong { color: var(--c-text); font-weight: 800; }
+
+     #status {
+      font-size: var(--type-xs);
+      color: var(--c-muted);
+      letter-spacing: 0.06em;
+      min-height: 1.2em;
+      transition: color 0.3s ease;
+     }
+     #status.warn { color: var(--c-drift); }
+     #status.good { color: var(--c-success); }
+     #status.locked { color: var(--c-accent); }
+
+     #footer-note {
+      font-size: 0.55rem;
+      color: var(--c-muted);
+      opacity: 0.5;
+      margin-top: var(--space-2);
+      font-style: italic;
+     }
+
+     #mute-btn {
+      position: fixed;
+      top: var(--space-3);
+      right: var(--space-3);
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--c-border);
+      background: var(--c-surface);
+      color: var(--c-muted);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+     }
+     #mute-btn:hover { border-color: var(--c-accent); }
+     #mute-btn.muted { border-color: var(--c-drift); color: var(--c-drift); }
+
+     @media (max-width: 480px) {
+      #app { padding: var(--space-4); gap: var(--space-3); }
+      .btn { padding: var(--space-2) var(--space-3); font-size: 0.75rem; }
+     }
+   </style>
+</head>
+<body>
+   <button id="mute-btn" aria-label="Toggle sound" title="Toggle sound">♫</button>
+
+   <div id="app">
+     <div id="label">Phase Oscillator — Patch or Fracture</div>
+
+     <div id="phase-display">
+       <span id="phase-value" class="sync">0.000</span>
+       <span style="color:var(--c-muted);font-size:var(--type-sm)">rad drift</span>
+     </div>
+
+     <div id="grid-canvas-wrap">
+       <canvas id="grid-canvas" width="400" height="400"></canvas>
+     </div>
+
+     <div id="controls">
+       <button class="btn btn--patch" id="btn-patch">Patch</button>
+       <button class="btn btn--fracture" id="btn-fracture">24-Col Fracture</button>
+       <button class="btn btn--reset" id="btn-reset">Reset</button>
+     </div>
+
+     <div id="score-row">
+       <span>Cycles: <strong id="score-cycles">0</strong></span>
+       <span>Drift: <strong id="score-drift">0.00</strong></span>
+       <span>Score: <strong id="score-score">0</strong></span>
+     </div>
+
+     <div id="status">Oscillator locked — system nominal</div>
+     <div id="footer-note">A grid that liberates. Less, but better. — Schneider-VD-01</div>
+   </div>
+
+   <script>
+   (function() {
+     'use strict';
+
+      // ─── Audio Engine ──────────────────────────────────────────────────
+     var AudioCtx = window.AudioContext || window.webkitAudioContext;
+     var audioCtx = null;
+     var masterGain = null;
+     var muted = false;
+
+     function initAudio() {
+       if (audioCtx) return;
+       try {
+         audioCtx = new AudioCtx();
+         masterGain = audioCtx.createGain();
+         masterGain.gain.value = 0.2;
+         masterGain.connect(audioCtx.destination);
+        } catch(e) {}
+      }
+
+     function ensureRunning() {
+       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      }
+
+     function playTone(freq, dur, type, vol) {
+       if (!audioCtx || muted) return;
+       ensureRunning();
+       var now = audioCtx.currentTime;
+       var osc = audioCtx.createOscillator();
+       var gain = audioCtx.createGain();
+       osc.type = type || 'sine';
+       osc.frequency.value = freq;
+       gain.gain.setValueAtTime(vol || 0.15, now);
+       gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+       osc.connect(gain).connect(masterGain);
+       osc.start(now);
+       osc.stop(now + dur);
+      }
+
+     function playPatch() {
+       playTone(523, 0.12, 'sine', 0.2);
+       setTimeout(function(){ playTone(659, 0.15, 'sine', 0.18); }, 60);
+       setTimeout(function(){ playTone(784, 0.2, 'sine', 0.15); }, 120);
+      }
+
+     function playFracture() {
+       playTone(180, 0.4, 'sawtooth', 0.2);
+       playTone(185, 0.35, 'square', 0.15);
+        // Dissonance beat
+       for (var i = 0; i < 4; i++) {
+         setTimeout(function(){ playTone(100 + i * 47, 0.15, 'sawtooth', 0.1); }, i * 80);
+        }
+      }
+
+     function playLock() {
+       [523, 659, 784, 1047].forEach(function(f, i) {
+         setTimeout(function(){ playTone(f, 0.3, 'sine', 0.18); }, i * 70);
+        });
+      }
+
+     function playTick(phaseAbs) {
+       var vol = Math.min(0.08 + phaseAbs * 0.5, 0.2);
+       playTone(440 + phaseAbs * 200, 0.04, 'triangle', vol);
+      }
+
+     function playReset() {
+       playTone(880, 0.1, 'triangle', 0.12);
+       setTimeout(function(){ playTone(660, 0.15, 'triangle', 0.1); }, 80);
+      }
+
+      // ─── Mute toggle ───────────────────────────────────────────────────
+     var muteBtn = document.getElementById('mute-btn');
+     muteBtn.addEventListener('click', function() {
+       muted = !muted;
+       muteBtn.textContent = muted ? '✕' : '♫';
+       muteBtn.classList.toggle('muted', muted);
+       if (!muted) initAudio();
+      });
+
+      // ─── Phase Oscillator State ────────────────────────────────────────
+     var phase = 0;            // Current phase offset (radians)
+     var driftRate = 0;        // How fast phase drifts per frame
+     var locked = false;       // Phase-locked state
+     var cycles = 0;           // Full rotations completed
+     var score = 0;            // Cumulative score
+     var omega = 0.03;         // Base angular velocity
+     var cols = 6;             // Grid columns (Schneider-approved 6-col)
+     var rows = 6;             // Grid rows
+     var cells = [];           // Current grid cell states
+     var fractureCols = 24;    // Chaotic 24-col mode
+     var fractureMode = false;
+     var animFrame = null;
+     var lastTime = 0;
+     var lockTimer = 0;        // Time remaining in locked state (frames)
+
+      // Color palette for cells (6 colors, mathematically related)
+     var PALETTE = ['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7'];
+     var PALETTE_DARK = ['#7f1d1d','#7c2d12','#713f12','#14532d','#1e3a5f','#4c1d95'];
+
+      // ─── Canvas Setup ──────────────────────────────────────────────────
+     var canvas = document.getElementById('grid-canvas');
+     var ctx = canvas.getContext('2d');
+     var W = 400, H = 400;
+     canvas.width = W;
+     canvas.height = H;
+
+      // High-DPI support
+     var dpr = window.devicePixelRatio || 1;
+     canvas.width = W * dpr;
+     canvas.height = H * dpr;
+     ctx.scale(dpr, dpr);
+
+      // ─── Grid Cell State ───────────────────────────────────────────────
+      function initCells() {
+        cells = [];
+        for (var r = 0; r < rows; r++) {
+          cells[r] = [];
+          for (var c = 0; c < cols; c++) {
+            cells[r][c] = { phase: 0, intensity: 0 };
+          }
+        }
+      }
+      initCells();
+
+      // ─── Oscillator Math ───────────────────────────────────────────────
+     function updatePhase(dt) {
+       if (locked) {
+         lockTimer -= dt;
+         phase *= 0.96; // exponential decay to zero
+         if (lockTimer <= 0 || Math.abs(phase) < 0.001) {
+           locked = false;
+           phase = 0;
+           driftRate = 0;
+          }
+        } else {
+          // Phase evolves based on driftRate
+          phase += driftRate * dt;
+          cycles = Math.floor(Math.abs(phase) / (Math.PI * 2));
+
+           // Natural drift accumulates slowly
+         driftRate += (0.0002 + Math.abs(phase) * 0.00005) * dt;
+         driftRate = Math.min(driftRate, 0.5);
+        }
+      }
+
+      // ─── Rendering ─────────────────────────────────────────────────────
+     function drawGrid() {
+       ctx.clearRect(0, 0, W, H);
+
+        // Background
+       ctx.fillStyle = '#0c0e14';
+       ctx.fillRect(0, 0, W, H);
+
+       var currentCols = fractureMode ? fractureCols : cols;
+       var currentRows = fractureMode ? Math.ceil(fractureCols * H / W) : rows;
+       var cellW = W / currentCols;
+       var cellH = H / currentRows;
+
+        // Draw grid lines
+       ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+       ctx.lineWidth = 0.5;
+       for (var x = 0; x <= currentCols; x++) {
+         ctx.beginPath();
+         ctx.moveTo(x * cellW, 0);
+         ctx.lineTo(x * cellW, H);
+         ctx.stroke();
+        }
+       for (var y = 0; y <= currentRows; y++) {
+         ctx.beginPath();
+         ctx.moveTo(0, y * cellH);
+         ctx.lineTo(W, y * cellH);
+         ctx.stroke();
+        }
+
+        // Fill cells with phase-driven color
+       var phaseAbs = Math.abs(phase);
+       for (var r = 0; r < rows; r++) {
+         for (var c = 0; c < cols; c++) {
+           var cell = cells[r][c];
+            // In fracture mode, scatter cells randomly
+           if (fractureMode) {
+             cellW = W / fractureCols;
+             cellH = H / (fractureCols * 2);
+             var fx = (c * 2 + Math.random()) * cellW;
+             var fy = r * cellH + Math.random() * cellH * 0.5;
+             var fi = Math.min(phaseAbs / Math.PI, 1);
+             ctx.fillStyle = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+             ctx.globalAlpha = 0.3 + fi * 0.7;
+             ctx.fillRect(fx, fy, cellW * 0.8, cellH * 0.8);
+            } else {
+             var cx = c * (W / cols);
+             var cy = r * (H / rows);
+             var cw = W / cols;
+             var ch = H / rows;
+
+              // Phase wave propagates diagonally
+             var wave = Math.sin(phase + (r + c) * 0.5) * 0.5 + 0.5;
+             var ci = Math.floor(wave * PALETTE.length);
+             ctx.fillStyle = wave > 0.3 ? PALETTE[ci % PALETTE.length] : PALETTE_DARK[ci % PALETTE_DARK.length];
+             ctx.globalAlpha = 0.4 + wave * 0.6;
+
+              // Cell offset based on phase drift (visualizes the fracture)
+             var offsetX = Math.sin(phase + r) * phaseAbs * 8;
+             var offsetY = Math.cos(phase + c) * phaseAbs * 8;
+
+             ctx.fillRect(
+               cx + 1 + offsetX,
+               cy + 1 + offsetY,
+               cw - 2,
+               ch - 2
+              );
+            }
+          }
+        }
+       ctx.globalAlpha = 1;
+
+        // Draw phase indicator ring (center overlay)
+       var cx = W / 2;
+       var cy = H / 2;
+       var ringR = 40;
+       ctx.beginPath();
+       ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+       ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+       ctx.lineWidth = 2;
+       ctx.stroke();
+
+        // Phase arc (how far we've drifted this cycle)
+       var arcAngle = phase % (Math.PI * 2);
+       ctx.beginPath();
+       ctx.arc(cx, cy, ringR, -Math.PI/2, -Math.PI/2 + arcAngle);
+       var arcColor = phaseAbs < 0.5 ? '#22c55e' : (phaseAbs < 2 ? '#eab308' : '#f43f5e');
+       ctx.strokeStyle = arcColor;
+       ctx.lineWidth = 3;
+       ctx.stroke();
+
+        // Phase needle
+       var needleAngle = phase;
+       var nx = cx + Math.cos(needleAngle - Math.PI/2) * ringR * 0.9;
+       var ny = cy + Math.sin(needleAngle - Math.PI/2) * ringR * 0.9;
+       ctx.beginPath();
+       ctx.moveTo(cx, cy);
+       ctx.lineTo(nx, ny);
+       ctx.strokeStyle = '#fff';
+       ctx.lineWidth = 1.5;
+       ctx.stroke();
+
+        // Center dot
+       ctx.beginPath();
+       ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+       ctx.fillStyle = arcColor;
+       ctx.fill();
+
+        // Mode label in corner
+       if (fractureMode) {
+         ctx.fillStyle = 'rgba(244,63,94,0.15)';
+         ctx.fillRect(0, 0, W, H);
+         ctx.fillStyle = '#f43f5e';
+         ctx.font = 'bold 10px system-ui';
+         ctx.fillText('24-COL FRACTURE', 8, 16);
+        } else if (locked) {
+         ctx.fillStyle = 'rgba(34,197,94,0.1)';
+         ctx.fillRect(0, 0, W, H);
+         ctx.fillStyle = '#22c55e';
+         ctx.font = 'bold 10px system-ui';
+         ctx.fillText('PHASE LOCKED', 8, 16);
+        }
+      }
+
+      // ─── UI Updates ────────────────────────────────────────────────────
+     var phaseEl = document.getElementById('phase-value');
+     var statusEl = document.getElementById('status');
+     var cyclesEl = document.getElementById('score-cycles');
+     var driftEl = document.getElementById('score-drift');
+     var scoreEl = document.getElementById('score-score');
+
+     function updateUI() {
+       var phaseAbs = Math.abs(phase);
+
+        // Phase display
+       phaseEl.textContent = phaseAbs.toFixed(3);
+       if (locked) {
+         phaseEl.className = 'locked';
+        } else if (phaseAbs < 0.5) {
+         phaseEl.className = 'sync';
+        } else if (phaseAbs < 2) {
+         phaseEl.className = 'sync';
+        } else {
+         phaseEl.className = 'drift';
+        }
+
+        // Status text
+       if (locked) {
+         statusEl.textContent = 'Phase-locked — system coherent (Schneider-VD-01)';
+         statusEl.className = 'locked';
+        } else if (fractureMode) {
+         statusEl.textContent = '24-col fracture active — grid is a sieve';
+         statusEl.className = 'warn';
+        } else if (phaseAbs < 0.3) {
+         statusEl.textContent = 'Oscillator locked — system nominal';
+         statusEl.className = 'good';
+        } else if (phaseAbs < 1) {
+         statusEl.textContent = 'Minor phase deviation — acceptable';
+         statusEl.className = '';
+        } else if (phaseAbs < 3) {
+         statusEl.textContent = 'Drift increasing — patch recommended';
+         statusEl.className = 'warn';
+        } else {
+         statusEl.textContent = 'CRITICAL: Grid fracture imminent — patch now';
+         statusEl.className = 'warn';
+        }
+
+        // Score row
+       cyclesEl.textContent = cycles;
+       driftEl.textContent = phaseAbs.toFixed(2);
+       scoreEl.textContent = score;
+      }
+
+      // ─── Game Loop ────────────────────────────────────────────────────
+     function loop(timestamp) {
+       if (!lastTime) lastTime = timestamp;
+       var dt = Math.min((timestamp - lastTime) / 16.67, 3); // normalize to ~60fps, cap
+       lastTime = timestamp;
+
+       updatePhase(dt);
+       drawGrid();
+       updateUI();
+
+        // Play tick at phase boundaries
+       if (phase > Math.PI || phase < -Math.PI) {
+         playTick(Math.abs(phase % (Math.PI * 2)));
+        }
+
+       animFrame = requestAnimationFrame(loop);
+      }
+
+     function startLoop() {
+       if (animFrame) return;
+       lastTime = 0;
+       animFrame = requestAnimationFrame(loop);
+      }
+
+     function stopLoop() {
+       if (animFrame) {
+         cancelAnimationFrame(animFrame);
+         animFrame = null;
+        }
+      }
+
+      // ─── Controls ──────────────────────────────────────────────────────
+     document.getElementById('btn-patch').addEventListener('click', function() {
+       initAudio();
+       if (fractureMode) {
+         // Patching out of fracture mode = big reward
+         fractureMode = false;
+         phase *= 0.3;
+         driftRate *= 0.2;
+         locked = true;
+         lockTimer = 180; // ~3 seconds at 60fps
+         score += 50;
+         playLock();
+        } else {
+         // Reducing drift
+         phase *= 0.7;
+         driftRate *= 0.5;
+         score += Math.floor(10 * (1 - Math.min(Math.abs(phase) / Math.PI, 1)));
+         playPatch();
+        }
+      });
+
+     document.getElementById('btn-fracture').addEventListener('click', function() {
+       initAudio();
+       fractureMode = true;
+       driftRate += 0.08;
+       phase += Math.random() * 2 - 1;
+       playFracture();
+      });
+
+     document.getElementById('btn-reset').addEventListener('click', function() {
+       initAudio();
+       phase = 0;
+       driftRate = 0;
+       locked = false;
+       lockTimer = 0;
+       cycles = 0;
+       score = 0;
+       fractureMode = false;
+       initCells();
+       playReset();
+      });
+
+      // Keyboard support
+     document.addEventListener('keydown', function(e) {
+       if (e.key === ' ' || e.key === 'Enter') {
+         e.preventDefault();
+         initAudio();
+         document.getElementById('btn-patch').click();
+        } else if (e.key === 'f' || e.key === 'F') {
+         initAudio();
+         document.getElementById('btn-fracture').click();
+        } else if (e.key === 'r' || e.key === 'R') {
+         initAudio();
+         document.getElementById('btn-reset').click();
+        }
+      });
+
+      // Touch / pointer support on canvas
+     canvas.addEventListener('pointerdown', function(e) {
+       e.preventDefault();
+       initAudio();
+        // Tap top half = patch, bottom half = fracture
+       var rect = canvas.getBoundingClientRect();
+       var y = e.clientY - rect.top;
+       if (y < rect.height / 2) {
+         document.getElementById('btn-patch').click();
+        } else {
+         document.getElementById('btn-fracture').click();
+        }
+      });
+
+      // ─── Start ─────────────────────────────────────────────────────────
+     startLoop();
+   })();
+   </script>
+</body>
+</html>
