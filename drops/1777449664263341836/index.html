@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Beat Grid — ystackai</title>
+<style>
+:root{
+  --bg:#0a0a10;--surface:#111118;--border:rgba(99,102,241,0.15);
+  --accent:#6366f1;--accent-glow:#818cf8;--text:#e2e8f0;--muted:#64748b;
+  --f1:1px;--f2:1px;--f3:2px;--f5:3px;--f8:5px;--f13:8px;--f21:13px;--f34:21px;
+  --space-fibonacci-5:8px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden;-webkit-tap-highlight-color:transparent;
+}
+
+/* ── Header band ───────────────────────────────────────────────── */
+.hero{
+  width:100%;text-align:center;
+  padding:calc(var(--f21) * 2) calc(var(--f13));
+  background:linear-gradient(135deg,rgba(99,102,241,0.12) 0%,rgba(192,132,252,0.06) 50%,rgba(99,102,241,0.03) 100%);
+  border-bottom:1px solid var(--border);
+}
+.hero h1{
+  font-size:clamp(1.4rem,3.5vw,2rem);font-weight:900;letter-spacing:-0.04em;
+  background:linear-gradient(135deg,#a5b4fc,#c084fc);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero .tagline{font-size:.8rem;color:var(--muted);margin-top:var(--f5)}
+
+/* ── Controls bar ──────────────────────────────────────────────── */
+.ctrl-bar{
+  display:flex;align-items:center;gap:var(--f8);justify-content:center;
+  padding:var(--f13) calc(var(--f8));flex-wrap:wrap;width:100%;
+}
+.btn{
+  padding:var(--f5) var(--f13);font-size:.8rem;font-weight:700;font-family:inherit;
+  background:linear-gradient(135deg,#6366f1,#764ba2);color:#fff;border:none;border-radius:var(--f5);
+  cursor:pointer;transition:opacity .15s,transform .1s;letter-spacing:.01em;
+}
+.btn:hover{opacity:.9;transform:translateY(-1px)}
+.btn:active{opacity:1;transform:translateY(0)}
+.btn.outline{
+  background:transparent;border:1px solid var(--border);color:var(--accent-glow);
+}
+.sr-wrap{display:flex;align-items:center;gap:var(--f5)}
+.sr-wrap label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.sr-val{font-size:.85rem;font-weight:800;color:var(--accent-glow);min-width:2.5ch;text-align:center;font-variant-numeric:tabular-nums}
+
+/* ── Grid wrapper ──────────────────────────────────────────────── */
+.grid-wrap{
+  width:100%;max-width:760px;overflow-x:auto;padding:var(--f8);
+  display:flex;justify-content:center;
+}
+.seq-grid{
+  display:inline-grid;
+  grid-template-columns:auto repeat(16,var(--cell-w,42px));
+  gap:2px;
+}
+
+
+.cell-head{
+  display:flex;align-items:center;justify-content:flex-end;
+  padding-right:var(--f5);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;
+  min-width:52px;color:var(--muted);
+}
+.beat-col-head{
+  width:var(--cell-w,42px);text-align:center;font-size:.55rem;color:#334155;font-weight:600;
+  padding-bottom:2px;
+}
+.beat-col-head.down{color:#475569}
+
+.cell{
+  width:var(--cell-w,42px);height:var(--cell-h,28px);
+  border-radius:3px;cursor:pointer;
+  background:rgba(30,30,46,0.4);border:1px solid rgba(30,30,46,0.6);
+  transition:background .08s,box-shadow .08s,transform .06s;
+  -webkit-user-select:none;user-select:none;
+}
+.cell:hover{background:rgba(99,102,241,0.08);border-color:rgba(99,102,241,0.25)}
+
+.cell.on{
+  border-color:rgba(129,140,248,0.5);
+  box-shadow:0 0 6px rgba(99,102,241,0.25);
+}
+.cell.kick.on{background:rgba(250,204,21,0.45)}
+.cell.kick.on.here{background:#facc15;box-shadow:0 0 16px rgba(250,204,21,0.6)}
+
+.cell.hihat.on{background:rgba(96,165,250,0.45)}
+.cell.hihat.on.here{background:#60a5fa;box-shadow:0 0 16px rgba(96,165,250,0.6)}
+
+.cell.snare.on{background:rgba(251,113,133,0.45)}
+.cell.snare.on.here{background:#fb7185;box-shadow:0 0 16px rgba(251,113,133,0.6)}
+
+.cell.synth.on{background:rgba(129,240,248,0.4)}
+.cell.synth.on.here{background:#7fffe8;box-shadow:0 0 16px rgba(129,240,248,0.6)}
+
+.here:not(.on){background:rgba(99,102,241,0.06);border-color:rgba(99,102,241,0.15)}
+
+/* 4-beat grouping */
+.beat-col-head:nth-child(4n+2){color:#475569}
+
+/* ── Hard clamp indicator ─────────────────────────────────────── */
+.clamp-bar{
+  width:100%;max-width:680px;margin:var(--f5) 0 var(--f8);
+  height:6px;border-radius:999px;background:rgba(99,102,241,0.08);overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(99,102,241,0.1);
+  transition:height .05s;
+}
+.clamp-fill{
+  height:100%;width:0%;border-radius:999px;
+  background:linear-gradient(90deg,#6366f1,#a855f7);
+  transition:width .08s;
+}
+.clamp-fill.clip{background:linear-gradient(90deg,#ef4444,#f97316)}
+
+/* ── Footer ───────────────────────────────────────────────────── */
+.footer{text-align:center;padding:var(--f13);font-size:.65rem;color:#1e293b;border-top:1px solid rgba(255,255,255,0.03)}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media(max-width:600px){
+  :root{--cell-w:calc((100vw - 72px)/16);--cell-h:24px}
+  .cell-head{min-width:36px;font-size:.5rem}
+  .hero{padding:var(--f13) var(--f8)}
+}
+@media(min-width:800px){
+  :root{--cell-w:42px;--cell-h:30px}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Beat Grid</h1>
+  <p class="tagline">Tap to sequence. Let the oscillator breathe.</p>
+</header>
+
+<!-- Controls -->
+<div class="ctrl-bar">
+  <button class="btn" id="btn-play" aria-label="Play/Pause">▶ Play</button>
+  <button class="btn outline" id="btn-clear" aria-label="Clear grid">Clear</button>
+  <button class="btn outline" id="btn-mute" aria-label="Mute/Unmute">🔊</button>
+  <div class="sr-wrap">
+    <label for="sr-val">BPM</label>
+    <button class="btn outline" id="btn-sr-down" aria-label="Decrease BPM">−</button>
+    <span class="sr-val" id="sr-val" aria-live="polite">120</span>
+    <button class="btn outline" id="btn-sr-up" aria-label="Increase BPM">+</button>
+  </div>
+</div>
+
+<!-- Hard clamp visual -->
+<div class="clamp-bar" role="img" aria-label="Audio level meter">
+  <span class="clamp-fill" id="clamp-fill"></span>
+</div>
+
+<!-- Sequencer grid -->
+<div class="grid-wrap">
+  <div class="seq-grid" id="grid" role="grid" aria-label="16-step beat sequencer">
+    <!-- Rendered by JS -->
+  </div>
+</div>
+
+<footer class="footer">ystackai · procedural audio · zero dependencies</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ── Config ─────────────────────────────────────────────── */
+  const STEPS = 16;
+  const TRACKS = [
+    { id:'kick',  label:'Kick',   color:'#facc15' },
+    { id:'hihat', label:'Hi-Hat', color:'#60a5fa' },
+    { id:'snare', label:'Snare',  color:'#fb7185' },
+    { id:'synth', label:'Osc',    color:'#7fffe8' },
+  ];
+  const MIN_BPM = 60, MAX_BPM = 240;
+
+  /* ── State ──────────────────────────────────────────────── */
+  let grid = {};        // grid[trackIdx][step] = boolean
+  let playing = false;
+  let currentStep = -1;
+  let bpm = 120;
+  let muted = false;
+  let timerID = null;
+  let audioCtx = null;
+
+  /* ── DOM refs (resolved on init) ───────────────────────── */
+  let elGrid, elPlay, elSrv, elClamp;
+
+  /* ══════════════════════════════════════════════════════════
+   *  Audio engine — procedural, gated with hard clamp
+   * ══════════════════════════════════════════════════════════ */
+
+  function ensureAudioCtx(){
+    if(!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  // Hard clamp: limits gain to prevent clipping
+  const HARD_CLAMP_MAX = 0.85;
+  function safeGain(g){ return Math.min(g, HARD_CLAMP_MAX); }
+
+  // ─ Kick ──────────────────────────────────────────────────
+  function playKick(time){
+    if(!audioCtx || muted) return 0;
+    const t = time || audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const g   = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(160, t);
+    osc.frequency.exponentialRampToValueAtTime(30, t + 0.12);
+    g.gain.setValueAtTime(safeGain(0.8), t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + 0.35);
+    return 0.8;
+  }
+
+  // ─ Hi-Hat ────────────────────────────────────────────────
+  function playHihat(time){
+    if(!audioCtx || muted) return 0;
+    const t = time || audioCtx.currentTime;
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.15, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i] = (Math.random()*2 - 1);
+    const src = audioCtx.createBufferSource(); src.buffer = buf;
+    const filt = audioCtx.createBiquadFilter();
+    filt.type='highpass'; filt.frequency.value = 8000;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(safeGain(0.3), t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+    src.start(t); src.stop(t + 0.1);
+    return 0.3;
+  }
+
+  // ─ Snare ─────────────────────────────────────────────────
+  function playSnare(time){
+    if(!audioCtx || muted) return 0;
+    const t = time || audioCtx.currentTime;
+    // Tone
+    const osc = audioCtx.createOscillator();
+    const tg = audioCtx.createGain();
+    osc.type='triangle'; osc.frequency.value=220;
+    tg.gain.setValueAtTime(safeGain(0.5), t);
+    tg.gain.exponentialRampToValueAtTime(0.001, t+0.15);
+    osc.connect(tg); tg.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t+0.15);
+    // Noise sweep
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate*0.2, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
+    const ns = audioCtx.createBufferSource(); ns.buffer=buf;
+    const nf = audioCtx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=4000; nf.Q.value=1.2;
+    const ng = audioCtx.createGain();
+    ng.gain.setValueAtTime(safeGain(0.45), t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t+0.2);
+    ns.connect(nf); nf.connect(ng); ng.connect(audioCtx.destination);
+    ns.start(t); ns.stop(t+0.2);
+    return 0.55;
+  }
+
+  // ─ Synth / Oscillator ────────────────────────────────────
+  function playOsc(time){
+    if(!audioCtx || muted) return 0;
+    const t = time || audioCtx.currentTime;
+    // Dual oscillator for body
+    const o1 = audioCtx.createOscillator();
+    const o2 = audioCtx.createOscillator();
+    const g  = audioCtx.createGain();
+    o1.type='sawtooth'; o1.frequency.value=261.63; // C5
+    o2.type='square';   o2.frequency.value=392;     // G5
+    // Phase callback simulation via slight detune
+    o2.detune.value = 8 + Math.random()*-16;
+    g.gain.setValueAtTime(safeGain(0.15), t);
+    g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
+    o1.connect(g); o2.connect(g); g.connect(audioCtx.destination);
+    o1.start(t); o1.stop(t+0.45);
+    o2.start(t); o2.stop(t+0.45);
+    return 0.15;
+  }
+
+  const soundMap = [playKick, playHihat, playSnare, playOsc];
+
+  /* ══════════════════════════════════════════════════════════
+   *  Grid UI
+   * ══════════════════════════════════════════════════════════ */
+
+   function initGrid(){
+    elGrid = document.getElementById('grid');
+    elGrid.innerHTML = '';
+
+    // Step number header row
+    var corner = document.createElement('div');
+    corner.className = 'cell-head';
+    elGrid.appendChild(corner);
+    for(var s=0; s<STEPS; s++){
+      var h = document.createElement('div');
+      h.className = 'beat-col-head' + (s%4===0?' down':'');
+      h.textContent = s+1;
+      elGrid.appendChild(h);
+    }
+
+    // Track rows
+    TRACKS.forEach(function(tr, ti){
+      grid[ti] = new Array(STEPS).fill(false);
+      var lbl = document.createElement('div');
+      lbl.className = 'cell-head';
+      lbl.textContent = tr.label;
+      lbl.style.color = tr.color;
+      elGrid.appendChild(lbl);
+
+      for(var step=0; step<STEPS; step++){
+        var cell = document.createElement('div');
+        cell.className = 'cell ' + tr.id;
+        cell.dataset.track = ti;
+        cell.dataset.step  = step;
+        cell.setAttribute('role','gridcell');
+        cell.setAttribute('tabindex','0');
+        cell.setAttribute('aria-label', tr.label + ' step '+(step+1) + ' off');
+        cell.addEventListener('pointerdown', onCellTap);
+        cell.addEventListener('keydown', function(e){
+          if(e.key===' '||e.key==='Enter'){ e.preventDefault(); onCellTap(e); }
+        });
+        elGrid.appendChild(cell);
+      }
+    });
+  }
+
+   function onCellTap(e){
+    var cell   = e.currentTarget;
+    var ti     = +cell.dataset.track;
+    var step   = +cell.dataset.step;
+    grid[ti][step] = !grid[ti][step];
+    cell.classList.toggle('on', grid[ti][step]);
+    cell.setAttribute('aria-label', TRACKS[ti].label + ' step '+(step+1)+(grid[ti][step]?' on':' off'));
+
+     // Immediate sonic feedback
+    ensureAudioCtx();
+    var level = soundMap[ti](audioCtx.currentTime);
+
+     // Clamp flash
+    flashClamp(level || 0);
+   }
+
+  /* ══════════════════════════════════════════════════════════
+   *  Playback — phase-locked step scheduler
+   * ═════════───────────────────────────────────────────────── */
+
+  let phaseStep = 0;
+
+  function scheduleStep(){
+    var step = phaseStep % STEPS;
+    currentStep = step;
+
+    var peak = 0;
+    for(var ti=0; ti<TRACKS.length; ti++){
+      if(grid[ti][step]){
+        var g = soundMap[ti]();
+        peak = Math.max(peak, g || 0);
+      }
+    }
+    flashClamp(peak);
+
+    // Visual playhead
+    updatePlayhead(step);
+
+    phaseStep++;
+  }
+
+  function updatePlayhead(step){
+    var cells = elGrid.querySelectorAll('.cell');
+    cells.forEach(function(c){
+      c.classList.toggle('here', +c.dataset.step === step);
+    });
+  }
+
+  function startPlayback(){
+    ensureAudioCtx();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    playing = true;
+    phaseStep = 0;
+    var intervalMs = (60 / bpm / 4) * 1000; // 16th notes
+    scheduleStep();
+    timerID = setInterval(scheduleStep, intervalMs);
+    elPlay.textContent = '⏸ Pause';
+  }
+
+  function stopPlayback(){
+    playing = false;
+    clearInterval(timerID);
+    timerID = null;
+    elPlay.textContent = '▶ Play';
+    // Clear playhead
+    elGrid.querySelectorAll('.cell.here').forEach(function(c){ c.classList.remove('here'); });
+    currentStep = -1;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+   *  Clamp meter
+   * ══════════════════════════════════════════════════════════ */
+
+  let clampVal = 0;
+  let clampAnim = null;
+
+  function flashClamp(value){
+    clampVal = value;
+    if(!clampAnim) animateClamp();
+  }
+
+  function animateClamp(){
+    clampAnim = requestAnimationFrame(function(){
+      clampVal *= 0.92;
+      var pct = Math.min(clampVal / HARD_CLAMP_MAX * 100, 100);
+      elClamp.style.width = pct + '%';
+      elClamp.classList.toggle('clip', pct > 95);
+      if(clampVal > 0.01){
+        animateClamp();
+      } else {
+        elClamp.style.width = '0%';
+        elClamp.classList.remove('clip');
+        clampAnim = null;
+      }
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+   *  BPM control
+   * ══════════════════════════════════════════════════════════ */
+
+  function setBpm(val){
+    bpm = Math.max(MIN_BPM, Math.min(MAX_BPM, val));
+    elSrv.textContent = bpm;
+    if(playing){
+      clearInterval(timerID);
+      var intervalMs = (60 / bpm / 4) * 1000;
+      timerID = setInterval(scheduleStep, intervalMs);
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+   *  Persistence — localStorage
+   * ══════════════════════════════════════════════════════════ */
+
+  var STORAGE_KEY = 'beatgrid-data';
+
+  function savePattern(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ grid: grid, bpm: bpm }));
+    } catch(e){ /* quota exceeded, ignore */ }
+  }
+
+  function loadPattern(){
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return false;
+      var d = JSON.parse(raw);
+      if(d.grid && d.bpm){
+        bpm = Math.max(MIN_BPM, Math.min(MAX_BPM, d.bpm));
+        elSrv.textContent = bpm;
+        for(var ti=0; ti<TRACKS.length; ti++){
+          for(var s=0; s<STEPS; s++){
+            var v = !!d.grid[ti][s];
+            grid[ti][s] = v;
+            var sel = '.cell[data-track="'+ti+'"][data-step="'+s+'"]';
+            var cell = elGrid.querySelector(sel);
+            if(cell) cell.classList.toggle('on', v);
+          }
+        }
+        return true;
+      }
+    } catch(e){ /* corrupt data, ignore */ }
+    return false;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+   *  Presets — a few starting patterns
+   * ══════════════════════════════════════════════════════════ */
+
+  var PRESETS = {
+    classic: {
+      kick:  [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+      hihat: [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+      synth: [0,0,0,0, 0,0,1,0, 0,0,0,0, 0,0,1,0],
+    },
+    half: {
+      kick:  [1,0,0,1, 0,0,1,0, 1,0,0,1, 0,0,0,0],
+      hihat: [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1],
+      snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1],
+      synth: [0,0,0,0, 0,0,0,1, 0,0,0,0, 0,1,0,0],
+    },
+  };
+
+  function loadPreset(name){
+    var p = PRESETS[name]; if(!p) return;
+    // Reset grid
+    for(var ti=0; ti<TRACKS.length; ti++){
+      for(var s=0; s<STEPS; s++){ grid[ti][s] = false; }
+    }
+    // Apply preset
+    TRACKS.forEach(function(tr, ti){
+      var arr = p[tr.id]; if(!arr) return;
+      arr.forEach(function(v, s){
+        if(v){
+          grid[ti][s] = true;
+        }
+      });
+    });
+    // Re-render all cells
+    var cells = elGrid.querySelectorAll('.cell');
+    cells.forEach(function(c){
+      var ti = +c.dataset.track, s = +c.dataset.step;
+      c.classList.toggle('on', !!grid[ti][s]);
+    });
+    savePattern();
+  }
+
+  /* ══════════════════════════════════════════════════════════
+   *  Init
+   * ══════════════════════════════════════════════════════════ */
+
+  function init(){
+    initGrid();
+
+    elPlay  = document.getElementById('btn-play');
+    elSrv   = document.getElementById('sr-val');
+    elClamp = document.getElementById('clamp-fill');
+
+    // Check localStorage
+    var loaded = loadPattern();
+    if(!loaded){
+      loadPreset('classic');
+    }
+
+    elPlay.addEventListener('click', function(){
+      if(playing) stopPlayback(); else startPlayback();
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', function(){
+      for(var ti=0; ti<TRACKS.length; ti++){
+        for(var s=0; s<STEPS; s++){ grid[ti][s] = false; }
+      }
+      elGrid.querySelectorAll('.cell.on').forEach(function(c){ c.classList.remove('on'); });
+      if(playing) stopPlayback();
+      savePattern();
+    });
+
+    document.getElementById('btn-mute').addEventListener('click', function(){
+      muted = !muted;
+      this.textContent = muted ? '🔇' : '🔊';
+    });
+
+    document.getElementById('btn-sr-down').addEventListener('click', function(){ setBpm(bpm - 5); savePattern(); });
+    document.getElementById('btn-sr-up').addEventListener('click',   function(){ setBpm(bpm + 5); savePattern(); });
+
+    // Preset buttons via keyboard shortcuts
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'p' && !e.ctrlKey && !e.metaKey && document.activeElement === document.body){
+        if(playing) stopPlayback(); else startPlayback();
+      }
+      if(e.key === '1' && document.activeElement === document.body) loadPreset('classic');
+      if(e.key === '2' && document.activeElement === document.body) loadPreset('half');
+    });
+
+    // Save on any grid change
+    elGrid.addEventListener('pointerdown', function(){ setTimeout(savePattern, 50); });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
