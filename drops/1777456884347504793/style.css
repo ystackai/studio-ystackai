@@ -1,0 +1,277 @@
+/* ── Variables ─────────────────────────────────────────────── */
+:root {
+  --bg-dark: #0a0a0f;
+  --bg-card: rgba(20, 20, 35, 0.85);
+  --border-subtle: rgba(99, 102, 241, 0.15);
+  --border-active: rgba(99, 102, 241, 0.45);
+  --text-main: #e2e8f0;
+  --text-muted: #64748b;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.35);
+  --success: #22c55e;
+  --clamp: #f43f5e;
+  --phase: #a78bfa;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-8: 32px;
+  --space-13: 48px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+}
+
+/* ── Reset & base ──────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── Grid overlay ──────────────────────────────────────────── */
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  background-image:
+      linear-gradient(rgba(99, 102, 241, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
+  background-size: 42px 42px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Scene ─────────────────────────────────────────────────── */
+.sweep-scene {
+  position: relative;
+  z-index: 1;
+  width: min(90vw, 620px);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.sweep-header { margin-bottom: var(--space-2); }
+
+.sweep-title {
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  background: linear-gradient(135deg, var(--text-main), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sweep-subtitle {
+  margin-top: var(--space-1);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.45;
+}
+
+/* ── Stage ─────────────────────────────────────────────────── */
+.sweep-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 340px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  overflow: hidden;
+  box-shadow: 0 0 40px var(--accent-glow);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sweep-stage.active {
+  border-color: var(--border-active);
+  box-shadow: 0 0 60px var(--accent-glow);
+}
+
+#sweepCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── Clamp indicator ───────────────────────────────────────── */
+.clamp-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 35%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.clamp-line {
+  width: 100%;
+  height: 1px;
+  background: var(--clamp);
+  opacity: 0.4;
+  position: absolute;
+  transition: opacity 0.25s ease;
+}
+
+.clamp-label {
+  position: relative;
+  z-index: 3;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--clamp);
+  background: var(--bg-dark);
+  padding: 2px 8px;
+  border-radius: 3px;
+  opacity: 0.7;
+}
+
+.sweep-stage.active .clamp-line { opacity: 0.7; }
+.sweep-stage.active .clamp-label { opacity: 1; }
+
+/* ── Phase display ─────────────────────────────────────────── */
+.phase-display {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  font-size: 0.7rem;
+  color: var(--phase);
+  text-align: right;
+  z-index: 3;
+  opacity: 0.7;
+}
+
+.phase-value {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  display: block;
+}
+
+.phase-unit {
+  display: block;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+/* ── Controls ──────────────────────────────────────────────── */
+.sweep-controls {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.sweep-btn {
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  color: #fff;
+  border: none;
+  padding: var(--space-3) var(--space-8);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 2px 16px rgba(99, 102, 241, 0.25);
+  letter-spacing: 0.02em;
+}
+
+.sweep-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.4);
+}
+
+.sweep-btn:active {
+  transform: scale(0.96);
+}
+
+.sweep-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+.mute-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mute-btn:hover {
+  border-color: var(--border-active);
+  color: var(--text-main);
+}
+
+.mute-btn.muted {
+  color: var(--clamp);
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+/* ── Status ─────────────────────────────────────────────────── */
+.sweep-status {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  min-height: 1.2em;
+  transition: color 0.3s ease;
+}
+
+.sweep-status.success { color: var(--success); }
+.sweep-status.clamped { color: var(--clamp); }
+.sweep-status.running { color: var(--phase); }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .sweep-scene {
+    gap: var(--space-4);
+    width: 94vw;
+  }
+
+  .sweep-stage {
+    max-height: 220px;
+  }
+
+  .sweep-title {
+    letter-spacing: -0.8px;
+  }
+
+  .sweep-subtitle {
+    font-size: 0.78rem;
+  }
+
+  .phase-display {
+    top: var(--space-2);
+    right: var(--space-2);
+  }
+
+  .phase-value {
+    font-size: 0.75rem;
+  }
+}
