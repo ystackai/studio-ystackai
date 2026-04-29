@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase Shift — ystackai</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="frame" id="frame">
+        <header class="header">
+            <div class="header-inner">
+                <span class="brand">ystackai</span>
+                <span class="title">phase shift</span>
+                <span class="subtitle">oscillator × grid × rhythm</span>
+            </div>
+        </header>
+
+        <main class="canvas-area">
+            <canvas id="waveform" aria-label="Oscillator waveform visualization"></canvas>
+            <div class="overlay" id="overlay">
+                <div class="phase-indicator" id="phase-indicator">
+                    <span class="phase-label">PHASE</span>
+                    <span class="phase-value" id="phase-value">0.00</span>
+                </div>
+                <div class="grid-overlay" id="grid-overlay"></div>
+            </div>
+        </main>
+
+        <footer class="controls">
+            <button id="phaseButton" class="action-btn" aria-label="Trigger phase shift">
+                <span class="btn-text">SHIFT PHASE</span>
+                <span class="btn-indicator" id="btnIndicator"></span>
+            </button>
+            <button id="muteBtn" class="mute-btn" aria-label="Toggle audio mute">
+                <span id="muteIcon">🔊</span>
+            </button>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
