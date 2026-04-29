@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ystackai — Audio-Reactive Sweep</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="grid" role="main">
+    <div class="center-col">
+      <h1 class="title" aria-live="polite">Sine Sweep</h1>
+      <p class="subtitle" aria-live="polite">Click to trigger the sweep</p>
+    </div>
+
+    <div class="center-col button-row">
+      <button
+        id="sweepBtn"
+        class="cta"
+        aria-label="Trigger sine sweep and kick drum"
+      >
+        DROP IT
+      </button>
+    </div>
+
+    <div class="center-col state-row">
+      <div id="stateLabel" class="state-label" aria-live="assertive" aria-atomic="true">IDLE</div>
+      <div id="phaseBar" class="phase-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Sweep progress"></div>
+    </div>
+
+    <div class="center-col reset-row">
+      <button id="resetBtn" class="reset" aria-label="Reset to idle state" hidden>RESET</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
