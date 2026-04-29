@@ -16,25 +16,34 @@
             </div>
         </header>
 
-        <main class="canvas-area">
+        <main class="canvas-area" id="canvasArea">
             <canvas id="waveform" aria-label="Oscillator waveform visualization"></canvas>
             <div class="overlay" id="overlay">
                 <div class="phase-indicator" id="phase-indicator">
                     <span class="phase-label">PHASE</span>
                     <span class="phase-value" id="phase-value">0.00</span>
                 </div>
+                <div class="cycle-indicator" id="cycle-indicator">
+                    <span class="cycle-label">CYCLES</span>
+                    <span class="cycle-count" id="cycle-count">0 / 4</span>
+                </div>
                 <div class="grid-overlay" id="grid-overlay"></div>
+            </div>
+            <div class="start-prompt" id="startPrompt">
+                <span class="prompt-text">tap or press space</span>
+                <span class="prompt-sub">to initialise</span>
             </div>
         </main>
 
         <footer class="controls">
-            <button id="phaseButton" class="action-btn" aria-label="Trigger phase shift">
+            <button id="muteBtn" class="mute-btn" aria-label="Toggle audio mute" disabled>
+                <span id="muteIcon">🔇</span>
+            </button>
+            <button id="phaseButton" class="action-btn" aria-label="Trigger phase shift" disabled>
                 <span class="btn-text">SHIFT PHASE</span>
                 <span class="btn-indicator" id="btnIndicator"></span>
             </button>
-            <button id="muteBtn" class="mute-btn" aria-label="Toggle audio mute">
-                <span id="muteIcon">🔊</span>
-            </button>
+            <div class="spacer"></div>
         </footer>
     </div>
     <script src="script.js"></script>
