@@ -131,7 +131,7 @@
     function playSawtooth(lockTime, duration, frequency) {
         if (!audioCtx || State.gridLocked) return;
 
-        freq = frequency || CFG.sawFreq;
+        var freq = frequency || CFG.sawFreq;
 
         var osc = audioCtx.createOscillator();
         osc.type = 'sawtooth';
