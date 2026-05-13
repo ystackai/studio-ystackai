@@ -6,6 +6,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches:
+      - main
       - 'factoryx/**'
   workflow_dispatch:
 
@@ -114,36 +115,12 @@ jobs:
             -e "ssh -i ~/.ssh/factoryx_preview -o StrictHostKeyChecking=accept-new" \
             "$site_dir/" "$FACTORYX_PREVIEW_USER@$FACTORYX_PREVIEW_HOST:$remote_dir/"
 
-  publish:
+  deploy-production:
     runs-on: ubuntu-latest
-    needs: [facts, ci, deploy-preview]
-    if: github.event_name == 'pull_request'
-    environment:
-      name: production
-      url: ${{ needs.facts.outputs.production_url }}
+    needs: [facts, ci]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Capture approved preview screenshot
-        shell: bash
-        run: |
-          mkdir -p factoryx-artifacts
-          npx --yes playwright install chromium
-          npx --yes playwright screenshot "${{ needs.facts.outputs.preview_url }}" factoryx-artifacts/review.png
-      - uses: actions/upload-artifact@v4
-        with:
-          name: factoryx-review-screenshot
-          path: factoryx-artifacts/review.png
-      - name: Merge approved PR
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh pr merge "${{ github.event.pull_request.number }}" \
-            --squash \
-            --delete-branch \
-            --match-head-commit "${{ github.event.pull_request.head.sha }}"
       - name: Deploy production from main
         shell: bash
         env:
@@ -177,6 +154,27 @@ jobs:
             --exclude='factoryx-artifacts/' \
             -e "ssh -i ~/.ssh/factoryx_production -o StrictHostKeyChecking=accept-new" \
             "$site_dir/" "$FACTORYX_PRODUCTION_USER@$FACTORYX_PRODUCTION_HOST:$FACTORYX_PRODUCTION_ROOT/"
+      - name: Capture live screenshot
+        shell: bash
+        run: |
+          mkdir -p factoryx-artifacts
+          npx --yes playwright install chromium
+          npx --yes playwright screenshot "${{ needs.facts.outputs.production_url }}" factoryx-artifacts/live.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: factoryx-live-screenshot
+          path: factoryx-artifacts/live.png
+      - name: Publish live screenshot copy
+        shell: bash
+        env:
+          FACTORYX_PRODUCTION_SSH_KEY: ${{ secrets.FACTORYX_PRODUCTION_SSH_KEY }}
+          FACTORYX_PRODUCTION_HOST: ${{ secrets.FACTORYX_PRODUCTION_HOST }}
+          FACTORYX_PRODUCTION_USER: ${{ secrets.FACTORYX_PRODUCTION_USER }}
+          FACTORYX_PRODUCTION_ROOT: ${{ secrets.FACTORYX_PRODUCTION_ROOT }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$FACTORYX_PRODUCTION_SSH_KEY" > ~/.ssh/factoryx_production
+          chmod 600 ~/.ssh/factoryx_production
           rsync -az \
             -e "ssh -i ~/.ssh/factoryx_production -o StrictHostKeyChecking=accept-new" \
-            factoryx-artifacts/review.png "$FACTORYX_PRODUCTION_USER@$FACTORYX_PRODUCTION_HOST:$FACTORYX_PRODUCTION_ROOT/factoryx-review.png"
+            factoryx-artifacts/live.png "$FACTORYX_PRODUCTION_USER@$FACTORYX_PRODUCTION_HOST:$FACTORYX_PRODUCTION_ROOT/factoryx-review.png"
