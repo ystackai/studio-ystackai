@@ -1,0 +1,182 @@
+name: FactoryX Delivery
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - 'factoryx/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  deployments: write
+
+concurrency:
+  group: factoryx-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  facts:
+    runs-on: ubuntu-latest
+    outputs:
+      factory_slug: ${{ steps.facts.outputs.factory_slug }}
+      work_order_id: ${{ steps.facts.outputs.work_order_id }}
+      preview_url: ${{ steps.facts.outputs.preview_url }}
+      production_url: ${{ steps.facts.outputs.production_url }}
+    steps:
+      - id: facts
+        shell: bash
+        env:
+          FACTORYX_FACTORY_SLUG: ${{ vars.FACTORYX_FACTORY_SLUG }}
+          FACTORYX_PREVIEW_BASE_URL: ${{ vars.FACTORYX_PREVIEW_BASE_URL }}
+          FACTORYX_PRODUCTION_BASE_URL: ${{ vars.FACTORYX_PRODUCTION_BASE_URL }}
+        run: |
+          ref="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          work_order_id="${ref##*/}"
+          if [ -z "$work_order_id" ] || [ "$work_order_id" = "main" ]; then
+            work_order_id="${{ github.event.pull_request.number || github.run_id }}"
+          fi
+          factory_slug="${FACTORYX_FACTORY_SLUG:-${GITHUB_REPOSITORY#*/}}"
+          preview_base="${FACTORYX_PREVIEW_BASE_URL:-https://www.ystackai.com/factoryx/previews}"
+          production_base="${FACTORYX_PRODUCTION_BASE_URL:-https://www.ystackai.com}"
+          preview_url="${preview_base%/}/${factory_slug}/${work_order_id}/"
+          production_url="${production_base%/}/${factory_slug}/"
+          echo "factory_slug=$factory_slug" >> "$GITHUB_OUTPUT"
+          echo "work_order_id=$work_order_id" >> "$GITHUB_OUTPUT"
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+          echo "production_url=$production_url" >> "$GITHUB_OUTPUT"
+
+  ci:
+    runs-on: ubuntu-latest
+    needs: facts
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify
+        shell: bash
+        run: |
+          if [ -x scripts/verify.sh ]; then
+            scripts/verify.sh
+          elif [ -f package.json ]; then
+            npm ci
+            npm test --if-present
+            npm run build --if-present
+          else
+            echo "No verification command configured."
+          fi
+
+  deploy-preview:
+    runs-on: ubuntu-latest
+    needs: [facts, ci]
+    if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/factoryx/')
+    environment:
+      name: review-preview
+      url: ${{ needs.facts.outputs.preview_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build preview
+        shell: bash
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+            npm run build --if-present
+          fi
+      - name: Deploy preview to Hetzner
+        shell: bash
+        env:
+          FACTORYX_PREVIEW_SSH_KEY: ${{ secrets.FACTORYX_PREVIEW_SSH_KEY }}
+          FACTORYX_PREVIEW_HOST: ${{ secrets.FACTORYX_PREVIEW_HOST }}
+          FACTORYX_PREVIEW_USER: ${{ secrets.FACTORYX_PREVIEW_USER }}
+          FACTORYX_PREVIEW_ROOT: ${{ secrets.FACTORYX_PREVIEW_ROOT }}
+          FACTORYX_FACTORY_SLUG: ${{ needs.facts.outputs.factory_slug }}
+          FACTORYX_WORK_ORDER_ID: ${{ needs.facts.outputs.work_order_id }}
+        run: |
+          : "${FACTORYX_PREVIEW_SSH_KEY:?missing preview ssh key}"
+          : "${FACTORYX_PREVIEW_HOST:?missing preview host}"
+          : "${FACTORYX_PREVIEW_USER:?missing preview user}"
+          : "${FACTORYX_PREVIEW_ROOT:?missing preview root}"
+          site_dir="dist"
+          if [ ! -d "$site_dir" ]; then
+            site_dir="."
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$FACTORYX_PREVIEW_SSH_KEY" > ~/.ssh/factoryx_preview
+          chmod 600 ~/.ssh/factoryx_preview
+          remote_dir="${FACTORYX_PREVIEW_ROOT%/}/${FACTORYX_FACTORY_SLUG}/${FACTORYX_WORK_ORDER_ID}"
+          ssh -i ~/.ssh/factoryx_preview -o StrictHostKeyChecking=accept-new "$FACTORYX_PREVIEW_USER@$FACTORYX_PREVIEW_HOST" "mkdir -p '$remote_dir'"
+          rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.DS_Store' \
+            --exclude='factoryx-artifacts/' \
+            -e "ssh -i ~/.ssh/factoryx_preview -o StrictHostKeyChecking=accept-new" \
+            "$site_dir/" "$FACTORYX_PREVIEW_USER@$FACTORYX_PREVIEW_HOST:$remote_dir/"
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [facts, ci, deploy-preview]
+    if: github.event_name == 'pull_request'
+    environment:
+      name: production
+      url: ${{ needs.facts.outputs.production_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Capture approved preview screenshot
+        shell: bash
+        run: |
+          mkdir -p factoryx-artifacts
+          npx --yes playwright install chromium
+          npx --yes playwright screenshot "${{ needs.facts.outputs.preview_url }}" factoryx-artifacts/review.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: factoryx-review-screenshot
+          path: factoryx-artifacts/review.png
+      - name: Merge approved PR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ github.event.pull_request.number }}" \
+            --squash \
+            --delete-branch \
+            --match-head-commit "${{ github.event.pull_request.head.sha }}"
+      - name: Deploy production from main
+        shell: bash
+        env:
+          FACTORYX_PRODUCTION_SSH_KEY: ${{ secrets.FACTORYX_PRODUCTION_SSH_KEY }}
+          FACTORYX_PRODUCTION_HOST: ${{ secrets.FACTORYX_PRODUCTION_HOST }}
+          FACTORYX_PRODUCTION_USER: ${{ secrets.FACTORYX_PRODUCTION_USER }}
+          FACTORYX_PRODUCTION_ROOT: ${{ secrets.FACTORYX_PRODUCTION_ROOT }}
+        run: |
+          : "${FACTORYX_PRODUCTION_SSH_KEY:?missing production ssh key}"
+          : "${FACTORYX_PRODUCTION_HOST:?missing production host}"
+          : "${FACTORYX_PRODUCTION_USER:?missing production user}"
+          : "${FACTORYX_PRODUCTION_ROOT:?missing production root}"
+          git fetch origin main
+          git checkout --force origin/main
+          if [ -f package.json ]; then
+            npm ci
+            npm run build --if-present
+          fi
+          site_dir="dist"
+          if [ ! -d "$site_dir" ]; then
+            site_dir="."
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$FACTORYX_PRODUCTION_SSH_KEY" > ~/.ssh/factoryx_production
+          chmod 600 ~/.ssh/factoryx_production
+          ssh -i ~/.ssh/factoryx_production -o StrictHostKeyChecking=accept-new "$FACTORYX_PRODUCTION_USER@$FACTORYX_PRODUCTION_HOST" "mkdir -p '$FACTORYX_PRODUCTION_ROOT'"
+          rsync -az --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.DS_Store' \
+            --exclude='factoryx-artifacts/' \
+            -e "ssh -i ~/.ssh/factoryx_production -o StrictHostKeyChecking=accept-new" \
+            "$site_dir/" "$FACTORYX_PRODUCTION_USER@$FACTORYX_PRODUCTION_HOST:$FACTORYX_PRODUCTION_ROOT/"
+          rsync -az \
+            -e "ssh -i ~/.ssh/factoryx_production -o StrictHostKeyChecking=accept-new" \
+            factoryx-artifacts/review.png "$FACTORYX_PRODUCTION_USER@$FACTORYX_PRODUCTION_HOST:$FACTORYX_PRODUCTION_ROOT/factoryx-review.png"
