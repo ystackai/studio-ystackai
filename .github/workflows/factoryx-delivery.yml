@@ -84,6 +84,108 @@ jobs:
             npm ci
             npm run build --if-present
           fi
+      - name: Prepare FactoryX preview root
+        shell: bash
+        run: |
+          site_dir="dist"
+          if [ ! -d "$site_dir" ]; then
+            site_dir="."
+          fi
+
+          entrypoint=""
+          if [ -f .factoryx/preview-entrypoint ]; then
+            entrypoint="$(python3 - <<'PY'
+          from pathlib import Path
+          value = Path(".factoryx/preview-entrypoint").read_text(encoding="utf-8").strip().splitlines()
+          print(value[0].strip() if value else "")
+          PY
+          )"
+          fi
+
+          if [ -z "$entrypoint" ] && [ -f "$GITHUB_EVENT_PATH" ]; then
+            entrypoint="$(python3 - <<'PY'
+          import json
+          import os
+          import re
+
+          with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as handle:
+              event = json.load(handle)
+
+          body = ((event.get("pull_request") or {}).get("body") or "")
+          patterns = [
+              r"`((?:drops|games|apps)/[^`\s]+/index\.html)`",
+              r"/(?:[^/\s]+/)?((?:drops|games|apps)/[^/\s]+/)",
+          ]
+
+          for pattern in patterns:
+              match = re.search(pattern, body)
+              if not match:
+                  continue
+              path = match.group(1)
+              if path.endswith("/"):
+                  path += "index.html"
+              print(path)
+              break
+          PY
+          )"
+          fi
+
+          if [ -z "$entrypoint" ]; then
+            base_ref="${GITHUB_BASE_REF:-main}"
+            git fetch --no-tags --depth=50 origin "$base_ref" || true
+            changed="$(git diff --name-only --diff-filter=AM "origin/$base_ref...HEAD" 2>/dev/null || true)"
+            entrypoint="$(printf '%s\n' "$changed" | awk '/^(drops|games|apps)\/[^/]+\/index\.html$/ { candidate=$0 } END { print candidate }')"
+          fi
+
+          if [ -z "$entrypoint" ]; then
+            echo "No FactoryX preview entrypoint found; leaving preview root unchanged."
+            exit 0
+          fi
+
+          case "$entrypoint" in
+            /*|*://*|*..*)
+              echo "Invalid FactoryX preview entrypoint: $entrypoint" >&2
+              exit 1
+              ;;
+          esac
+
+          if [ ! -f "$site_dir/$entrypoint" ]; then
+            echo "FactoryX preview entrypoint '$entrypoint' was not found under '$site_dir'; leaving preview root unchanged."
+            exit 0
+          fi
+
+          entry_url="$entrypoint"
+          if [[ "$entry_url" == */index.html ]]; then
+            entry_url="${entry_url%index.html}"
+          fi
+
+          ENTRY_URL="$entry_url" SITE_DIR="$site_dir" python3 - <<'PY'
+          import html
+          import json
+          import os
+          from pathlib import Path
+
+          entry_url = os.environ["ENTRY_URL"]
+          site_dir = Path(os.environ["SITE_DIR"])
+          target = site_dir / "index.html"
+          target.write_text(
+              "<!doctype html>\n"
+              "<html lang=\"en\">\n"
+              "<head>\n"
+              "  <meta charset=\"utf-8\">\n"
+              "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+              "  <title>FactoryX Preview</title>\n"
+              f"  <meta http-equiv=\"refresh\" content=\"0; url={html.escape(entry_url, quote=True)}\">\n"
+              f"  <script>window.location.replace({json.dumps(entry_url)});</script>\n"
+              "</head>\n"
+              "<body>\n"
+              f"  <p><a href=\"{html.escape(entry_url, quote=True)}\">Open FactoryX preview</a></p>\n"
+              "</body>\n"
+              "</html>\n",
+              encoding="utf-8",
+          )
+          PY
+          echo "FactoryX preview root redirects to $entry_url"
       - name: Deploy preview to Hetzner
         shell: bash
         env:
