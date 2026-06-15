@@ -38,55 +38,59 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
 .legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:12px;font-size:11px}
 .legend-item{display:flex;align-items:center;gap:4px}
 .legend-swatch{width:12px;height:12px;border-radius:2px;display:inline-block}
-#controls-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#4a4a6a;font-size:10px;z-index:10;text-align:center;white-space:nowrap}
+#controls-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#4a4a6a;font-size:10px;z-index:10;text-align:center;white-space:nowrap;transition:opacity 2s ease}
+#controls-hint.fade{opacity:0}
+#process-prompt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#44ff44;font-size:14px;font-weight:700;z-index:12;pointer-events:none;opacity:0;transition:opacity 0.2s ease;text-shadow:0 0 10px rgba(68,255,68,0.5)}
+#process-prompt.show{opacity:1}
 @media(pointer:coarse){#touch-controls{display:block}#mobile-extinguish{display:flex}#controls-hint{display:none}}
 @media(max-width:600px){#hud{font-size:11px;padding:6px 8px}.hud-value{font-size:13px}}
 </style>
 </head>
 <body>
 <div id="game-container">
-    <div id="hud">
-        <div class="hud-item"><span class="hud-label">Score</span><span class="hud-value" id="score-val">0</span></div>
-        <div class="hud-item"><span class="hud-label">Wave</span><span class="hud-value" id="level-val">1</span></div>
-        <div class="hud-item"><span class="hud-label">Shipped</span><span class="hud-value" id="builds-val">0</span></div>
-        <div class="hud-item"><span class="hud-label">Secrets</span><span class="hud-value" id="secrets-val">0</span></div>
-        <div class="hud-item"><span class="hud-label">Time</span><span class="hud-value" id="time-val">3:00</span></div>
-    </div>
-    <div id="canvas-wrapper">
-        <canvas id="game-canvas" width="880" height="520"></canvas>
-        <div id="overlay">
-            <h1>&#128293; FACTORY FIREBREAK</h1>
-            <h2>ystackai Production Floor</h2>
-            <p class="subtitle">
+     <div id="hud">
+         <div class="hud-item"><span class="hud-label">Score</span><span class="hud-value" id="score-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">Wave</span><span class="hud-value" id="level-val">1</span></div>
+         <div class="hud-item"><span class="hud-label">Shipped</span><span class="hud-value" id="builds-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">Secrets</span><span class="hud-value" id="secrets-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">Time</span><span class="hud-value" id="time-val">3:00</span></div>
+     </div>
+     <div id="canvas-wrapper">
+         <canvas id="game-canvas" width="880" height="520"></canvas>
+         <div id="process-prompt">&#9654; STATION READY</div>
+         <div id="overlay">
+             <h1>&#128293; FACTORY FIREBREAK</h1>
+             <h2>ystackai Production Floor</h2>
+             <p class="subtitle">
                 Incidents are spreading across the factory floor!<br>
                 Move to stations to extinguish fires, process builds, and protect secrets.<br>
                 Don't let the whole factory go up in flames.
-            </p>
-            <button class="btn primary" id="start-btn">&#9654; START SHIFT</button>
-            <div class="legend">
-                <div class="legend-item"><span class="legend-swatch" style="background:#00e5ff"></span> Agent</div>
-                <div class="legend-item"><span class="legend-swatch" style="background:#ff4444"></span> Fire</div>
-                <div class="legend-item"><span class="legend-swatch" style="background:#44ff44"></span> Build</div>
-                <div class="legend-item"><span class="legend-swatch" style="background:#ffbb33"></span> Secret</div>
-                <div class="legend-item"><span class="legend-swatch" style="background:#aa66ff"></span> Ship</div>
-                <div class="legend-item"><span class="legend-swatch" style="background:#8888ff"></span> Secured</div>
-            </div>
-        </div>
-        <div id="touch-controls">
-            <div class="touch-row">
-                <div class="touch-spacer"></div>
-                <div class="touch-btn" id="btn-up">&#9650;</div>
-                <div class="touch-spacer"></div>
-            </div>
-            <div class="touch-row">
-                <div class="touch-btn" id="btn-left">&#9664;</div>
-                <div class="touch-btn" id="btn-down">&#9660;</div>
-                <div class="touch-btn" id="btn-right">&#9654;</div>
-            </div>
-        </div>
-        <div id="mobile-extinguish">&#129327;<br>EXTINGUISH</div>
-        <div id="controls-hint">WASD / Arrows to move &bull; SPACE / X to extinguish &bull; Stand near station to process</div>
-    </div>
+             </p>
+             <button class="btn primary" id="start-btn">&#9654; START SHIFT</button>
+             <div class="legend">
+                 <div class="legend-item"><span class="legend-swatch" style="background:#00e5ff"></span> Agent</div>
+                 <div class="legend-item"><span class="legend-swatch" style="background:#ff4444"></span> Fire</div>
+                 <div class="legend-item"><span class="legend-swatch" style="background:#44ff44"></span> Build</div>
+                 <div class="legend-item"><span class="legend-swatch" style="background:#ffbb33"></span> Secret</div>
+                 <div class="legend-item"><span class="legend-swatch" style="background:#aa66ff"></span> Ship</div>
+                 <div class="legend-item"><span class="legend-swatch" style="background:#8888ff"></span> Secured</div>
+             </div>
+         </div>
+         <div id="touch-controls">
+             <div class="touch-row">
+                 <div class="touch-spacer"></div>
+                 <div class="touch-btn" id="btn-up">&#9650;</div>
+                 <div class="touch-spacer"></div>
+             </div>
+             <div class="touch-row">
+                 <div class="touch-btn" id="btn-left">&#9664;</div>
+                 <div class="touch-btn" id="btn-down">&#9660;</div>
+                 <div class="touch-btn" id="btn-right">&#9654;</div>
+             </div>
+         </div>
+         <div id="mobile-extinguish">&#129327;<br>EXTINGUISH</div>
+         <div id="controls-hint">WASD / Arrows to move &bull; SPACE / X to extinguish &bull; Stand near station to process</div>
+     </div>
 </div>
 <script>
 (function(){
@@ -96,32 +100,29 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
 const GRID_W=11,GRID_H=7,CELL=72;
 const CANVAS_W=GRID_W*CELL,CANVAS_H=GRID_H*CELL;
 const GAME_DURATION=180;
-const FIRE_TICK_RATE=2000;
-const QUEUE_INTERVAL=5000;
+const FIRE_TICK_RATE=2000,QUEUE_INTERVAL=5000;
 const FIRE_SPAWN_MIN=5000,FIRE_SPAWN_MAX=12000;
-const PROCESS_COOLDOWN=0.5;
-
+const PROCESS_COOLDOWN=0.2;
 const T_BUILD='build',T_TEST='test',T_SHIP='ship',T_SEC='security';
 
 const COLORS={
-    [T_BUILD]:'#1a3a2a',[T_TEST]:'#1a2a3a',[T_SHIP]:'#2a2a3a',[T_SEC]:'#2a1a2a'
+     [T_BUILD]:'#1a3a2a',[T_TEST]:'#1a2a3a',[T_SHIP]:'#2a2a3a',[T_SEC]:'#2a1a2a'
 };
 const BORDERS={
-    [T_BUILD]:'#44cc44',[T_TEST]:'#4488ff',[T_SHIP]:'#aa66ff',[T_SEC]:'#ff6688'
+     [T_BUILD]:'#44cc44',[T_TEST]:'#4488ff',[T_SHIP]:'#aa66ff',[T_SEC]:'#ff6688'
 };
 const LABELS={
-    [T_BUILD]:'BUILD',[T_TEST]:'TEST',[T_SHIP]:'SHIP',[T_SEC]:'SEC'
+     [T_BUILD]:'BUILD',[T_TEST]:'TEST',[T_SHIP]:'SHIP',[T_SEC]:'SEC'
 };
 
-// 11x7 grid: 0=empty, or station type
 const LAYOUT=[
-    [T_BUILD,T_BUILD,T_BUILD,0,T_TEST,0,0,T_SEC,T_SEC,T_SEC,0],
-    [0,0,T_BUILD,0,0,T_TEST,0,0,0,T_SEC,0],
-    [T_BUILD,T_BUILD,0,T_TEST,T_TEST,T_TEST,T_SHIP,0,T_SEC,0,T_SHIP],
-    [0,0,T_BUILD,0,0,0,T_SHIP,0,0,0,T_SHIP],
-    [0,T_BUILD,T_BUILD,T_TEST,0,0,T_SHIP,T_SHIP,T_SEC,0,0],
-    [0,0,0,T_TEST,T_TEST,0,0,0,0,0,0],
-    [T_BUILD,T_BUILD,T_BUILD,0,0,0,0,0,0,0,0],
+     [T_BUILD,T_BUILD,T_BUILD,0,T_TEST,0,0,T_SEC,T_SEC,T_SEC,0],
+     [0,0,T_BUILD,0,0,T_TEST,0,0,0,T_SEC,0],
+     [T_BUILD,T_BUILD,0,T_TEST,T_TEST,T_TEST,T_SHIP,0,T_SEC,0,T_SHIP],
+     [0,0,T_BUILD,0,0,0,T_SHIP,0,0,0,T_SHIP],
+     [0,T_BUILD,T_BUILD,T_TEST,0,0,T_SHIP,T_SHIP,T_SEC,0,0],
+     [0,0,0,T_TEST,T_TEST,0,0,0,0,0,0],
+     [T_BUILD,T_BUILD,T_BUILD,0,0,0,0,0,0,0,0],
 ];
 
 // ─── CANVAS ───
@@ -137,20 +138,24 @@ const timeEl=document.getElementById('time-val');
 const levelEl=document.getElementById('level-val');
 const buildsEl=document.getElementById('builds-val');
 const secretsEl=document.getElementById('secrets-val');
+const processPrompt=document.getElementById('process-prompt');
+const controlsHint=document.getElementById('controls-hint');
 const mobileExt=document.getElementById('mobile-extinguish');
 
 // ─── AUDIO ───
 let audioCtx=null;
-function initAudio(){if(audioCtx)return;audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+function initAudio(){if(audioCtx)return;try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
 function playTone(freq,dur,type,vol){
     type=type||'square';vol=vol||0.08;
     if(!audioCtx)return;
-    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-    o.type=type;o.frequency.value=freq;
-    g.gain.setValueAtTime(vol,audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
-    o.connect(g);g.connect(audioCtx.destination);
-    o.start();o.stop(audioCtx.currentTime+dur);
+    try{
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.type=type;o.frequency.value=freq;
+        g.gain.setValueAtTime(vol,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+        o.connect(g);g.connect(audioCtx.destination);
+        o.start();o.stop(audioCtx.currentTime+dur);
+    }catch(e){}
 }
 function sfxExtinguish(){playTone(880,0.15,'sine',0.1);playTone(1100,0.1,'sine',0.06);}
 function sfxFire(){playTone(150,0.3,'sawtooth',0.06);}
@@ -159,22 +164,20 @@ function sfxDeath(){playTone(200,0.5,'sawtooth',0.1);playTone(120,0.6,'sawtooth'
 function sfxWave(){playTone(440,0.1,'sine',0.08);playTone(660,0.1,'sine',0.07);playTone(880,0.15,'sine',0.06);}
 function sfxBuild(){playTone(520,0.08,'triangle',0.05);}
 function sfxSecret(){playTone(1200,0.2,'sine',0.08);playTone(1500,0.15,'sine',0.06);}
+function sfxProcess(){playTone(700,0.06,'triangle',0.04);}
 
 // ─── GAME STATE ───
-let state='menu';
-let score=0,wave=1,timeLeft=GAME_DURATION;
-let buildsShipped=0,secretsSecured=0;
+let gameState='menu',score=0,wave=1,timeLeft=GAME_DURATION;
+let buildsShipped=0,secretsSecured=0,lastIncidentsExtinguished=0;
 let stations=[],particles=[],floatingTexts=[];
 let lastFireTick=0,lastQueueTick=0,nextFireSpawn=FIRE_SPAWN_MIN,fireSpawnTimer=FIRE_SPAWN_MIN;
-let shakeTimer=0,shakeIntensity=0;
-let timerInterval=null,animFrame=null,lastFrameTime=0;
-let lastIncidentsExtinguished=0;
-let processCooldown=0;
+let shakeTimer=0,shakeIntensity=0,timerInterval=null,animFrame=null,lastFrameTime=0;
+let processCooldown=0,hasShownHint=false;
 
-// Station data
 function createStation(x,y,type){
     return{x,y,type,health:100,hasBuild:false,hasFire:false,fireHealth:0,
-        label:LABELS[type],flashTimer:0,secLevel:0,secured:false,secTimer:0};
+        label:LABELS[type],flashTimer:0,secLevel:0,secured:false,secTimer:0,
+        buildAnim:0,processAnim:0};
 }
 
 function isWalkable(x,y){return x>=0&&x<GRID_W&&y>=0&&y<GRID_H;}
@@ -188,25 +191,23 @@ function findAdjacent(x,y){
     return a;
 }
 
+const player={x:5,y:3,dir:'right',frame:0,frameTimer:0,moving:false};
+
 function initGame(){
     score=0;wave=1;timeLeft=GAME_DURATION;buildsShipped=0;secretsSecured=0;
-    stations=[];particles=[];floatingTexts=[];lastIncidentsExtinguished=0;
+    lastIncidentsExtinguished=0;particles=[];floatingTexts=[];processCooldown=0;
+    stations=[];
     for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
         const t=LAYOUT[y][x];if(t)stations.push(createStation(x,y,t));
     }
-    // Player starts center
     player.x=5;player.y=3;player.dir='right';player.frame=0;
     player.frameTimer=0;player.moving=false;
-    processCooldown=0;
     updateHUD();
 }
-const player={x:0,y:0,dir:'right',frame:0,frameTimer:0,moving:false};
 
 function updateHUD(){
-    scoreEl.textContent=score;
-    levelEl.textContent=wave;
-    buildsEl.textContent=buildsShipped;
-    secretsEl.textContent=secretsSecured;
+    scoreEl.textContent=score;levelEl.textContent=wave;
+    buildsEl.textContent=buildsShipped;secretsEl.textContent=secretsSecured;
     const m=Math.floor(timeLeft/60),s=timeLeft%60;
     timeEl.textContent=m+':'+String(s).padStart(2,'0');
     if(timeLeft<=30)timeEl.style.color='#ff3333';
@@ -278,7 +279,7 @@ function extinguishNearby(){
     if(ex){shakeTimer=0.15;shakeIntensity=3;}
 }
 
-// ─── BUILDS & PROCESSING ───
+// ─── BUILDS ───
 function addBuildQueue(){
     const producers=stations.filter(s=>s.type===T_BUILD&&!s.hasFire&&s.health>0);
     if(!producers.length)return;
@@ -288,24 +289,26 @@ function addBuildQueue(){
 }
 
 function processBuilds(){
-    // Find player-adjacent stations with builds
     const playerAdj=findAdjacent(player.x,player.y);
+    const playerCells=new Set(playerAdj.map(a=>a.x+','+a.y));
+    playerCells.add(player.x+','+player.y);
+    
+    let anyProcessed=false;
+    
+    // Player-adjacent processing (bonus points)
     for(const adj of playerAdj){
         const s=getStationAt(adj.x,adj.y);
         if(!s||!s.hasBuild||s.hasFire)continue;
-        // Process: move build to next station
+        
         if(s.type===T_BUILD){
-            // Move to adjacent test station
             const adj2=findAdjacent(s.x,s.y);
             for(const a of adj2){
                 const t=getStationAt(a.x,a.y);
                 if(t&&t.type===T_TEST&&!t.hasBuild&&!t.hasFire){
-                    t.hasBuild=true;s.hasBuild=false;
-                    s.flashTimer=0.2;t.flashTimer=0.2;
-                    spawnParticles(t.x,t.y,'#44ff44',6,1.5);
-                    score+=10;
-                    spawnFT(s.x,s.y,'Sent to TEST','#44ff44');
-                    return;
+                    t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
+                    score+=15;sfxProcess();
+                    spawnFT(s.x,s.y,'To TEST','#44ff44');
+                    anyProcessed=true;break;
                 }
             }
         } else if(s.type===T_TEST){
@@ -313,48 +316,48 @@ function processBuilds(){
             for(const a of adj2){
                 const t=getStationAt(a.x,a.y);
                 if(t&&t.type===T_SHIP&&!t.hasBuild&&!t.hasFire){
-                    t.hasBuild=true;s.hasBuild=false;
-                    s.flashTimer=0.2;t.flashTimer=0.2;
-                    spawnParticles(t.x,t.y,'#44ff44',6,1.5);
-                    score+=20;
-                    spawnFT(s.x,s.y,'Sent to SHIP','#44ff44');
-                    return;
+                    t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
+                    score+=25;sfxProcess();
+                    spawnFT(s.x,s.y,'To SHIP','#44ff44');
+                    anyProcessed=true;break;
                 }
             }
         } else if(s.type===T_SHIP){
             s.hasBuild=false;
-            const pts=25*wave;score+=pts;buildsShipped++;
-            s.flashTimer=0.3;
+            const pts=30*wave;score+=pts;buildsShipped++;
+            s.processAnim=0.5;
             sfxShip();
             spawnParticles(s.x,s.y,'#aa66ff',10,2);
             spawnParticles(s.x,s.y,'#ffdd44',8,2);
             spawnFT(s.x,s.y,'SHIPPED! +'+pts,'#aa66ff');
-            return;
+            anyProcessed=true;break;
         }
+        if(anyProcessed)break;
     }
-    // Auto-process from build to test if adjacent (passive, less points)
-    const built=stations.filter(s=>s.hasBuild&&!s.hasFire);
-    for(const s of built){
-        if(s.type===T_BUILD){
-            const adj=findAdjacent(s.x,s.y);
-            for(const a of adj){
-                const t=getStationAt(a.x,a.y);
-                if(t&&t.type===T_TEST&&!t.hasBuild&&!t.hasFire){
-                    t.hasBuild=true;s.hasBuild=false;
-                    s.flashTimer=0.1;t.flashTimer=0.1;
-                    score+=5;
-                    return;
+    
+    // Auto-process from build to test (fewer points, passive)
+    if(!anyProcessed){
+        const built=stations.filter(s=>s.hasBuild&&!s.hasFire);
+        for(const s of built){
+            if(s.type===T_BUILD){
+                const adj=findAdjacent(s.x,s.y);
+                for(const a of adj){
+                    const t=getStationAt(a.x,a.y);
+                    if(t&&t.type===T_TEST&&!t.hasBuild&&!t.hasFire){
+                        t.hasBuild=true;s.hasBuild=false;
+                        s.flashTimer=0.1;t.flashTimer=0.1;
+                        score+=5;return;
+                    }
                 }
-            }
-        } else if(s.type===T_TEST){
-            const adj=findAdjacent(s.x,s.y);
-            for(const a of adj){
-                const t=getStationAt(a.x,a.y);
-                if(t&&t.type===T_SHIP&&!t.hasBuild&&!t.hasFire){
-                    t.hasBuild=true;s.hasBuild=false;
-                    s.flashTimer=0.1;t.flashTimer=0.1;
-                    score+=15;
-                    return;
+            } else if(s.type===T_TEST){
+                const adj=findAdjacent(s.x,s.y);
+                for(const a of adj){
+                    const t=getStationAt(a.x,a.y);
+                    if(t&&t.type===T_SHIP&&!t.hasBuild&&!t.hasFire){
+                        t.hasBuild=true;s.hasBuild=false;
+                        s.flashTimer=0.1;t.flashTimer=0.1;
+                        score+=15;return;
+                    }
                 }
             }
         }
@@ -362,13 +365,12 @@ function processBuilds(){
 }
 
 // ─── SECURITY ───
-function processSecurity(){
+function processSecurity(dt){
     const adj=findAdjacent(player.x,player.y);
     for(const a of adj){
         const s=getStationAt(a.x,a.y);
         if(s&&s.type===T_SEC&&!s.secured){
-            // Player at security station: secure it (takes time based on wave)
-            s.secTimer+=0.016;
+            s.secTimer+=dt;
             const reqTime=Math.max(1,3-wave*0.2);
             if(s.secTimer>=reqTime){
                 s.secured=true;s.secTimer=0;s.secLevel++;
@@ -393,7 +395,7 @@ let moveCooldown=0;
 document.addEventListener('keydown',function(e){
     keys[e.key]=true;
     if(e.key===' '||e.key==='x'||e.key==='X'){
-        if(state==='playing')extinguishNearby();
+        if(gameState==='playing')extinguishNearby();
     }
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].indexOf(e.key)>=0)e.preventDefault();
 });
@@ -412,8 +414,8 @@ function setupTouch(id,key){
 }
 setupTouch('btn-up','ArrowUp');setupTouch('btn-down','ArrowDown');
 setupTouch('btn-left','ArrowLeft');setupTouch('btn-right','ArrowRight');
-mobileExt.addEventListener('touchstart',function(e){e.preventDefault();if(state==='playing')extinguishNearby();},{passive:false});
-mobileExt.addEventListener('mousedown',function(){if(state==='playing')extinguishNearby();});
+mobileExt.addEventListener('touchstart',function(e){e.preventDefault();if(gameState==='playing')extinguishNearby();},{passive:false});
+mobileExt.addEventListener('mousedown',function(){if(gameState==='playing')extinguishNearby();});
 
 // ─── PLAYER ───
 function updatePlayer(dt){
@@ -460,28 +462,36 @@ function roundRect(x,y,w,h,r){
 function drawStation(s,t){
     const cx=s.x*CELL+CELL/2,cy=s.y*CELL+CELL/2;
     const hw=CELL*0.42,hh=CELL*0.42;
-    // Background
+    
     let col=COLORS[s.type];
     if(s.hasFire)col='#3a1a1a';
     if(s.secured)col='#2a2a4a';
+    
     const flash=s.flashTimer>0?Math.sin(s.flashTimer*30)*0.3:0;
-    ctx.globalAlpha=0.7+flash;
+    const procGlow=s.processAnim>0?Math.sin(s.processAnim*20)*0.2:0;
+    ctx.globalAlpha=0.7+flash+procGlow;
     roundRect(cx-hw,cy-hh,hw*2,hh*2,6);ctx.fill();
     ctx.globalAlpha=1;
-    // Border
-    ctx.strokeStyle=s.flashTimer>0?'#ffffff':s.secured?'#8888ff':BORDERS[s.type];
+    
+    // Border with glow
+    ctx.strokeStyle=s.flashTimer>0?'#ffffff':s.secured?'#8888ff':s.hasFire?'#ff4444':BORDERS[s.type];
     ctx.lineWidth=2;
+    if(s.secured||s.hasFire){ctx.shadowColor=s.secured?'#8888ff':'#ff4444';ctx.shadowBlur=8;}
     roundRect(cx-hw,cy-hh,hw*2,hh*2,6);ctx.stroke();
+    ctx.shadowBlur=0;
+    
     // Label
     ctx.fillStyle=BORDERS[s.type]||'#888';
     ctx.font='bold 11px monospace';ctx.textAlign='center';
     ctx.fillText(s.label,cx,cy-4);
+    
     // Status
     const sy=cy+12;
     if(s.hasBuild){
         ctx.fillStyle='#44ff44';ctx.font='bold 10px monospace';
         ctx.fillText('\u25c8',cx,sy);
     }
+    
     // Fire
     if(s.hasFire){
         const fp=Math.sin(t*8+s.x*3+s.y*5);
@@ -489,6 +499,7 @@ function drawStation(s,t){
         ctx.fillStyle='#ff4422';ctx.beginPath();ctx.arc(cx-8,sy,fs*0.5,0,Math.PI*2);ctx.fill();
         ctx.fillStyle='#ffaa22';ctx.beginPath();ctx.arc(cx+6,sy-2,fs*0.35,0,Math.PI*2);ctx.fill();
         ctx.fillStyle='#ff6600';ctx.beginPath();ctx.arc(cx+2,sy+4,fs*0.4,0,Math.PI*2);ctx.fill();
+        
         // Health bar
         const bw=hw*1.6,bh=3,bx=cx-bw/2,by=cy+hh+4;
         ctx.fillStyle='#333355';ctx.fillRect(bx,by,bw,bh);
@@ -496,48 +507,65 @@ function drawStation(s,t){
         ctx.fillStyle=hp>0.5?'#44ff44':hp>0.25?'#ffaa22':'#ff3333';
         ctx.fillRect(bx,by,bw*hp,bh);
     }
+    
     // Security shield
     if(s.type===T_SEC){
         if(s.secured){
             ctx.fillStyle='#8888ff';ctx.font='16px sans-serif';ctx.textAlign='center';
             ctx.fillText('\u25c6',cx,cy-hh-6);
-            ctx.font='bold 8px monospace';
-            ctx.fillText('LOCKED',cx,cy+hh+16);
+            ctx.font='bold 8px monospace';ctx.fillText('LOCKED',cx,cy+hh+16);
+        } else {
+            // Pulsing vulnerability indicator
+            const pulse=Math.sin(t*3)*0.5+0.5;
+            ctx.globalAlpha=pulse*0.6;
+            ctx.fillStyle='#ff6688';ctx.font='14px sans-serif';ctx.textAlign='right';
+            ctx.fillText('\u26a0',cx+hw+4,cy-hh-2);
+            ctx.globalAlpha=1;
         }
-        ctx.fillStyle='#ff88aa';ctx.font='14px sans-serif';ctx.textAlign='right';
-        ctx.fillText('\u26a1',cx+hw+4,cy-hh-2);
     }
+    
     // Ship progress
     if(s.type===T_SHIP&&s.hasBuild&&!s.hasFire){
         const sp=Math.sin(t*4);
         ctx.fillStyle='#ffdd44';ctx.font='bold 12px monospace';ctx.textAlign='center';
-        ctx.fillText('\ud83d\udce6 '+Math.round(sp*10)+'%',cx,cy+hh+18);
+        ctx.fillText('\ud83d\udce6 '+Math.round(sp*10+10)+'%',cx,cy+hh+18);
     }
-    // Process indicator (player adjacent)
+    
+    // Process indicator when player adjacent with build
     const playerAdj=findAdjacent(player.x,player.y);
     const isPlayerNear=playerAdj.some(a=>a.x===s.x&&a.y===s.y);
-    if(isPlayerNear&&!s.hasFire){
-        ctx.strokeStyle='rgba(0,229,255,0.3)';ctx.lineWidth=1;
-        ctx.setLineDash([2,4]);
-        roundRect(cx-hw-2,cy-hh-2,hw*2+4,hh*2+4,8);ctx.stroke();
+    if(isPlayerNear&&!s.hasFire&&s.hasBuild){
+        const pulse=Math.sin(t*5)*0.3+0.7;
+        ctx.strokeStyle='rgba(68,255,68,'+pulse*0.6+')';ctx.lineWidth=2;
+        ctx.setLineDash([3,5]);
+        roundRect(cx-hw-3,cy-hh-3,hw*2+6,hh*2+6,8);ctx.stroke();
         ctx.setLineDash([]);
+        // Arrow pointing to station
+        const arrowY=cy-hh-12;
+        ctx.fillStyle='#44ff44';ctx.font='bold 10px monospace';ctx.textAlign='center';
+        ctx.fillText('\u25b6',cx,arrowY);
     }
 }
 
 function drawPlayer(t){
     const cx=player.x*CELL+CELL/2,cy=player.y*CELL+CELL/2;
     const bob=player.moving?Math.sin(t*12)*2:0;
+    
     // Glow
     ctx.fillStyle='rgba(0,229,255,0.15)';ctx.beginPath();ctx.arc(cx,cy+bob,22,0,Math.PI*2);ctx.fill();
+    
     // Body
     ctx.fillStyle='#00e5ff';ctx.beginPath();ctx.arc(cx,cy+bob,10,0,Math.PI*2);ctx.fill();
+    
     // Helmet
     ctx.fillStyle='#0099aa';ctx.beginPath();ctx.arc(cx,cy+bob-3,8,Math.PI,0);ctx.fill();
+    
     // Eyes
     ctx.fillStyle='#fff';
     const eo=player.dir==='left'?-3:player.dir==='right'?3:0;
     ctx.beginPath();ctx.arc(cx-3+eo,cy+bob-2,2,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(cx+3+eo,cy+bob-2,2,0,Math.PI*2);ctx.fill();
+    
     // Walking legs
     if(player.moving){
         const lp=Math.sin(t*14);
@@ -581,21 +609,28 @@ function drawConveyors(){
 
 // ─── GAME LOOP ───
 function gameLoop(timestamp){
-    if(state!=='playing')return;
+    if(gameState!=='playing')return;
     const dt=Math.min((timestamp-lastFrameTime)/1000,0.1);
     lastFrameTime=timestamp;const t=timestamp/1000;
+    
     let shakeX=0,shakeY=0;
     if(shakeTimer>0){shakeTimer-=dt;shakeX=(Math.random()-0.5)*shakeIntensity*2;shakeY=(Math.random()-0.5)*shakeIntensity*2;shakeIntensity*=0.9;}
+    
     ctx.save();ctx.translate(shakeX,shakeY);
     ctx.fillStyle='#0d0d1a';ctx.fillRect(-10,-10,CANVAS_W+20,CANVAS_H+20);
+    
     drawGrid();drawConveyors();
     for(const s of stations)drawStation(s,t);
     drawPlayer(t);drawParticles();
+    
     // Danger vignette
     const avgHP=stations.reduce((a,s)=>a+s.health,0)/stations.length;
     if(avgHP<40){const u=(40-avgHP)/40;ctx.fillStyle='rgba(255,30,30,'+(u*0.12)+')';ctx.fillRect(0,0,CANVAS_W,CANVAS_H);}
+    
     ctx.restore();
+    
     updatePlayer(dt);updateParticles(dt);
+    
     // Fire tick
     if(timestamp-lastFireTick>Math.max(1500,FIRE_TICK_RATE-wave*100)){
         lastFireTick=timestamp;spreadFire();
@@ -607,41 +642,60 @@ function gameLoop(timestamp){
             }
         }
     }
+    
     // Queue
     if(timestamp-lastQueueTick>QUEUE_INTERVAL){lastQueueTick=timestamp;addBuildQueue();}
-    // Process builds (player must be adjacent)
+    
+    // Process builds
     processCooldown-=dt;
-    if(processCooldown<=0){processBuilds();processCooldown=0.15;}
-    processSecurity();
+    if(processCooldown<=0){processBuilds();processCooldown=PROCESS_COOLDOWN;}
+    
+    // Security
+    processSecurity(dt);
+    
+    // Process animations decay
+    for(const s of stations){
+        if(s.processAnim>0)s.processAnim-=dt*2;
+    }
+    
     // Fire spawn
     fireSpawnTimer-=dt*1000;
     if(fireSpawnTimer<=0){spawnFire();fireSpawnTimer=nextFireSpawn+Math.random()*3000;}
+    
     updateDifficulty();updateHUD();
+    
     animFrame=requestAnimationFrame(gameLoop);
 }
 
 // ─── START / END ───
 function startGame(){
-    initAudio();initGame();state='playing';
+    initAudio();initGame();gameState='playing';
     overlay.classList.add('hidden');
     lastFireTick=performance.now();lastQueueTick=performance.now();
     fireSpawnTimer=nextFireSpawn;lastFrameTime=performance.now();
     timerInterval=setInterval(function(){
-        if(state!=='playing')return;timeLeft--;updateHUD();
+        if(gameState!=='playing')return;timeLeft--;updateHUD();
         if(timeLeft<=0)endGame();
     },1000);
+    
+    // Show hint
+    if(controlsHint&&!hasShownHint){
+        controlsHint.classList.add('fade');
+        hasShownHint=true;
+    }
+    
     animFrame=requestAnimationFrame(gameLoop);
 }
 
 function endGame(){
-    state='gameover';clearInterval(timerInterval);cancelAnimationFrame(animFrame);
+    gameState='gameover';clearInterval(timerInterval);cancelAnimationFrame(animFrame);
     const elapsed=GAME_DURATION-timeLeft;
     let rating='D';
     if(score>=3000)rating='S';else if(score>=2000)rating='A';
     else if(score>=1200)rating='B';else if(score>=600)rating='C';
     overlay.innerHTML='<h1>SHIFT COMPLETE</h1><h2>Final Score</h2>'
         +'<div class="final-score">'+score+'</div>'
-        +'<p class="subtitle">Wave '+wave+' \u00b7 '+buildsShipped+' shipped \u00b7 '+secretsSecured+' secrets secured \u00b7 '+lastIncidentsExtinguished+' fires out \u00b7 Rating: '+rating+'<br><span style="color:#6a6a8a">The factory survived... for now.</span></p>'
+        +'<p class="subtitle">Wave '+wave+' \u00b7 '+buildsShipped+' shipped \u00b7 '+secretsSecured+' secured \u00b7 '+lastIncidentsExtinguished+' fires out \u00b7 Rating: '+rating+'<br><span style="color:#6a6a8a">The factory survived... for now.</span></p>'
         +'<button class="btn primary" id="restart-btn">\u25b6 ANOTHER SHIFT</button>';
     overlay.classList.remove('hidden');
     document.getElementById('restart-btn').addEventListener('click',startGame);
@@ -660,7 +714,7 @@ function initTitleParticles(){
     }
 }
 function titleLoop(ts){
-    if(state!=='menu')return;
+    if(gameState!=='menu')return;
     const t=ts/1000;
     ctx.fillStyle='#0d0d1a';ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
     ctx.strokeStyle='#1a1a2e';ctx.lineWidth=0.5;
