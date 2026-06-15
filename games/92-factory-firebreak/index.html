@@ -108,6 +108,7 @@ const CANVAS_W=GRID_W*CELL,CANVAS_H=GRID_H*CELL;
 const GAME_DURATION=180;
 const FIRE_TICK_RATE=2000,QUEUE_INTERVAL=5000;
 const FIRE_SPAWN_MIN=5000,FIRE_SPAWN_MAX=12000;
+var currentQueueInterval=QUEUE_INTERVAL; // ramps down with wave for escalating queue pressure (visible backlog on BUILD)
 const PROCESS_COOLDOWN=0.2;
 const T_BUILD='build',T_TEST='test',T_SHIP='ship',T_SEC='security';
 
@@ -207,7 +208,7 @@ const player={x:5,y:3,dir:'right',frame:0,frameTimer:0,moving:false};
 function initGame(){
     score=0;wave=1;timeLeft=GAME_DURATION;buildsShipped=0;secretsSecured=0;
     lastIncidentsExtinguished=0;particles=[];floatingTexts=[];transits=[];processCooldown=0;
-    shiftLost=false;
+    shiftLost=false; currentQueueInterval=QUEUE_INTERVAL;
     stations=[];
     for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
         const t=LAYOUT[y][x];if(t)stations.push(createStation(x,y,t));
@@ -584,6 +585,7 @@ function updateDifficulty(){
         shakeTimer=0.25; shakeIntensity=4;
     }
     nextFireSpawn=Math.max(2000,FIRE_SPAWN_MAX-(wave-1)*800);
+    currentQueueInterval=Math.max(2200,QUEUE_INTERVAL-(wave-1)*650); // escalating queues: faster spawns = visible backlog pressure to route under fire/incident load
 }
 
 // ─── RENDERING ───
@@ -627,6 +629,11 @@ function drawStation(s,t){
     if(s.hasBuild){
         ctx.fillStyle='#44ff44';ctx.font='bold 10px monospace';
         ctx.fillText('\u25c8',cx,sy);
+        // queued-work pip (escalating backlog telegraph): makes "route resources / juggle queues" concrete and glanceable on the live production floor
+        if(s.type===T_BUILD){
+            ctx.fillStyle='#aaffcc';ctx.font='9px monospace';
+            ctx.fillText('\u2022',cx+9,sy-1);
+        }
     }
     
     // Fire
@@ -827,8 +834,8 @@ function gameLoop(timestamp){
         }
     }
     
-    // Queue
-    if(timestamp-lastQueueTick>QUEUE_INTERVAL){lastQueueTick=timestamp;addBuildQueue();}
+    // Queue (uses currentQueueInterval which escalates with wave for visible production backlog)
+    if(timestamp-lastQueueTick>currentQueueInterval){lastQueueTick=timestamp;addBuildQueue();}
     
     // Process builds
     processCooldown-=dt;
@@ -960,6 +967,10 @@ function titleLoop(ts){
         roundRect(cx-CELL*0.35,cy-CELL*0.35,CELL*0.7,CELL*0.7,6);ctx.stroke();
         ctx.fillStyle=BORDERS[s.type]+'66';ctx.font='bold 10px monospace';ctx.textAlign='center';
         ctx.fillText(s.label,cx,cy+3);
+        // demo queued pip on title (makes escalating queue + route verb visible on first screen for the polish)
+        if(s.hasBuild && s.type===T_BUILD){
+            ctx.fillStyle='#aaffcc';ctx.font='8px monospace';ctx.fillText('\u2022',cx+7,cy+3);
+        }
         // demo fire visuals on title (firebreak theme visible immediately)
         if((s.x===1&&s.y===0)||(s.x===8&&s.y===0)){
             const fp=Math.sin(t*7+s.x)*0.6+0.8;
@@ -991,6 +1002,9 @@ function titleLoop(ts){
 for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
     const t=LAYOUT[y][x];if(t)stations.push(createStation(x,y,t));
 }
+// demo queued work on one BUILD for title screen (telegraphs the new "escalating queues + route resources" polish immediately on first screen)
+const demoBuild = stations.find(s=>s.type===T_BUILD && s.x<3 && s.y<2);
+if(demoBuild) demoBuild.hasBuild=true;
 initTitleParticles();titleLoop(performance.now());
 
 })();
