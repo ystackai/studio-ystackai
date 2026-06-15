@@ -35,14 +35,15 @@ function record(type, ...args) {
 }
 
 const mockCanvas = {
-  width: 880, height: 520,
+  width: 880, height: 560,
   getContext: (type) => ({
     fillStyle: '', strokeStyle: '', lineWidth: 1, globalAlpha: 1, shadowBlur: 0,
     setLineDash: () => {}, font: '', textAlign: 'left',
     fillRect: () => {}, fillText: () => {}, beginPath: () => {}, moveTo: () => {},
     lineTo: () => {}, arc: () => {}, closePath: () => {}, fill: () => {}, stroke: () => {},
     save: () => {}, restore: () => {}, translate: () => {}, quadraticCurveTo: () => {}
-  })
+  }),
+  addEventListener: (ev, fn) => record('canvas-listener', ev)
 };
 
 const mockEl = (id) => ({

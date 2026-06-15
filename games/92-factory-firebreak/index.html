@@ -68,7 +68,7 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
              <h2>ystackai Production Floor</h2>
              <p class="subtitle">
                 Route builds • Extinguish fires • Patrol secrets<br>
-                WASD/arrows to move • SPACE or ACTION (context verb) • 3:00 shift under pressure
+                WASD/arrows or click grid • SPACE or ACTION (context verb) • 3:00 shift under pressure
              </p>
              <button class="btn primary" id="start-btn">&#9654; START SHIFT</button>
              <div class="legend">
@@ -93,7 +93,7 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
              </div>
          </div>
          <div id="mobile-extinguish">&#129327;<br>ACTION</div>
-         <div id="controls-hint">WASD / Arrows to move &bull; SPACE / X / tap ACTION for context (extinguish / route / secure) &bull; Stand near station</div>
+         <div id="controls-hint">WASD/arrows or click grid &bull; SPACE/X/tap ACTION (context: extinguish/route/secure) &bull; Stand near station</div>
      </div>
 </div>
 <script>
@@ -174,13 +174,13 @@ function sfxSecret(){playTone(1200,0.2,'sine',0.08);playTone(1500,0.15,'sine',0.
 function sfxProcess(){playTone(700,0.06,'triangle',0.04);}
 
 // ─── GAME STATE ───
-let gameState='menu',score=0,wave=1,timeLeft=GAME_DURATION;
-let buildsShipped=0,secretsSecured=0,lastIncidentsExtinguished=0;
-let shiftLost=false; // set when avg health collapses (early fail)
-let stations=[],particles=[],floatingTexts=[],transits=[];
-let lastFireTick=0,lastQueueTick=0,nextFireSpawn=FIRE_SPAWN_MIN,fireSpawnTimer=FIRE_SPAWN_MIN;
-let shakeTimer=0,shakeIntensity=0,timerInterval=null,animFrame=null,lastFrameTime=0;
-let processCooldown=0,hasShownHint=false;
+var gameState='menu',score=0,wave=1,timeLeft=GAME_DURATION;
+var buildsShipped=0,secretsSecured=0,lastIncidentsExtinguished=0;
+var shiftLost=false; // set when avg health collapses (early fail)
+var stations=[],particles=[],floatingTexts=[],transits=[];
+var lastFireTick=0,lastQueueTick=0,nextFireSpawn=FIRE_SPAWN_MIN,fireSpawnTimer=FIRE_SPAWN_MIN;
+var shakeTimer=0,shakeIntensity=0,timerInterval=null,animFrame=null,lastFrameTime=0;
+var processCooldown=0,hasShownHint=false;
 
 function createStation(x,y,type){
     return{x,y,type,health:100,hasBuild:false,hasFire:false,fireHealth:0,
@@ -532,6 +532,21 @@ setupTouch('btn-left','ArrowLeft');setupTouch('btn-right','ArrowRight');
 mobileExt.addEventListener('touchstart',function(e){e.preventDefault();if(gameState==='playing')doAction();},{passive:false});
 mobileExt.addEventListener('mousedown',function(){if(gameState==='playing')doAction();});
 
+// Pointer (mouse) support alongside keyboard/touch for readable controls
+canvas.addEventListener('mousedown',function(e){
+  if(gameState!=='playing')return;
+  const r=canvas.getBoundingClientRect();
+  const gx=Math.floor( ((e.clientX-r.left)/r.width)*CANVAS_W / CELL );
+  const gy=Math.floor( ((e.clientY-r.top)/r.height)*CANVAS_H / CELL );
+  if(!isWalkable(gx,gy))return;
+  const dx=gx-player.x, dy=gy-player.y;
+  if((Math.abs(dx)<=1&&Math.abs(dy)<=1)&&(dx||dy)){
+    player.x=gx;player.y=gy; moveCooldown=0.06;
+    if(dx>0)player.dir='right';else if(dx<0)player.dir='left';else if(dy<0)player.dir='up';else player.dir='down';
+    spawnParticles(gx,gy,'#00e5ff',2,0.6);
+  }else if(Math.abs(dx)<=2&&Math.abs(dy)<=2){ doAction(); }
+});
+
 // ─── PLAYER ───
 function updatePlayer(dt){
     if(moveCooldown>0){moveCooldown-=dt;return;}
@@ -739,16 +754,13 @@ function drawConveyors(t){
         // base faint line
         ctx.setLineDash([3,9]);
         ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-        // animated moving dashes for live production feel
-        ctx.strokeStyle='rgba(0,229,255,0.35)';
-        ctx.setLineDash([5,11]);
-        const len = Math.hypot(x2-x1,y2-y1) || 1;
-        const ox = ((phase-0.5)*24) % (5+11); // scroll offset
-        ctx.beginPath();
-        ctx.moveTo(x1 + (x2-x1)*(0.1 + ox/len*0.02), y1 + (y2-y1)*(0.1 + ox/len*0.02));
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-        ctx.strokeStyle='rgba(0,229,255,0.08)';
+        // animated moving dashes (lineDashOffset) for clear live production routing feel
+        ctx.strokeStyle='rgba(0,229,255,0.45)';
+        ctx.lineWidth=2;
+        ctx.setLineDash([6,10]);
+        ctx.lineDashOffset = -(phase * 28);
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+        ctx.lineDashOffset=0; ctx.lineWidth=1.5; ctx.strokeStyle='rgba(0,229,255,0.08)';
     }
     ctx.setLineDash([]);
 }
