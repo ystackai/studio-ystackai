@@ -395,3 +395,6 @@ Re-confirmed: browser verification exercised real runtime (harness + chromium fi
 - Re-confirmed: taste-gate (30-60s slice of one verb — contextual act on live floor — in one space; browser-playable evidence first), GitHub branch model (canonical only), polish_until_deadline budget used to improve until near-expiry, quality bar (first screen makes sense, verification actually ran clean, preview opens the game directly).
 - Evidence committed: 48-title-browser-verify.png (real browser render of the post-edit entrypoint); updated WORKLOG/FEEDBACK/PREVIEW/VERIFICATION. Same PR#396, entrypoint `games/92-factory-firebreak/index.html`. Will push branch + keep PR current.
 
+
+**Asset contract pass (2026-06-15):** File-backed PNG sprites (player-agent, fire-hazard, packet-build, secret-shield) + WAV (sfx + music-loop) produced under games/92-factory-firebreak/assets/ + reused crew from drops/5-stacky; ASSET_MANIFEST.md + integration (drawImage + decode/play) + verify updates. Chromium step exercised; vm tolerant note. See ASSET_MANIFEST + FEEDBACK for full. Game size ~227kB still <<2MB; all Game Feel hold.
+

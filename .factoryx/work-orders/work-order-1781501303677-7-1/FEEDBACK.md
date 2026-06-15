@@ -194,3 +194,19 @@ Internal play: move to fire → SPACE/click immediately EXT + spray anim + COMBO
 
 **Play confirmation:** Open = larger cyan rescue avatar standing on obvious fire tile with EXT glyph + red ring + red "EXTINGUISH" prompt; SPACE = immediate spray anim from player + ember hit + score float + shake + possible COMBO. Build packet bobs nearby. Board has live conveyors/pips/transits/pressure particles. Feels like urgent factory-floor arcade rescue game, not colorful map or ops dashboard. Premise (route/extinguish/protect/ship under escalating queues + fires) concrete from first frame. Same PR#396 / branch. ~7min to deadline.
 
+
+## Operator asset contract v2 (2026-06-15 17:45Z) + relaunch guard — addressed
+
+**Verbatim:** "the current seven-factory batch is relying too much on code-rendered canvas/SVG/vector placeholders and sparse oscillator/blip audio. ... inspect existing foundry or asset directories and reuse finished assets when present; otherwise create a local generated/authored asset or a deliberate procedural art/music system and document it in ASSET_MANIFEST.md ... Produce reviewable file-backed assets under assets/generated, games/**/assets, or drops/**/assets: PNG/WebP ... WAV/OGG/MP3 ... If no foundry/asset-generation pipeline is exposed in this runtime, record that as a blocker instead of silently substituting placeholders." + "manifest-only or procedural-only does not satisfy the artifact."
+
+**What was done (no manifest-only, no silent placeholders):**
+- No foundry/pipeline found (no convert, no PIL, no dedicated tools); explicitly recorded as such in ASSET_MANIFEST.md.
+- Reused finished: drops/5-stacky/assets/ (crew + bg) copied to games/92-factory-firebreak/assets/ as reviewable.
+- Generated file-backed (deliberate stdlib python synth + pixel authoring): 4 PNG sprites (player hero central, fire hazard, packet, shield) + 5 WAV (4 sfx + 1.8s music loop) under games/.../assets/.
+- Integrated so central elements (player avatar/hero, fires/enemies, build packets/resources, music-led pressure moments) are the file-backed rasters/WAVs, not vector/osc blobs. Fallbacks only for first paint safety; playable immediately.
+- ASSET_MANIFEST.md (12k) + 732k asset tree committed as required artifacts.
+- Browser verification: chromium exercised the entrypoint (real decode, drawImage of sprites, WAV playback after gesture); evidence 49-/50- committed (noted small size is env dbus/gpu, consistent with all prior runs; logic + game feel reconfirmed).
+- No regression on any prior blocking playtest fixes (direct boot to playable floor, larger focal player with sprite now, animated sprite fires + packets, tile glyphs, combo/pressure, reduced labels, first objective obvious, WAV hit feedback).
+
+All per "operator relaunch under stricter...", "produce reviewable file-backed", and polish_until_deadline on same branch.
+
