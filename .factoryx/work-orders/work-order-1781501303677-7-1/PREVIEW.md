@@ -23,8 +23,9 @@ https://github.com/ystackai/studio-ystackai/pull/396
 - `screenshots/03-title-polish.png` (after unified ACTION, HUD additions, conveyors)
 - `screenshots/04-title-browser-final.png` (post-final-polish: Ext HUD, lower prompt badge, de-cluttered conveyors)
 - `screenshots/05-title-browser-reverify.png` (2026-06-15 direct-run re-verify, chromium --headless --screenshot on file://`games/92-factory-firebreak/index.html`, 77.7KB, zero pageerror/console during titleLoop + DOM render; confirms first screen loads cleanly pre-deadline)
+- `screenshots/06-title-browser-feedback.png` (2026-06-15 ~08:50Z, post-monitor-feedback polish: CELL=80 enlarged grid 880×560, overlay 0.58 so live board+demo transits+fires+conveyors visible behind start modal, routing/firebreak theme concrete on first screen immediately; 89.7KB PNG, chromium file:// load clean)
 
-Title screen: dark terminal aesthetic (monospace, #0d0d1a, cyan #00e5ff / orange accents matching ystackai house style) with animated ember particles over the station grid + legend + START SHIFT button.
+Title screen: dark terminal aesthetic (monospace, #0d0d1a, cyan #00e5ff / orange accents matching ystackai house style) with animated ember particles, live station grid, faint conveyors, demo transits and flickering fires visible through the semi-transparent overlay (per monitor feedback) + legend + START SHIFT button. The production floor and core verbs are visible immediately.
 
 Gameplay screen: 11×7 grid factory floor, color-coded stations w/ health bars + low-HP ! alerts, live animated build transits (green ◇) + scrolling cyan conveyor dashes, cyan player agent (glowing, walking bob, helmet), flickering fires, floating score/feedback text ("+pts!", "To TEST", "SECURED!", "LEAK! -25", "WAVE 2"), dynamic "▶ ..." prompt, HUD now with Integrity % (color) + Transit count (queues visible), danger vignette + screen shake on events.
 

@@ -57,3 +57,15 @@
 - Updated VERIFICATION.md (new static + browser sections + known issues + prior-runner note), PREVIEW.md (05 screenshot ref), FEEDBACK.md (re-verify + checklist reconfirm), WORKLOG (this entry). No code changes to game (per "only modify required"; polish budget used for evidence/docs sync).
 - Time: ~08:45Z, deadline 14:28Z — >5h remaining; will commit on canonical only, push, gh pr comment (keep body current via committed notes + prior comments which embed full Work Order context/payload).
 - PR preview entrypoint remains `games/92-factory-firebreak/index.html` (relative, self-contained single-file per playbook). No homepage mutation. All per rules: taste-gate first (satisfied), browser verification real (chromium exercised), GitHub branch model, durable memory in FACTORYX_*_PATH, polish_until_deadline.
+
+### Feedback-driven polish (overnight monitor + pre-deadline, 2026-06-15 ~08:50 UTC)
+- Inspected PR #396 + branch (guard): OPEN, no reviews, checks SUCCESS, no CHANGES_REQUESTED/human blocks; head matched before edits. Sourced factoryx github-shell-env for gh/git (no token print).
+- Addressed monitor playtest note in FEEDBACK: "screenshots still dark and text-heavy. Make the board/action visible before or behind the start modal, enlarge the playable elements, and show routing/firebreak gameplay quickly."
+  - Made board visible: #overlay bg lowered to rgba(10,10,20,0.58) so the live titleLoop (grid + stations + embers) shows through immediately; title now renders faint conveyors + demo transits + flickering fires on stations.
+  - Enlarged elements: CELL=80 (11×7 grid now 880×560 canvas vs prior 792×504; stations/player/conveyors ~11% larger); HUD font 15px, touch D-pad 60px, ACTION 78px, btns min 48px + more pad; prompt font+pos adjusted for taller play area and legibility.
+  - Show routing/firebreak fast: titleLoop now draws animated demo transits (green diamonds progressing on Build→Ship lanes), faint scrolling conveyor dashes, and visual fires on 2 stations — the software-factory theme (route, extinguish) is concrete and visible in <5s on first screen, before START SHIFT.
+- Re-validated: node `new Function()` syntax PASS (42,620 bytes); chromium --headless file:// render succeeded with zero pageerror/uncaught (new 06-title-browser-feedback.png, 89.7KB PNG of visible board + larger grid + overlay UI + demo activity).
+- Game Feel: all items hold (larger touch targets even better, core verb still <20s discoverable on the now-visible floor with prompt, easing/feedback/juice unchanged, <2MB, offline, no net, 60fps design). First screen now even more immediately communicative per game-designer-2d guidance.
+- No core loop or systems changes (only presentation per feedback + enlargement); used same canonical branch.
+- Updated all durable notes + committed screenshots/06 + game; will push + PR comment to keep current. ~5.3h budget remains to 14:28Z deadline. Per polish_until_deadline + all workflow (taste-gate slice already long satisfied; this is targeted polish on existing playable core).
+- Execution continues to use only the Work Order branch `factoryx/factory-ystackai/work-order-1781501303677-7-1`; PR #396.

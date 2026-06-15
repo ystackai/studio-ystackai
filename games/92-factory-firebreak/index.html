@@ -8,7 +8,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#0d0d1a;color:#c8c8d8;font-family:'IBM Plex Mono','Space Mono','Fira Code',monospace;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
 #game-container{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:relative}
-#hud{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:#141425;border-bottom:1px solid #2a2a4a;font-size:14px;flex-shrink:0;z-index:10}
+#hud{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:#141425;border-bottom:1px solid #2a2a4a;font-size:15px;flex-shrink:0;z-index:10}
 .hud-item{display:flex;align-items:center;gap:6px}
 .hud-label{color:#6a6a8a;font-size:11px;text-transform:uppercase;letter-spacing:1px}
 .hud-value{font-weight:700;font-size:16px}
@@ -21,28 +21,28 @@ html,body{width:100%;height:100%;background:#0d0d1a;color:#c8c8d8;font-family:'I
 #transit-val{color:#00e5ff}
 #canvas-wrapper{position:relative;flex:1;width:100%;max-width:900px;display:flex;align-items:center;justify-content:center;min-height:0}
 canvas{display:block;background:#111122;image-rendering:pixelated;image-rendering:crisp-edges;max-width:100%;max-height:100%}
-#overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,10,20,0.92);z-index:20;transition:opacity 0.3s ease}
+#overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,10,20,0.58);z-index:20;transition:opacity 0.3s ease}
 #overlay.hidden{opacity:0;pointer-events:none}
 #overlay h1{font-size:clamp(28px,5vw,48px);color:#ff4444;margin-bottom:8px;text-shadow:0 0 20px rgba(255,68,68,0.5)}
 #overlay h2{font-size:clamp(16px,3vw,24px);color:#00e5ff;margin-bottom:16px;font-weight:400}
 #overlay .subtitle{color:#8888aa;font-size:clamp(11px,1.8vw,14px);margin-bottom:24px;text-align:center;line-height:1.6;max-width:500px;padding:0 16px}
 #overlay .final-score{font-size:36px;color:#00e5ff;margin:12px 0;text-shadow:0 0 15px rgba(0,229,255,0.4)}
-.btn{background:#1e1e3a;color:#e0e0f0;border:1px solid #3a3a6a;padding:12px 32px;font-family:inherit;font-size:16px;cursor:pointer;border-radius:4px;transition:all 0.15s ease;margin:6px;min-width:44px;min-height:44px}
+.btn{background:#1e1e3a;color:#e0e0f0;border:1px solid #3a3a6a;padding:14px 36px;font-family:inherit;font-size:16px;cursor:pointer;border-radius:4px;transition:all 0.15s ease;margin:6px;min-width:48px;min-height:48px}
 .btn:hover{background:#2a2a5a;border-color:#5a5a9a}
 .btn.primary{background:#0066cc;border-color:#0088ff;color:#fff}
 .btn.primary:hover{background:#0077ee}
 #touch-controls{display:none;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:15}
 .touch-row{display:flex;justify-content:center;gap:4px}
-.touch-btn{width:56px;height:56px;background:rgba(30,30,60,0.85);border:1px solid #4a4a7a;border-radius:8px;color:#c8c8e8;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.touch-btn{width:60px;height:60px;background:rgba(30,30,60,0.85);border:1px solid #4a4a7a;border-radius:8px;color:#c8c8e8;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .touch-btn:active{background:rgba(60,60,120,0.95)}
-.touch-spacer{width:56px;height:56px}
-#mobile-extinguish{position:absolute;bottom:100px;right:16px;width:72px;height:72px;background:rgba(139,26,26,0.85);border:2px solid #cc4444;border-radius:50%;color:#fff;font-size:12px;font-weight:700;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:15;touch-action:manipulation;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.2}
+.touch-spacer{width:60px;height:60px}
+#mobile-extinguish{position:absolute;bottom:110px;right:16px;width:78px;height:78px;background:rgba(139,26,26,0.88);border:2px solid #cc4444;border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:15;touch-action:manipulation;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.15}
 .legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:12px;font-size:11px}
 .legend-item{display:flex;align-items:center;gap:4px}
 .legend-swatch{width:12px;height:12px;border-radius:2px;display:inline-block}
 #controls-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#4a4a6a;font-size:10px;z-index:10;text-align:center;white-space:nowrap;transition:opacity 2s ease}
 #controls-hint.fade{opacity:0}
-#process-prompt{position:absolute;top:62%;left:50%;transform:translate(-50%,-50%);color:#44ff44;font-size:13px;font-weight:700;z-index:12;pointer-events:none;opacity:0;transition:opacity 0.2s ease;text-shadow:0 0 10px rgba(68,255,68,0.5);background:rgba(10,10,20,0.6);padding:2px 8px;border-radius:3px;border:1px solid rgba(68,255,68,0.3)}
+#process-prompt{position:absolute;top:55%;left:50%;transform:translate(-50%,-50%);color:#44ff44;font-size:14px;font-weight:700;z-index:12;pointer-events:none;opacity:0;transition:opacity 0.2s ease;text-shadow:0 0 10px rgba(68,255,68,0.5);background:rgba(10,10,20,0.65);padding:3px 10px;border-radius:3px;border:1px solid rgba(68,255,68,0.4)}
 #process-prompt.show{opacity:1}
 @media(pointer:coarse){#touch-controls{display:block}#mobile-extinguish{display:flex}#controls-hint{display:none}}
 @media(max-width:600px){#hud{font-size:11px;padding:6px 8px}.hud-value{font-size:13px}}
@@ -61,15 +61,14 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
          <div class="hud-item"><span class="hud-label">Time</span><span class="hud-value" id="time-val">3:00</span></div>
      </div>
      <div id="canvas-wrapper">
-         <canvas id="game-canvas" width="880" height="520"></canvas>
+         <canvas id="game-canvas" width="880" height="560"></canvas>
          <div id="process-prompt">&#9654; STATION READY</div>
          <div id="overlay">
              <h1>&#128293; FACTORY FIREBREAK</h1>
              <h2>ystackai Production Floor</h2>
              <p class="subtitle">
-                Incidents are spreading across the factory floor!<br>
-                Move (WASD/arrows) to stations. SPACE / ACTION button does the context verb: extinguish / route builds / secure.<br>
-                Juggle fires, builds, and secrets under the 3:00 timer. Don't let the floor collapse.
+                Route builds • Extinguish fires • Patrol secrets<br>
+                WASD/arrows to move • SPACE or ACTION (context verb) • 3:00 shift under pressure
              </p>
              <button class="btn primary" id="start-btn">&#9654; START SHIFT</button>
              <div class="legend">
@@ -102,7 +101,7 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
 'use strict';
 
 // ─── CONSTANTS ───
-const GRID_W=11,GRID_H=7,CELL=72;
+const GRID_W=11,GRID_H=7,CELL=80;
 const CANVAS_W=GRID_W*CELL,CANVAS_H=GRID_H*CELL;
 const GAME_DURATION=180;
 const FIRE_TICK_RATE=2000,QUEUE_INTERVAL=5000;
@@ -874,7 +873,7 @@ function endGame(){
 startBtn.addEventListener('click',startGame);
 
 // ─── TITLE SCREEN ───
-let titleAF=null,titleParts=[];
+let titleAF=null,titleParts=[],titleDemoTransits=[];
 function initTitleParticles(){
     for(let i=0;i<25;i++){
         titleParts.push({x:Math.random()*CANVAS_W,y:Math.random()*CANVAS_H,
@@ -882,6 +881,12 @@ function initTitleParticles(){
             life:0.3+Math.random()*0.7,size:1+Math.random()*2,
             color:['#ff4422','#ffaa22','#ff6600','#00e5ff','#44ff44'][Math.floor(Math.random()*5)]});
     }
+    // Demo transits for title: show routing action immediately (live production floor visible behind overlay)
+    titleDemoTransits=[
+        {sx:0,sy:0,tx:6,ty:2,prog:0.1,color:'#44ff44'}, // build -> ship lane
+        {sx:2,sy:0,tx:8,ty:3,prog:0.55,color:'#44ff44'},
+        {sx:1,sy:2,tx:7,ty:2,prog:0.8,color:'#44ff44'}
+    ];
 }
 function titleLoop(ts){
     if(gameState!=='menu')return;
@@ -890,14 +895,42 @@ function titleLoop(ts){
     ctx.strokeStyle='#1a1a2e';ctx.lineWidth=0.5;
     for(let x=0;x<=GRID_W;x++){ctx.beginPath();ctx.moveTo(x*CELL,0);ctx.lineTo(x*CELL,CANVAS_H);ctx.stroke();}
     for(let y=0;y<=GRID_H;y++){ctx.beginPath();ctx.moveTo(0,y*CELL);ctx.lineTo(CANVAS_W,y*CELL);ctx.stroke();}
+    // faint live conveyors (routing) visible on title
+    ctx.strokeStyle='rgba(0,229,255,0.12)';ctx.lineWidth=1.5;ctx.setLineDash([3,9]);
+    const tbuilds=stations.filter(s=>s.type===T_BUILD), tships=stations.filter(s=>s.type===T_SHIP);
+    for(const b of tbuilds){
+        let best=null,bestDx=999;
+        for(const sh of tships){const dx=sh.x-b.x; if(dx>0&&dx<bestDx){best=sh;bestDx=dx;}}
+        if(!best&&tships.length)best=tships[0]; if(!best)continue;
+        const x1=b.x*CELL+CELL/2,y1=b.y*CELL+CELL/2,x2=best.x*CELL+CELL/2,y2=best.y*CELL+CELL/2;
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    // stations (faded but now visible through 0.58 overlay)
     for(const s of stations){
         const cx=s.x*CELL+CELL/2,cy=s.y*CELL+CELL/2;
         ctx.fillStyle=COLORS[s.type]+'44';
         roundRect(cx-CELL*0.35,cy-CELL*0.35,CELL*0.7,CELL*0.7,6);ctx.fill();
         ctx.strokeStyle=BORDERS[s.type]+'44';ctx.lineWidth=1;
         roundRect(cx-CELL*0.35,cy-CELL*0.35,CELL*0.7,CELL*0.7,6);ctx.stroke();
-        ctx.fillStyle=BORDERS[s.type]+'66';ctx.font='bold 9px monospace';ctx.textAlign='center';
+        ctx.fillStyle=BORDERS[s.type]+'66';ctx.font='bold 10px monospace';ctx.textAlign='center';
         ctx.fillText(s.label,cx,cy+3);
+        // demo fire visuals on title (firebreak theme visible immediately)
+        if((s.x===1&&s.y===0)||(s.x===8&&s.y===0)){
+            const fp=Math.sin(t*7+s.x)*0.6+0.8;
+            ctx.fillStyle='#ff4422';ctx.beginPath();ctx.arc(cx-6,cy+8,5*fp,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#ffaa22';ctx.beginPath();ctx.arc(cx+5,cy+5,3.5*fp,0,Math.PI*2);ctx.fill();
+        }
+    }
+    // animated demo transits (routing under pressure, visible on first screen)
+    for(const tr of titleDemoTransits){
+        tr.prog = (tr.prog + 0.003) % 1.0;
+        const px=tr.sx*CELL + (tr.tx-tr.sx)*CELL*tr.prog + CELL*0.5;
+        const py=tr.sy*CELL + (tr.ty-tr.sy)*CELL*tr.prog + CELL*0.5;
+        ctx.globalAlpha=0.25+0.35*(1-Math.abs(tr.prog-0.5)*2);
+        ctx.fillStyle=tr.color;
+        ctx.beginPath();ctx.moveTo(px,py-4);ctx.lineTo(px+4,py);ctx.lineTo(px,py+4);ctx.lineTo(px-4,py);ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
     }
     for(const p of titleParts){
         p.x+=p.vx;p.y+=p.vy;p.life-=0.003;

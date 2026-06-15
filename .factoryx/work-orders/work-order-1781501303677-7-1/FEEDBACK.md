@@ -28,3 +28,15 @@ All items remain [x] after this polish pass (see VERIFICATION.md for exacts). Fi
 - Deadline-driven: continued using same branch/PR per rules.
 
 No external playtesters in this isolated run; the above is from direct execution + code+render verification. If human plays and finds issues, they will be addressed in follow-up on this PR/branch until budget.
+
+
+## Overnight Monitor Playtest Feedback
+
+Visual feedback from overnight monitor: factory-management theme is clear, but screenshots are still dark and text-heavy. Make the board/action visible before or behind the start modal, enlarge the playable elements, and show routing/firebreak gameplay quickly.
+
+**Addressed (2026-06-15 ~08:50Z polish pass):**
+- Board visible behind/through start: overlay opacity reduced to 0.58; titleLoop now draws the full station grid + embers + (new) faint conveyors + animated demo transits + flickering demo fires so the production floor and theme actions are immediately visible on first screen.
+- Enlarged playable: grid CELL bumped 72→80 (880×560 canvas, stations/player larger), HUD 15px, D-pad 60px, ACTION 78px, buttons enlarged.
+- Routing/firebreak shown quickly: demo transits progress on lanes, fires pulse on stations, conveyors scroll — concrete verbs (route resources, break fires) visible in the title render before any click. New chromium evidence `06-title-browser-feedback.png`.
+- Re-checked: core verb still discoverable instantly (visible floor + prompt), all Game Feel items hold (larger targets help), syntax+chromium clean, size 42.6KB. No behavior change to loop, just presentation polish per feedback + polish_until_deadline.
+- Internal play: title now feels like a live slice of the arcade (one space, visible routing+incidents), START reveals the full pressure sim. Ready for continued human review.
