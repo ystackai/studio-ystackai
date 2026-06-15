@@ -229,7 +229,7 @@ try {
   const cwd = process.cwd();
   const entry = path.join(cwd, 'games/92-factory-firebreak/index.html');
   const outDir = path.join(cwd, 'games/92-factory-firebreak/screenshots');
-  const outPng = path.join(outDir, '46-title-browser-verify.png');
+  const outPng = path.join(outDir, '48-title-browser-verify.png');
   require('fs').mkdirSync(outDir, { recursive: true });
   // Use timeout(10s) + chromium flags matching prior successful runs; dbus noise ignored as always env-only.
   const cmd = `timeout 10s /usr/bin/chromium --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --window-size=900,640 --screenshot=${outPng} file://${entry} 2>&1`;
@@ -243,7 +243,7 @@ try {
     try {
       const woDir = path.join(__dirname, 'screenshots');
       require('fs').mkdirSync(woDir, { recursive: true });
-      const woShot = path.join(woDir, '46-title-browser-verify.png');
+      const woShot = path.join(woDir, '48-title-browser-verify.png');
       require('fs').copyFileSync(outPng, woShot);
       record('browser', 'copied evidence to work-order screenshots/');
     } catch(e){ record('browser', 'copy note: '+(e.message||'').slice(0,60)); }
@@ -261,7 +261,7 @@ console.log('Start + interactions exercised: OK');
 console.log('Captured events:', log.length);
 console.log('Console errors during run:', errors.length);
 console.log('Page/throw errors:', pageErrors.length);
-console.log('Browser runtime (chromium file://): ' + (browserOk ? 'OK (fresh 46-*.png, no timeout)' : 'node-mock only (env)'));
+console.log('Browser runtime (chromium file://): ' + (browserOk ? 'OK (fresh 48-*.png, no timeout)' : 'node-mock only (env)'));
 if (browserShot) console.log('Browser evidence:', browserShot);
 console.log('Last snapshot:', log.filter(l=>l.type==='snapshot').pop());
 console.log('Sample log tail:');
