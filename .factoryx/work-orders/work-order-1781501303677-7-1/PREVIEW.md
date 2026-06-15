@@ -222,3 +222,12 @@ PR: https://github.com/ystackai/studio-ystackai/pull/396
 - Addresses all operator blocking playtest (11:23/11:50/12:18/15:32) + asset v2 + previous-run verify issue: first screen = live playable rescue floor (no menu), larger focal player + animated hazards (crawling embers from sprite fires) + interventions (sprays from player), score/combo/pressure, obvious tile glyphs + starter obj for immediate game-like first input (click/SPACE = real scored ext with juice + WAV), file-backed PNG/WAV under assets/ + manifest (no silent vector/osc), reduced labels. Game Feel + premise + taste-gate hold. Same PR#396 / canonical branch `factoryx/factory-ystackai/work-order-1781501303677-7-1`.
 - Re-ran full direct (no zellij) + sourced gh + `node .../verify-runtime.js` + chromium evidence before any metadata. ~polish budget used per deadline; kept same branch/PR.
 
+
+## FactoryX Work Order Context (for PR body)
+- Work Order: work-order-1781501303677-7-1
+- factory_id: factory-ystackai
+- project_id: ystackai
+- Full instruction/payload is the original work order prompt (including all operator blocking playtest feedback timestamps, asset contract v2, previous-run browser verify "const" SyntaxError on check-7.html repeated failures, "polish_until_deadline", "address ... before peripheral polish", "browser_runtime_verification": true, expected github_pr, preview_entrypoint games/92-factory-firebreak/index.html, and the complete rules for branch/PR/memory/assets/Game Feel/etc).
+- This commit + 57- evidence + memory updates address the verbatim blockings listed in the payload before any peripheral polish or PR-metadata-only changes.
+- Canonical branch: factoryx/factory-ystackai/work-order-1781501303677-7-1 ; PR: https://github.com/ystackai/studio-ystackai/pull/396 (update body with this section + full original prompt when push effective).
+
