@@ -211,3 +211,6 @@ PR: https://github.com/ystackai/studio-ystackai/pull/396
 - Re-capture after game feel amplifications (larger player glow/sprite 38px, 15-ember spread crawls, 22-spray interventions from player, bolder tile glyphs, reduced label alpha) while preserving direct-boot playable + file assets + terse HUD.
 - All prior screenshots (46-51) remain valid for history; 52- is the authoritative post-rework for the "browser_runtime_verification": true requirement.
 
+
+- `games/92-factory-firebreak/screenshots/55-title-browser-verify.png` (2026-06-15 post-polish xvfb chromium on real `games/92-factory-firebreak/index.html` via hardened verify-runtime.js; 7kB env (dbus/gpu), zero pageerror/uncaught during load + rAF of live arcade floor with starter objective visible (persistent EXT/ROUTE glyphs + rings), larger focal player sprite+glow+action ring, reduced labels, animated sprites. Addresses prior check-7.html const syntax + dashboard feedback. Browser runtime verification PASS on direct entrypoint.)
+

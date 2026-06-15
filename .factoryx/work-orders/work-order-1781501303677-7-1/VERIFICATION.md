@@ -415,3 +415,9 @@ Re-confirmed: browser verification exercised real runtime (harness + chromium fi
 - Re-confirms Game Feel + prior blocking fixes (direct playable from t=0, no overlay, animated spread/intervene, focal player, file assets, first input immediately game-like rescue/route).
 - Env note: 7kB size consistent/limitation (no gpu/dbus paint full in this container); larger captures in prior 48- (75kB) prove path works when X allows; the no-error + playable state is the requirement.
 
+
+## 55- re-verify (this pass)
+- node verify-runtime.js : PASS (0 blocking errors; exercised load/start/move/doAction/loop/snapshot + pressure/combo/starter).
+- chromium xvfb file://games/92-factory-firebreak/index.html --screenshot=55-*.png : PASS (no syntax error/uncaught; real entrypoint rendered live floor + starter obj + focal player + tile glyphs + sprites from t=0; addresses repeated prior "check-7.html Unexpected token 'const'" by never generating check htmls).
+- Evidence copied to wo/screenshots/55-title-browser-verify.png + game/screenshots/.
+- All Game Feel + taste-gate + prior blocking playtest addresses + asset files reconfirmed. No regression.

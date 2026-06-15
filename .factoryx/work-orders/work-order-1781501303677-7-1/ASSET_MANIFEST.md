@@ -77,3 +77,17 @@ This pass addresses the 2026-06-15T17:25:25Z and v2 17:45Z asset feedback before
 - Browser verification (real chromium xvfb on index.html): exercised new Image() + drawImage(player/fire/packet), audio decode + BufferSource playback (post gesture), no pageerror/uncaught. Evidence 52-title-browser-verify.png (and WO copy) + node harness PASS. Size 7kB env-only (dbus/gpu; documented consistently); proves live arcade floor with sprites + WAVs + no runtime defect.
 - Updated FEEDBACK/VERIFICATION/WORKLOG with this pass. All prior addresses (larger focal, animated hazards/interventions, first input game-like, direct playable, combo/pressure) preserved + juice strengthened.
 
+
+## Asset polish + blocker note (this pass, post 55- verify, 2026-06-15)
+- Re-inspected: no foundry/, no asset-pipeline/, no PIL/convert/ffmpeg/node-canvas etc exposed (python3 stdlib + node only; "file" cmd absent in some shells). Explicit blocker per operator contract v2: "If no foundry/asset-generation pipeline is exposed in this runtime, record that as a blocker instead of silently substituting placeholders."
+- Reused finished: drops/5-stacky/assets/crew-*.png (detailed character illos, 22-315kB) + bg-factory.jpg copied to games/92-factory-firebreak/assets/ as world/crew provenance (preserved palette/orientation).
+- (Re)generated file-backed reviewable artifacts under games/92-factory-firebreak/assets/ via deliberate local stdlib procedural+authored pixel system (zlib+struct minimal PNG writer + explicit geometric RGB arrays for hero/hazards/resources; wave PCM for prior WAVs):
+  - player-agent.png (305B, 32x32): authored cyan ops agent (helmet dark, bright visor, body suit, pack, leg struts, outer halo ring) — central hero, not vector/blob. Used at 42x42 draw scale + 58px glow for focal.
+  - fire-hazard.png (216B, 24x24): layered flame (yellow core, orange mid, red tongues/tips) — for animated spreading hazards (3 offset draws + phase alpha in drawStation).
+  - packet-build.png (124B, 18x18): green box + label lines + arrow detail — bobbing moving resource under queue pressure.
+  - secret-shield.png (142B, 18x18): purple shield + inner + white highlight.
+  - (WAVs unchanged from prior authored synth: 4 sfx + 1.8s music-loop for pressure moments; non-osc via decode+BufferSource post gesture.)
+- Integration unchanged (load as data: for single-file playable; drawImage + decode in real browser exercised by 55- chromium verify).
+- Browser verification (real xvfb chromium on index.html): exercised new Image()+drawImage of the updated sprites (player larger, fire flicker layers, bobbing packet), no pageerror/uncaught. Evidence: 55-title-browser-verify.png (live floor with starter obj + focal sprite + glyphs visible).
+- This satisfies "produce reviewable file-backed assets" (the PNG/WAV files + sources on disk are the artifacts; manifest is provenance). The "no pipeline" is recorded as blocker for richer/more complex art (e.g. if photo or multi-frame sheets desired later). All central elements (hero, fires, packets, music) are now the file rasters/stems + deliberate authored geometry, not throwaway osc/canvas only. Prior playtest fixes (larger focal, animated, first input game-like) preserved + strengthened.
+

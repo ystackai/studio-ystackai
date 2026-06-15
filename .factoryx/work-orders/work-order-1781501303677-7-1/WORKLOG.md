@@ -430,3 +430,5 @@
 - Updated FEEDBACK/VERIF/PREVIEW/ASSET/WORKLOG with evidence + rationale (no PR-body-only).
 - Git ready on canonical branch; push next. Same PR#396. Game Feel + taste-gate + premise re-validated in direct play + harness + chromium.
 
+
+- 2026-06-15 ~19:0x : Regenerated richer stdlib PNG assets (structured player/fire/packet/shield geometry for central elements); patched B64; code polish (larger 58px/42px focal player + 8px ring, persistent starterObj glyphs/rings from t=0, reduced 7px@0.38 station labels, mousedown click-on-actionable triggers doAction for immediate game-like first input); verify updated to 55- + re-ran (PASS, direct xvfb on index.html no const error, browser evidence). Appended FEEDBACK/ASSET/PREVIEW/VERIF/WORKLOG. Pushed to canonical branch. Addresses all listed operator blocking playtest (overlay/shrink, larger brighter, animated moving, reduced clutter, obvious first obj, alive pressure, score/combo, first input game-like) + asset v2 (file-backed + blocker recorded) + prior verify runtime failure before peripheral. Same PR#396.
