@@ -9,20 +9,23 @@ https://github.com/ystackai/studio-ystackai/pull/396
 ## How to Play
 1. Click **START SHIFT** to begin (first screen is immediately playable — core verb in <20s)
 2. Use **WASD** / **Arrow Keys** (or on-screen D-pad) to move your agent across the production floor grid
-3. Walk onto/near a station with a **fire** (red) to **extinguish it** (Space / X / tap button) — fires spread and destroy stations
-4. **Build** stations (green border) spawn builds (◈); stand near to boost routing them through **Test** → **Ship** for bonus points (or let them auto-flow for base). Watch the green transit diamonds travel the floor — resources visibly routed.
-5. **Security** stations must be secured by standing near; once secured they decay over time — keep patrolling to "protect secrets" or they unsecure (ongoing juggle)
-6. Ship builds, extinguish incidents, secure secrets, and survive the 3:00 timer across escalating waves (faster/more fires). Don't let avg station health collapse.
-7. **R** (or Space on gameover) restarts. Score + S/A/B/C/D rating on SHIFT COMPLETE.
+3. Walk near actionable stations; the centered **▶ PROMPT** shows the verb. Press **SPACE / X / tap the ACTION button** to do it (unified control: prioritizes extinguish, then route builds, then secure/patrol).
+4. **Build** stations (green border) spawn builds (◈); stand near + ACTION (or wait) to route them through **Test** → **Ship** for points. Watch the animated cyan conveyor dashes + green transit diamonds — resources visibly routed under pressure.
+5. **Security** stations: stand + ACTION to SECURE (takes time, wave-scaled); once secured they **decay globally** — patrol to re-arm or suffer LEAK penalties (-pts + fx). Real juggling.
+6. **HUD now shows Integrity %** (avg station health, color-coded) and **Transit** (in-flight builds + active routings) so the queue pressure is visible at a glance.
+7. Ship builds, extinguish incidents, secure secrets, and survive the 3:00 timer across escalating waves. If floor integrity collapses (<5%) you get CONTAINMENT FAILED early. Fires destroy stations with score penalty.
+8. **R** (or ACTION on gameover) restarts. Score + S/A/B/C/D rating on SHIFT COMPLETE / FAILED. Animated conveyors, wave-up bursts, low-health ! alerts, leak fx, screen shake + vignette all feed game feel.
 
 ## Screenshots
-**Browser-verified title / first screen** (real chromium headless render of canvas + full DOM):
-- `.factoryx/work-orders/work-order-1781501303677-7-1/screenshots/01-title-browser.png`
+**Browser-verified title / first screen** (real chromium headless render of canvas + full DOM, re-captured post-polish):
+- `screenshots/01-title-browser.png` (original)
+- `screenshots/02-title-browser-fresh.png`
+- `screenshots/03-title-polish.png` (after unified ACTION, HUD additions, conveyors)
 
 Title screen: dark terminal aesthetic (monospace, #0d0d1a, cyan #00e5ff / orange accents matching ystackai house style) with animated ember particles over the station grid + legend + START SHIFT button.
 
-Gameplay screen: 11×7 grid factory floor, color-coded stations w/ health bars, live animated build transits (green ◇ moving Build→Test→Ship), cyan player agent (glowing, walking bob, helmet), flickering fires, floating score/feedback text ("+pts!", "To TEST", "SECURED!", "WAVE 2"), dynamic "▶ EXTINGUISH / PROCESS BUILD / SECURE / PATROL" prompt when near station, HUD (score/wave/shipped/secrets/timer with urgency color), danger vignette + screen shake.
+Gameplay screen: 11×7 grid factory floor, color-coded stations w/ health bars + low-HP ! alerts, live animated build transits (green ◇) + scrolling cyan conveyor dashes, cyan player agent (glowing, walking bob, helmet), flickering fires, floating score/feedback text ("+pts!", "To TEST", "SECURED!", "LEAK! -25", "WAVE 2"), dynamic "▶ ..." prompt, HUD now with Integrity % (color) + Transit count (queues visible), danger vignette + screen shake on events.
 
-Game over: big final score, breakdown (wave, shipped, secured, fires out), letter rating, restart button.
+Game over: big final score, breakdown, letter rating; can be "CONTAINMENT FAILED" if integrity collapses. R / ACTION restarts.
 
-This is a real playable arcade game, not a dashboard mockup: the software factory theme (agents routing builds, fighting incidents, protecting secrets, shipping under time pressure) is the core loop, concrete and escalating from second one.
+This is a real playable arcade game, not a dashboard mockup: the software factory theme (route resources visibly, extinguish incidents, protect secrets under decay pressure, ship builds, juggle escalating queues) is the core loop, concrete and escalating from second one. All per Game Feel Checklist.

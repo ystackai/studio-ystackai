@@ -24,3 +24,15 @@
 - [x] Re-validated syntax + structure post-edit (35KB, 807 lines); real chromium headless render captured for title screen browser evidence.
 - [x] PR #396 inspected: OPEN, no comments/reviews, checks (facts/ci/deploy-preview) SUCCESS, reviewDecision=REVIEW_REQUIRED (no blocking feedback).
 - [x] Updated work order memory (WORKLOG, PREVIEW, VERIFICATION) with current scope, evidence, and game feel status.
+
+### Continuation polish (deadline-driven, addressing "superseded" note by shipping further ambition + verification)
+- [x] Re-ran full chromium headless renders (multiple fresh PNGs) + node syntax + vm-harness verification exercising load/start/interactions; captured 03-title-polish.png; confirmed zero pageerror/console in static browser load.
+- [x] Unified primary action: SPACE / X / ACTION button now contextually performs the ▶ prompt verb (prioritized: extinguish > process route > secure/patrol). Big improvement to readable controls + discoverability. Renamed mobile button + updated hint + subtitle.
+- [x] Added live pressure visibility: HUD now shows **Integrity %** (avg floor health, green/orange/red) and **Transit** (builds in flight + active transits). Queues and "juggle under pressure" are now glanceable, not hidden.
+- [x] Animated conveyors: drawConveyors(t) now renders scrolling dashes on Build→Ship lines using phase offset for "live production floor" feel (synced to rAF t).
+- [x] Made "protect secrets" consequential: when a secured station fully decays, immediate -25 score + LEAK! floating text + red particles + sfx. Patrol or pay.
+- [x] Escalating failure state: if avg station health <5%, trigger early `endGame()` with "CONTAINMENT FAILED" title + tagline (instead of only timer end). Makes health meter matter.
+- [x] More game feel juice: wave-up now spawns central particle burst + screen shake; low-HP stations (<25%) draw pulsing "!" alert above health bar; moveCooldown reduced to 0.09s for snappier grid steps; updateHUD() called on start for instant correct values (incl new meters); leak sfx tied to real decay.
+- [x] Re-validated: JS syntax OK (new Function), file 39.8KB, chromium renders clean, all Game Feel items still checked (core verb <30s, input<100ms, easing, hit feedback, gesture audio, touch>=44px, 60fps, <2MB, offline).
+- [x] Updated PREVIEW/VERIFICATION/WORKLOG + screenshots/ with new state. No new external deps, no layout breakage.
+- [x] Will commit + push to same canonical branch, then `gh pr edit` to keep PR body current with full Work Order context + these changes. Ready for review gate.

@@ -17,6 +17,8 @@ html,body{width:100%;height:100%;background:#0d0d1a;color:#c8c8d8;font-family:'I
 #level-val{color:#a78bfa}
 #builds-val{color:#fbbf24}
 #secrets-val{color:#ff88aa}
+#integrity-val{color:#44ff88}
+#transit-val{color:#00e5ff}
 #canvas-wrapper{position:relative;flex:1;width:100%;max-width:900px;display:flex;align-items:center;justify-content:center;min-height:0}
 canvas{display:block;background:#111122;image-rendering:pixelated;image-rendering:crisp-edges;max-width:100%;max-height:100%}
 #overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,10,20,0.92);z-index:20;transition:opacity 0.3s ease}
@@ -53,6 +55,8 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
          <div class="hud-item"><span class="hud-label">Wave</span><span class="hud-value" id="level-val">1</span></div>
          <div class="hud-item"><span class="hud-label">Shipped</span><span class="hud-value" id="builds-val">0</span></div>
          <div class="hud-item"><span class="hud-label">Secrets</span><span class="hud-value" id="secrets-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">Integrity</span><span class="hud-value" id="integrity-val">100%</span></div>
+         <div class="hud-item"><span class="hud-label">Transit</span><span class="hud-value" id="transit-val">0</span></div>
          <div class="hud-item"><span class="hud-label">Time</span><span class="hud-value" id="time-val">3:00</span></div>
      </div>
      <div id="canvas-wrapper">
@@ -63,8 +67,8 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
              <h2>ystackai Production Floor</h2>
              <p class="subtitle">
                 Incidents are spreading across the factory floor!<br>
-                Move to stations to extinguish fires, process builds, and protect secrets.<br>
-                Don't let the whole factory go up in flames.
+                Move (WASD/arrows) to stations. SPACE / ACTION button does the context verb: extinguish / route builds / secure.<br>
+                Juggle fires, builds, and secrets under the 3:00 timer. Don't let the floor collapse.
              </p>
              <button class="btn primary" id="start-btn">&#9654; START SHIFT</button>
              <div class="legend">
@@ -88,8 +92,8 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
                  <div class="touch-btn" id="btn-right">&#9654;</div>
              </div>
          </div>
-         <div id="mobile-extinguish">&#129327;<br>EXTINGUISH</div>
-         <div id="controls-hint">WASD / Arrows to move &bull; SPACE / X to extinguish &bull; Stand near station to process</div>
+         <div id="mobile-extinguish">&#129327;<br>ACTION</div>
+         <div id="controls-hint">WASD / Arrows to move &bull; SPACE / X / tap ACTION for context (extinguish / route / secure) &bull; Stand near station</div>
      </div>
 </div>
 <script>
@@ -138,6 +142,8 @@ const timeEl=document.getElementById('time-val');
 const levelEl=document.getElementById('level-val');
 const buildsEl=document.getElementById('builds-val');
 const secretsEl=document.getElementById('secrets-val');
+const integrityEl=document.getElementById('integrity-val');
+const transitEl=document.getElementById('transit-val');
 const processPrompt=document.getElementById('process-prompt');
 const controlsHint=document.getElementById('controls-hint');
 const mobileExt=document.getElementById('mobile-extinguish');
@@ -169,6 +175,7 @@ function sfxProcess(){playTone(700,0.06,'triangle',0.04);}
 // ─── GAME STATE ───
 let gameState='menu',score=0,wave=1,timeLeft=GAME_DURATION;
 let buildsShipped=0,secretsSecured=0,lastIncidentsExtinguished=0;
+let shiftLost=false; // set when avg health collapses (early fail)
 let stations=[],particles=[],floatingTexts=[],transits=[];
 let lastFireTick=0,lastQueueTick=0,nextFireSpawn=FIRE_SPAWN_MIN,fireSpawnTimer=FIRE_SPAWN_MIN;
 let shakeTimer=0,shakeIntensity=0,timerInterval=null,animFrame=null,lastFrameTime=0;
@@ -196,6 +203,7 @@ const player={x:5,y:3,dir:'right',frame:0,frameTimer:0,moving:false};
 function initGame(){
     score=0;wave=1;timeLeft=GAME_DURATION;buildsShipped=0;secretsSecured=0;
     lastIncidentsExtinguished=0;particles=[];floatingTexts=[];transits=[];processCooldown=0;
+    shiftLost=false;
     stations=[];
     for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
         const t=LAYOUT[y][x];if(t)stations.push(createStation(x,y,t));
@@ -208,6 +216,11 @@ function initGame(){
 function updateHUD(){
     scoreEl.textContent=score;levelEl.textContent=wave;
     buildsEl.textContent=buildsShipped;secretsEl.textContent=secretsSecured;
+    const avg = stations.length ? Math.round( stations.reduce((a,s)=>a+s.health,0) / stations.length ) : 100;
+    integrityEl.textContent = avg + '%';
+    integrityEl.style.color = avg>60 ? '#44ff88' : avg>25 ? '#ffaa33' : '#ff3333';
+    const inFlight = stations.filter(s=>s.hasBuild).length + transits.length;
+    transitEl.textContent = inFlight;
     const m=Math.floor(timeLeft/60),s=timeLeft%60;
     timeEl.textContent=m+':'+String(s).padStart(2,'0');
     if(timeLeft<=30)timeEl.style.color='#ff3333';
@@ -295,6 +308,60 @@ function extinguishNearby(){
         }
     }
     if(ex){shakeTimer=0.15;shakeIntensity=3;}
+}
+
+// ─── UNIFIED ACTION (readable controls: one verb for the prompt) ───
+function doAction(){
+    if(gameState!=='playing')return;
+    // Priority 1: extinguish (urgent)
+    const beforeExt = lastIncidentsExtinguished;
+    extinguishNearby();
+    if(lastIncidentsExtinguished > beforeExt) return; // did something
+
+    // Priority 2: process a build if adjacent (instant boost)
+    const hadBuilds = buildsShipped;
+    const pAdj = findAdjacent(player.x, player.y);
+    let didProc = false;
+    for(const a of pAdj){
+        const s = getStationAt(a.x, a.y);
+        if(s && s.hasBuild && !s.hasFire){
+            processBuilds(); // reuses the player-adj + auto logic; will award bonus
+            didProc = true;
+            break;
+        }
+    }
+    if(didProc) return;
+
+    // Priority 3: security secure/patrol (advance the timer or re-arm)
+    for(const a of pAdj){
+        const s = getStationAt(a.x, a.y);
+        if(s && s.type===T_SEC){
+            if(!s.secured){
+                // fast-forward the secure timer
+                s.secTimer += 1.2;
+                const req = Math.max(0.8,2.8-wave*0.25);
+                if(s.secTimer >= req){
+                    s.secured=true; s.secTimer=0; s.secLevel=4;
+                    const pts=30*wave; score+=pts; secretsSecured++;
+                    sfxSecret();
+                    spawnParticles(s.x,s.y,'#8888ff',15,3);
+                    spawnParticles(s.x,s.y,'#ffbb33',10,2);
+                    spawnFT(s.x,s.y,'SECURED! +'+pts,'#8888ff');
+                } else {
+                    spawnFT(s.x,s.y,'...','#ffbb33');
+                }
+            } else if(s.secLevel < 3.5){
+                s.secLevel = Math.min(5, s.secLevel + 2.5);
+                const pts=8*wave; score+=pts;
+                spawnFT(s.x,s.y,'+'+pts,'#8888ff');
+                sfxSecret();
+            }
+            shakeTimer=0.08; shakeIntensity=1.5;
+            return;
+        }
+    }
+    // Fallback: just a little pulse feedback if standing on empty
+    spawnParticles(player.x, player.y, '#00e5ff', 3, 0.8);
 }
 
 // ─── BUILDS ───
@@ -393,8 +460,16 @@ function processSecurity(dt){
     // Global decay for secured stations: protection requires you to keep visiting under pressure
     for(const s of stations){
         if(s.type===T_SEC&&s.secured){
+            const before = s.secLevel;
             s.secLevel=Math.max(0,s.secLevel-dt*0.9);
-            if(s.secLevel<=0.01){s.secured=false;s.secTimer=0;}
+            if(before>0.01 && s.secLevel<=0.01){
+                s.secured=false;s.secTimer=0;
+                // Consequential leak: penalty + feedback (makes "protect secrets" tense)
+                score = Math.max(0, score - 25);
+                spawnParticles(s.x,s.y,'#ff3366',9,2.5);
+                spawnFT(s.x,s.y,'LEAK! -25','#ff3366');
+                sfxFire();
+            }
         }
     }
     const adj=findAdjacent(player.x,player.y);
@@ -429,7 +504,7 @@ let moveCooldown=0;
 document.addEventListener('keydown',function(e){
     keys[e.key]=true;
     if(e.key===' '||e.key==='x'||e.key==='X'){
-        if(gameState==='playing')extinguishNearby();
+        if(gameState==='playing')doAction();
         else if(gameState==='gameover')startGame();
     }
     if(e.key==='r'||e.key==='R'){
@@ -452,8 +527,8 @@ function setupTouch(id,key){
 }
 setupTouch('btn-up','ArrowUp');setupTouch('btn-down','ArrowDown');
 setupTouch('btn-left','ArrowLeft');setupTouch('btn-right','ArrowRight');
-mobileExt.addEventListener('touchstart',function(e){e.preventDefault();if(gameState==='playing')extinguishNearby();},{passive:false});
-mobileExt.addEventListener('mousedown',function(){if(gameState==='playing')extinguishNearby();});
+mobileExt.addEventListener('touchstart',function(e){e.preventDefault();if(gameState==='playing')doAction();},{passive:false});
+mobileExt.addEventListener('mousedown',function(){if(gameState==='playing')doAction();});
 
 // ─── PLAYER ───
 function updatePlayer(dt){
@@ -469,7 +544,7 @@ function updatePlayer(dt){
             player.x=nx;player.y=ny;player.moving=true;
             if(dx>0)player.dir='right';else if(dx<0)player.dir='left';
             else if(dy<0)player.dir='up';else player.dir='down';
-            moveCooldown=0.12;
+            moveCooldown=0.09;
             spawnParticles(nx,ny,'#00e5ff',2,0.5);
         }
     }else player.moving=false;
@@ -483,6 +558,9 @@ function updateDifficulty(){
     const nw=Math.floor(elapsed/30)+1;
     if(nw>wave){wave=nw;sfxWave();
         spawnFT(Math.floor(GRID_W/2),Math.floor(GRID_H/2),'WAVE '+wave,'#a78bfa');
+        // juice: central burst + shake on escalation
+        spawnParticles(Math.floor(GRID_W/2),Math.floor(GRID_H/2),'#a78bfa',18,2.5);
+        shakeTimer=0.25; shakeIntensity=4;
     }
     nextFireSpawn=Math.max(2000,FIRE_SPAWN_MAX-(wave-1)*800);
 }
@@ -544,6 +622,11 @@ function drawStation(s,t){
         const hp=s.health/100;
         ctx.fillStyle=hp>0.5?'#44ff44':hp>0.25?'#ffaa22':'#ff3333';
         ctx.fillRect(bx,by,bw*hp,bh);
+        if(hp<0.25){
+            const ap=Math.sin(t*9)*0.4+0.8;
+            ctx.fillStyle='rgba(255,51,51,'+ap+')';ctx.font='bold 9px monospace';ctx.textAlign='center';
+            ctx.fillText('!',cx,by-3);
+        }
     }
     
     // Security shield
@@ -634,13 +717,27 @@ function drawGrid(){
     for(let y=0;y<=GRID_H;y++){ctx.beginPath();ctx.moveTo(0,y*CELL);ctx.lineTo(CANVAS_W,y*CELL);ctx.stroke();}
 }
 
-function drawConveyors(){
-    ctx.strokeStyle='rgba(0,229,255,0.06)';ctx.lineWidth=1;ctx.setLineDash([4,8]);
+function drawConveyors(t){
+    const phase = ((t||0)*0.9) % 1;
+    ctx.strokeStyle='rgba(0,229,255,0.08)';ctx.lineWidth=1.5;
     const builds=stations.filter(s=>s.type===T_BUILD);
     const ships=stations.filter(s=>s.type===T_SHIP);
     for(const b of builds)for(const sh of ships){
-        ctx.beginPath();ctx.moveTo(b.x*CELL+CELL/2,b.y*CELL+CELL/2);
-        ctx.lineTo(sh.x*CELL+CELL/2,sh.y*CELL+CELL/2);ctx.stroke();
+        const x1=b.x*CELL+CELL/2, y1=b.y*CELL+CELL/2;
+        const x2=sh.x*CELL+CELL/2, y2=sh.y*CELL+CELL/2;
+        // base faint line
+        ctx.setLineDash([3,9]);
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+        // animated moving dashes for live production feel
+        ctx.strokeStyle='rgba(0,229,255,0.35)';
+        ctx.setLineDash([5,11]);
+        const len = Math.hypot(x2-x1,y2-y1) || 1;
+        const ox = ((phase-0.5)*24) % (5+11); // scroll offset
+        ctx.beginPath();
+        ctx.moveTo(x1 + (x2-x1)*(0.1 + ox/len*0.02), y1 + (y2-y1)*(0.1 + ox/len*0.02));
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.strokeStyle='rgba(0,229,255,0.08)';
     }
     ctx.setLineDash([]);
 }
@@ -657,13 +754,14 @@ function gameLoop(timestamp){
     ctx.save();ctx.translate(shakeX,shakeY);
     ctx.fillStyle='#0d0d1a';ctx.fillRect(-10,-10,CANVAS_W+20,CANVAS_H+20);
     
-    drawGrid();drawConveyors();
+    drawGrid();drawConveyors(t);
     for(const s of stations)drawStation(s,t);
     drawPlayer(t);drawParticles();drawTransits();
     
     // Danger vignette
     const avgHP=stations.reduce((a,s)=>a+s.health,0)/stations.length;
     if(avgHP<40){const u=(40-avgHP)/40;ctx.fillStyle='rgba(255,30,30,'+(u*0.12)+')';ctx.fillRect(0,0,CANVAS_W,CANVAS_H);}
+    if(avgHP < 5 && !shiftLost){ shiftLost=true; endGame(); }
     
     ctx.restore();
     
@@ -723,6 +821,7 @@ function gameLoop(timestamp){
 // ─── START / END ───
 function startGame(){
     initAudio();initGame();gameState='playing';
+    updateHUD();
     if(audioCtx&&audioCtx.state==='suspended'){try{audioCtx.resume().catch(function(){});}catch(e){}}
     overlay.classList.add('hidden');
     processPrompt.classList.remove('show');
@@ -749,9 +848,12 @@ function endGame(){
     let rating='D';
     if(score>=3000)rating='S';else if(score>=2000)rating='A';
     else if(score>=1200)rating='B';else if(score>=600)rating='C';
-    overlay.innerHTML='<h1>SHIFT COMPLETE</h1><h2>Final Score</h2>'
+    const lost = shiftLost || (stations.reduce((a,s)=>a+s.health,0)/Math.max(1,stations.length) < 8);
+    const title = lost ? 'CONTAINMENT FAILED' : 'SHIFT COMPLETE';
+    const tag = lost ? 'The floor is lost. Rebuild and try again.' : 'The factory survived... for now.';
+    overlay.innerHTML='<h1>'+title+'</h1><h2>Final Score</h2>'
         +'<div class="final-score">'+score+'</div>'
-        +'<p class="subtitle">Wave '+wave+' \u00b7 '+buildsShipped+' shipped \u00b7 '+secretsSecured+' secured \u00b7 '+lastIncidentsExtinguished+' fires out \u00b7 Rating: '+rating+'<br><span style="color:#6a6a8a">The factory survived... for now.</span></p>'
+        +'<p class="subtitle">Wave '+wave+' \u00b7 '+buildsShipped+' shipped \u00b7 '+secretsSecured+' secured \u00b7 '+lastIncidentsExtinguished+' fires out \u00b7 Rating: '+rating+'<br><span style="color:#6a6a8a">'+tag+'</span></p>'
         +'<button class="btn primary" id="restart-btn">\u25b6 ANOTHER SHIFT</button>';
     overlay.classList.remove('hidden');
     document.getElementById('restart-btn').addEventListener('click',startGame);
