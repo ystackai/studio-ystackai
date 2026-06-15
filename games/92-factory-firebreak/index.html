@@ -19,6 +19,7 @@ html,body{width:100%;height:100%;background:#0d0d1a;color:#c8c8d8;font-family:'I
 #secrets-val{color:#ff88aa}
 #integrity-val{color:#44ff88}
 #transit-val{color:#00e5ff}
+#fires-val{color:#ff6644}
 #canvas-wrapper{position:relative;flex:1;width:100%;max-width:900px;display:flex;align-items:center;justify-content:center;min-height:0}
 canvas{display:block;background:#111122;image-rendering:pixelated;image-rendering:crisp-edges;max-width:100%;max-height:100%}
 #overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,10,20,0.58);z-index:20;transition:opacity 0.3s ease}
@@ -58,6 +59,7 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
          <div class="hud-item"><span class="hud-label">Integrity</span><span class="hud-value" id="integrity-val">100%</span></div>
          <div class="hud-item"><span class="hud-label">Transit</span><span class="hud-value" id="transit-val">0</span></div>
          <div class="hud-item"><span class="hud-label">Ext</span><span class="hud-value" id="ext-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">Fires</span><span class="hud-value" id="fires-val">0</span></div>
          <div class="hud-item"><span class="hud-label">Time</span><span class="hud-value" id="time-val">3:00</span></div>
      </div>
      <div id="canvas-wrapper">
@@ -145,6 +147,7 @@ const secretsEl=document.getElementById('secrets-val');
 const integrityEl=document.getElementById('integrity-val');
 const transitEl=document.getElementById('transit-val');
 const extEl=document.getElementById('ext-val');
+const firesEl=document.getElementById('fires-val');
 const processPrompt=document.getElementById('process-prompt');
 const controlsHint=document.getElementById('controls-hint');
 const mobileExt=document.getElementById('mobile-extinguish');
@@ -223,6 +226,7 @@ function updateHUD(){
     const inFlight = stations.filter(s=>s.hasBuild).length + transits.length;
     transitEl.textContent = inFlight;
     if(extEl) extEl.textContent = lastIncidentsExtinguished;
+    if(firesEl){ const nf=stations.filter(s=>s.hasFire).length; firesEl.textContent=nf; firesEl.style.color=nf>0?'#ff6644':'#c8c8d8'; }
     const m=Math.floor(timeLeft/60),s=timeLeft%60;
     timeEl.textContent=m+':'+String(s).padStart(2,'0');
     if(timeLeft<=30)timeEl.style.color='#ff3333';
