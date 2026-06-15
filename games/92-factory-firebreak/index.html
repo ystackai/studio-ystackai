@@ -169,7 +169,7 @@ function sfxProcess(){playTone(700,0.06,'triangle',0.04);}
 // ─── GAME STATE ───
 let gameState='menu',score=0,wave=1,timeLeft=GAME_DURATION;
 let buildsShipped=0,secretsSecured=0,lastIncidentsExtinguished=0;
-let stations=[],particles=[],floatingTexts=[];
+let stations=[],particles=[],floatingTexts=[],transits=[];
 let lastFireTick=0,lastQueueTick=0,nextFireSpawn=FIRE_SPAWN_MIN,fireSpawnTimer=FIRE_SPAWN_MIN;
 let shakeTimer=0,shakeIntensity=0,timerInterval=null,animFrame=null,lastFrameTime=0;
 let processCooldown=0,hasShownHint=false;
@@ -195,7 +195,7 @@ const player={x:5,y:3,dir:'right',frame:0,frameTimer:0,moving:false};
 
 function initGame(){
     score=0;wave=1;timeLeft=GAME_DURATION;buildsShipped=0;secretsSecured=0;
-    lastIncidentsExtinguished=0;particles=[];floatingTexts=[];processCooldown=0;
+    lastIncidentsExtinguished=0;particles=[];floatingTexts=[];transits=[];processCooldown=0;
     stations=[];
     for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
         const t=LAYOUT[y][x];if(t)stations.push(createStation(x,y,t));
@@ -227,6 +227,9 @@ function spawnParticles(x,y,color,count,speed){
 function spawnFT(x,y,text,color){
     floatingTexts.push({x:x*CELL+CELL/2,y:y*CELL+CELL/2-10,text,color,life:1,vy:-0.8});
 }
+function spawnTransit(sx,sy,tx,ty,color){
+    transits.push({sx:sx,sy:sy,tx:tx,ty:ty,prog:0,color:color});
+}
 function updateParticles(dt){
     for(let i=particles.length-1;i>=0;i--){
         const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vx*=0.96;p.vy*=0.96;
@@ -235,6 +238,21 @@ function updateParticles(dt){
     for(let i=floatingTexts.length-1;i>=0;i--){
         const t=floatingTexts[i];t.y+=t.vy;t.life-=0.015;
         if(t.life<=0)floatingTexts.splice(i,1);
+    }
+}
+function updateTransits(dt){
+    for(let i=transits.length-1;i>=0;i--){
+        const tr=transits[i];tr.prog+=dt/0.55;if(tr.prog>=1){transits.splice(i,1);continue;}
+    }
+}
+function drawTransits(){
+    for(const tr of transits){
+        const px=tr.sx*CELL + (tr.tx-tr.sx)*CELL*tr.prog + CELL*0.5;
+        const py=tr.sy*CELL + (tr.ty-tr.sy)*CELL*tr.prog + CELL*0.5;
+        ctx.globalAlpha=Math.max(0.3,1-tr.prog*0.7);
+        ctx.fillStyle=tr.color;
+        ctx.beginPath();ctx.moveTo(px,py-5);ctx.lineTo(px+5,py);ctx.lineTo(px,py+5);ctx.lineTo(px-5,py);ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
     }
 }
 
@@ -308,6 +326,7 @@ function processBuilds(){
                     t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
                     score+=15;sfxProcess();
                     spawnFT(s.x,s.y,'To TEST','#44ff44');
+                    spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
                     anyProcessed=true;break;
                 }
             }
@@ -319,6 +338,7 @@ function processBuilds(){
                     t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
                     score+=25;sfxProcess();
                     spawnFT(s.x,s.y,'To SHIP','#44ff44');
+                    spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
                     anyProcessed=true;break;
                 }
             }
@@ -346,7 +366,9 @@ function processBuilds(){
                     if(t&&t.type===T_TEST&&!t.hasBuild&&!t.hasFire){
                         t.hasBuild=true;s.hasBuild=false;
                         s.flashTimer=0.1;t.flashTimer=0.1;
-                        score+=5;return;
+                        score+=5;
+                        spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
+                        return;
                     }
                 }
             } else if(s.type===T_TEST){
@@ -356,7 +378,9 @@ function processBuilds(){
                     if(t&&t.type===T_SHIP&&!t.hasBuild&&!t.hasFire){
                         t.hasBuild=true;s.hasBuild=false;
                         s.flashTimer=0.1;t.flashTimer=0.1;
-                        score+=15;return;
+                        score+=15;
+                        spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
+                        return;
                     }
                 }
             }
@@ -366,24 +390,34 @@ function processBuilds(){
 
 // ─── SECURITY ───
 function processSecurity(dt){
+    // Global decay for secured stations: protection requires you to keep visiting under pressure
+    for(const s of stations){
+        if(s.type===T_SEC&&s.secured){
+            s.secLevel=Math.max(0,s.secLevel-dt*0.9);
+            if(s.secLevel<=0.01){s.secured=false;s.secTimer=0;}
+        }
+    }
     const adj=findAdjacent(player.x,player.y);
     for(const a of adj){
         const s=getStationAt(a.x,a.y);
-        if(s&&s.type===T_SEC&&!s.secured){
+        if(!s||s.type!==T_SEC)continue;
+        if(!s.secured){
             s.secTimer+=dt;
-            const reqTime=Math.max(1,3-wave*0.2);
+            const reqTime=Math.max(0.8,2.8-wave*0.25);
             if(s.secTimer>=reqTime){
-                s.secured=true;s.secTimer=0;s.secLevel++;
+                s.secured=true;s.secTimer=0;s.secLevel=4;
                 const pts=30*wave;score+=pts;secretsSecured++;
                 sfxSecret();
                 spawnParticles(s.x,s.y,'#8888ff',15,3);
                 spawnParticles(s.x,s.y,'#ffbb33',10,2);
                 spawnFT(s.x,s.y,'SECURED! +'+pts,'#8888ff');
-                s.secTimer=0;
             }
-        } else if(s&&s.type===T_SEC&&s.secured){
-            s.secTimer=0;s.secLevel=Math.max(0,s.secLevel-0.05);
-            if(s.secLevel<=0)s.secured=false;
+        }else{
+            // Patrolling re-arms the buffer and yields occasional vigilance points
+            if(s.secLevel<3.5){
+                s.secLevel=Math.min(5,s.secLevel+dt*3);
+                if(Math.random()<0.06){const pts=8*wave;score+=pts;spawnFT(s.x,s.y,'+'+pts,'#8888ff');}
+            }
         }
     }
 }
@@ -396,6 +430,10 @@ document.addEventListener('keydown',function(e){
     keys[e.key]=true;
     if(e.key===' '||e.key==='x'||e.key==='X'){
         if(gameState==='playing')extinguishNearby();
+        else if(gameState==='gameover')startGame();
+    }
+    if(e.key==='r'||e.key==='R'){
+        if(gameState==='gameover'||gameState==='menu')startGame();
     }
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].indexOf(e.key)>=0)e.preventDefault();
 });
@@ -621,7 +659,7 @@ function gameLoop(timestamp){
     
     drawGrid();drawConveyors();
     for(const s of stations)drawStation(s,t);
-    drawPlayer(t);drawParticles();
+    drawPlayer(t);drawParticles();drawTransits();
     
     // Danger vignette
     const avgHP=stations.reduce((a,s)=>a+s.health,0)/stations.length;
@@ -629,7 +667,7 @@ function gameLoop(timestamp){
     
     ctx.restore();
     
-    updatePlayer(dt);updateParticles(dt);
+    updatePlayer(dt);updateParticles(dt);updateTransits(dt);
     
     // Fire tick
     if(timestamp-lastFireTick>Math.max(1500,FIRE_TICK_RATE-wave*100)){
@@ -663,6 +701,21 @@ function gameLoop(timestamp){
     if(fireSpawnTimer<=0){spawnFire();fireSpawnTimer=nextFireSpawn+Math.random()*3000;}
     
     updateDifficulty();updateHUD();
+
+    // Show contextual prompt when near an actionable station (makes core verbs discoverable)
+    let promptText=null;
+    const pAdj=findAdjacent(player.x,player.y);
+    for(const a of pAdj){
+        const s=getStationAt(a.x,a.y);
+        if(s){
+            if(s.hasFire){promptText='EXTINGUISH';break;}
+            if(s.hasBuild&&!s.hasFire){promptText='PROCESS BUILD';break;}
+            if(s.type===T_SEC&&!s.secured){promptText='SECURE';break;}
+            if(s.type===T_SEC&&s.secured&&s.secLevel<2){promptText='PATROL';break;}
+        }
+    }
+    if(promptText){processPrompt.textContent='▶ '+promptText;processPrompt.classList.add('show');}
+    else{processPrompt.classList.remove('show');}
     
     animFrame=requestAnimationFrame(gameLoop);
 }
@@ -670,7 +723,9 @@ function gameLoop(timestamp){
 // ─── START / END ───
 function startGame(){
     initAudio();initGame();gameState='playing';
+    if(audioCtx&&audioCtx.state==='suspended'){try{audioCtx.resume().catch(function(){});}catch(e){}}
     overlay.classList.add('hidden');
+    processPrompt.classList.remove('show');
     lastFireTick=performance.now();lastQueueTick=performance.now();
     fireSpawnTimer=nextFireSpawn;lastFrameTime=performance.now();
     timerInterval=setInterval(function(){
@@ -689,6 +744,7 @@ function startGame(){
 
 function endGame(){
     gameState='gameover';clearInterval(timerInterval);cancelAnimationFrame(animFrame);
+    processPrompt.classList.remove('show');
     const elapsed=GAME_DURATION-timeLeft;
     let rating='D';
     if(score>=3000)rating='S';else if(score>=2000)rating='A';
