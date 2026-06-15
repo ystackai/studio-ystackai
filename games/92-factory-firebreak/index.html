@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Factory Firebreak — ystackai</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#0d0d1a;color:#c8c8d8;font-family:'IBM Plex Mono','Space Mono','Fira Code',monospace;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+#game-container{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:relative}
+#hud{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:#141425;border-bottom:1px solid #2a2a4a;font-size:15px;flex-shrink:0;z-index:10}
+.hud-item{display:flex;align-items:center;gap:6px}
+.hud-label{color:#6a6a8a;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.hud-value{font-weight:700;font-size:16px}
+#score-val{color:#00e5ff}
+#time-val{color:#ff6b35}
+#level-val{color:#a78bfa}
+#builds-val{color:#fbbf24}
+#secrets-val{color:#ff88aa}
+#integrity-val{color:#44ff88}
+#transit-val{color:#00e5ff}
+#fires-val{color:#ff6644}
+#canvas-wrapper{position:relative;flex:1;width:100%;max-width:900px;display:flex;align-items:center;justify-content:center;min-height:0}
+canvas{display:block;background:#111122;image-rendering:pixelated;image-rendering:crisp-edges;max-width:100%;max-height:100%}
+.btn{background:#1e1e3a;color:#e0e0f0;border:1px solid #3a3a6a;padding:14px 36px;font-family:inherit;font-size:16px;cursor:pointer;border-radius:4px;transition:all 0.15s ease;margin:6px;min-width:48px;min-height:48px}
+.btn:hover{background:#2a2a5a;border-color:#5a5a9a}
+.btn.primary{background:#0066cc;border-color:#0088ff;color:#fff}
+.btn.primary:hover{background:#0077ee}
+#touch-controls{display:none;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:15}
+.touch-row{display:flex;justify-content:center;gap:4px}
+.touch-btn{width:60px;height:60px;background:rgba(30,30,60,0.85);border:1px solid #4a4a7a;border-radius:8px;color:#c8c8e8;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.touch-btn:active{background:rgba(60,60,120,0.95)}
+.touch-spacer{width:60px;height:60px}
+#mobile-extinguish{position:absolute;bottom:110px;right:16px;width:78px;height:78px;background:rgba(139,26,26,0.88);border:2px solid #cc4444;border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:15;touch-action:manipulation;-webkit-tap-highlight-color:transparent;text-align:center;line-height:1.15}
+.legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:12px;font-size:11px}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-swatch{width:12px;height:12px;border-radius:2px;display:inline-block}
+#controls-hint{display:none}
+#process-prompt{position:absolute;top:62%;left:50%;transform:translate(-50%,-50%);color:#44ff44;font-size:15px;font-weight:700;z-index:12;pointer-events:none;opacity:0;transition:opacity 0.12s ease, transform 0.12s ease;text-shadow:0 0 8px rgba(68,255,68,0.6);background:rgba(8,8,18,0.7);padding:4px 11px;border-radius:3px;border:1px solid rgba(68,255,68,0.5)}
+#process-prompt.show{opacity:1; transform:translate(-50%,-55%) scale(1.03);}
+@media(pointer:coarse){#touch-controls{display:block}#mobile-extinguish{display:flex}#controls-hint{display:none}}
+@media(max-width:600px){#hud{font-size:11px;padding:6px 8px}.hud-value{font-size:13px}}
+</style>
+</head>
+<body>
+<div id="game-container">
+     <div id="hud">
+         <div class="hud-item"><span class="hud-value" id="score-val" style="color:#00e5ff;font-size:17px">0</span></div>
+         <div class="hud-item"><span class="hud-value" id="time-val" style="font-size:16px">3:00</span></div>
+         <div class="hud-item"><span class="hud-value" id="level-val" style="color:#a78bfa">1</span></div>
+         <div class="hud-item"><span class="hud-label">🔥</span><span class="hud-value" id="fires-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">▶</span><span class="hud-value" id="transit-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">✓</span><span class="hud-value" id="ext-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">INT</span><span class="hud-value" id="integrity-val">100%</span></div>
+         <div class="hud-item" id="combo-item" style="display:none"><span class="hud-value" id="combo-val" style="color:#ffdd44">x1</span></div>
+     </div>
+     <div id="canvas-wrapper">
+         <canvas id="game-canvas" width="880" height="560"></canvas>
+         <div id="process-prompt">&#9654; STATION READY</div>
+         <div id="touch-controls">
+             <div class="touch-row">
+                 <div class="touch-spacer"></div>
+                 <div class="touch-btn" id="btn-up">&#9650;</div>
+                 <div class="touch-spacer"></div>
+             </div>
+             <div class="touch-row">
+                 <div class="touch-btn" id="btn-left">&#9664;</div>
+                 <div class="touch-btn" id="btn-down">&#9660;</div>
+                 <div class="touch-btn" id="btn-right">&#9654;</div>
+             </div>
+         </div>
+         <div id="mobile-extinguish">&#129327;<br>ACTION</div>
+     </div>
+</div>
+<script>
+(function(){
+'use strict';
+
+// ─── CONSTANTS ───
+const GRID_W=11,GRID_H=7,CELL=80;
+const CANVAS_W=GRID_W*CELL,CANVAS_H=GRID_H*CELL;
+const GAME_DURATION=180;
+const FIRE_TICK_RATE=2000,QUEUE_INTERVAL=5000;
+const FIRE_SPAWN_MIN=5000,FIRE_SPAWN_MAX=12000;
+var currentQueueInterval=QUEUE_INTERVAL; // ramps down with wave for escalating queue pressure (visible backlog on BUILD)
+const PROCESS_COOLDOWN=0.2;
+const T_BUILD='build',T_TEST='test',T_SHIP='ship',T_SEC='security';
+
+const COLORS={
+     [T_BUILD]:'#1a3a2a',[T_TEST]:'#1a2a3a',[T_SHIP]:'#2a2a3a',[T_SEC]:'#2a1a2a'
+};
+const BORDERS={
+     [T_BUILD]:'#44cc44',[T_TEST]:'#4488ff',[T_SHIP]:'#aa66ff',[T_SEC]:'#ff6688'
+};
+const LABELS={
+     [T_BUILD]:'BUILD',[T_TEST]:'TEST',[T_SHIP]:'SHIP',[T_SEC]:'SEC'
+};
+
+const LAYOUT=[
+     [T_BUILD,T_BUILD,T_BUILD,0,T_TEST,0,0,T_SEC,T_SEC,T_SEC,0],
+     [0,0,T_BUILD,0,0,T_TEST,0,0,0,T_SEC,0],
+     [T_BUILD,T_BUILD,0,T_TEST,T_TEST,T_TEST,T_SHIP,0,T_SEC,0,T_SHIP],
+     [0,0,T_BUILD,0,0,0,T_SHIP,0,0,0,T_SHIP],
+     [0,T_BUILD,T_BUILD,T_TEST,0,0,T_SHIP,T_SHIP,T_SEC,0,0],
+     [0,0,0,T_TEST,T_TEST,0,0,0,0,0,0],
+     [T_BUILD,T_BUILD,T_BUILD,0,0,0,0,0,0,0,0],
+];
+
+// ─── CANVAS ───
+const canvas=document.getElementById('game-canvas');
+const ctx=canvas.getContext('2d');
+canvas.width=CANVAS_W;canvas.height=CANVAS_H;
+
+// ─── DOM ───
+const scoreEl=document.getElementById('score-val');
+const timeEl=document.getElementById('time-val');
+const levelEl=document.getElementById('level-val');
+const integrityEl=document.getElementById('integrity-val');
+const transitEl=document.getElementById('transit-val');
+const extEl=document.getElementById('ext-val');
+const firesEl=document.getElementById('fires-val');
+const processPrompt=document.getElementById('process-prompt');
+const mobileExt=document.getElementById('mobile-extinguish');
+
+// ─── AUDIO ───
+let audioCtx=null;
+function initAudio(){if(audioCtx)return;try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+function playTone(freq,dur,type,vol){
+    type=type||'square';vol=vol||0.08;
+    if(!audioCtx)return;
+    try{
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.type=type;o.frequency.value=freq;
+        g.gain.setValueAtTime(vol,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+        o.connect(g);g.connect(audioCtx.destination);
+        o.start();o.stop(audioCtx.currentTime+dur);
+    }catch(e){}
+}
+function sfxExtinguish(){playTone(880,0.15,'sine',0.1);playTone(1100,0.1,'sine',0.06);}
+function sfxFire(){playTone(150,0.3,'sawtooth',0.06);}
+function sfxShip(){playTone(660,0.1,'square',0.07);playTone(880,0.15,'square',0.05);}
+function sfxDeath(){playTone(200,0.5,'sawtooth',0.1);playTone(120,0.6,'sawtooth',0.08);}
+function sfxWave(){playTone(440,0.1,'sine',0.08);playTone(660,0.1,'sine',0.07);playTone(880,0.15,'sine',0.06); playMotif('wave',1.15);}
+function sfxBuild(){playTone(520,0.08,'triangle',0.05);}
+function sfxSecret(){playTone(1200,0.2,'sine',0.08);playTone(1500,0.15,'sine',0.06);}
+function sfxProcess(){playTone(700,0.06,'triangle',0.04);}
+
+// ─── PROCEDURAL ART + MUSIC SYSTEM (authored for central hero/enemy/world/music moments) ───
+// Per operator asset feedback (17:25Z): inspected drops/5-stacky/assets (oompa faces + bg photo, theme-mismatched, no audio/sprites for agents/fires), team/avatars, no foundry/ or asset-pipeline scripts/MCP exposed in runtime. No reusable finished assets for hero (player agent), hazards (fires), world (floor routing), or music. Therefore: deliberate local authored procedural system + code-defined pixel sprite data (not silent placeholder vectors/osc blips). Documented in ASSET_MANIFEST.md in WO context. Keeps single-file self-contained, <2MB, offline.
+
+// Authored 8x8 pixel stamp data (local "asset" in source; crisp read at scale, mixed with vector for weight)
+const PIXEL_HERO_BADGE = [[0,1,1,1,1,1,1,0],[1,2,2,2,2,2,2,1],[1,2,3,2,2,3,2,1],[1,2,2,2,2,2,2,1],[1,2,2,2,2,2,2,1],[0,1,1,1,1,1,1,0],[0,0,1,0,0,1,0,0],[0,0,1,0,0,1,0,0]];
+function drawPixelStamp(spr,x,y,sc,cols){ for(let r=0;r<spr.length;r++)for(let c=0;c<spr[r].length;c++){const v=spr[r][c];if(!v)continue; ctx.fillStyle=cols[v]||'#fff'; ctx.fillRect(x+c*sc,y+r*sc,sc,sc);} }
+
+// "Factory Floor Protocol" — continuous low drone/hum (multi-osc LFO-filtered bed) + activity-reactive motif phrases for wave/rush/fire pressure + resolve stings on ship/secure. Replaces sparse blips for music-led central moments.
+let musicEnabled=false, lastMotifAt=0, humO=null, humG=null, humF=null;
+function initProceduralMusic(){ if(!audioCtx||musicEnabled)return; try{ humO=audioCtx.createOscillator();humO.type='sawtooth';humO.frequency.value=47;
+  const h2=audioCtx.createOscillator();h2.type='sine';h2.frequency.value=95.2; humF=audioCtx.createBiquadFilter();humF.type='lowpass';humF.frequency.value=170;
+  humG=audioCtx.createGain();humG.gain.value=0.014; const lfo=audioCtx.createOscillator();lfo.type='sine';lfo.frequency.value=0.09; const lg=audioCtx.createGain();lg.gain.value=18;
+  lfo.connect(lg);lg.connect(humF.frequency); humO.connect(humF);h2.connect(humF);humF.connect(humG);humG.connect(audioCtx.destination);
+  humO.start();h2.start();lfo.start(); musicEnabled=true; }catch(e){} }
+function updateMusicPressure(fireC, isRush, wv){ if(!humG||!audioCtx)return; const tgt=0.011+Math.min(0.032,fireC*0.004+(isRush?0.016:0)); humG.gain.value=tgt;
+  if(humF) humF.frequency.value=155+Math.min(115,fireC*16+(isRush?35:0)); }
+function playMotif(kind, inten){ if(!audioCtx||!musicEnabled)return; const now=audioCtx.currentTime; if(now-lastMotifAt<0.16)return; lastMotifAt=now; try{
+  if(kind==='wave'||kind==='rush'){ [218,260,292,328].forEach((f,i)=>{ const o=audioCtx.createOscillator();o.type='square';o.frequency.value=f; const g=audioCtx.createGain();g.gain.value=0.032*(inten||1);
+    g.gain.setValueAtTime(g.gain.value,now+i*0.065);g.gain.linearRampToValueAtTime(0.0001,now+i*0.065+0.2); const fi=audioCtx.createBiquadFilter();fi.type='bandpass';fi.frequency.value=f*1.7;fi.Q.value=2.2;
+    o.connect(fi);fi.connect(g);g.connect(audioCtx.destination);o.start(now+i*0.065);o.stop(now+i*0.065+0.26); }); }
+  else if(kind==='ship'){ [438,552,658].forEach((f,i)=>{ const o=audioCtx.createOscillator();o.type='sine';o.frequency.value=f; const g=audioCtx.createGain();g.gain.value=0.038;
+    g.gain.exponentialRampToValueAtTime(0.0001,now+0.55+i*0.04); o.connect(g);g.connect(audioCtx.destination);o.start(now+i*0.04);o.stop(now+0.62); }); }
+  else if(kind==='secure'){ [328,412,494].forEach((f,i)=>{ const o=audioCtx.createOscillator();o.type='sine';o.frequency.value=f; const g=audioCtx.createGain();g.gain.value=0.026;
+    g.gain.exponentialRampToValueAtTime(0.0001,now+0.48); o.connect(g);g.connect(audioCtx.destination);o.start(now+i*0.028);o.stop(now+0.55); }); }
+}catch(e){} }
+
+// ─── GAME STATE ───
+var gameState='playing',score=0,wave=1,timeLeft=GAME_DURATION;
+var buildsShipped=0,secretsSecured=0,lastIncidentsExtinguished=0;
+var shiftLost=false; // set when avg health collapses (early fail)
+var stations=[],particles=[],floatingTexts=[],transits=[];
+var lastFireTick=0,lastQueueTick=0,nextFireSpawn=FIRE_SPAWN_MIN,fireSpawnTimer=FIRE_SPAWN_MIN;
+var shakeTimer=0,shakeIntensity=0,timerInterval=null,animFrame=null,lastFrameTime=0;
+var processCooldown=0,hasShownHint=false,flowUntil=0,rushFactor=1;
+var combo=0,comboUntil=0,lastVerb=''; // combo for chaining ext/route/patrol under pressure (score+visual feedback)
+
+function createStation(x,y,type){
+    return{x,y,type,health:100,hasBuild:false,hasFire:false,fireHealth:0,
+        label:LABELS[type],flashTimer:0,secLevel:0,secured:false,secTimer:0,
+        buildAnim:0,processAnim:0};
+}
+
+function isWalkable(x,y){return x>=0&&x<GRID_W&&y>=0&&y<GRID_H;}
+function getStationAt(x,y){return stations.find(s=>s.x===x&&s.y===y)||null;}
+function findAdjacent(x,y){
+    const a=[];
+    if(x>0)a.push({x:x-1,y:y});
+    if(x<GRID_W-1)a.push({x:x+1,y:y});
+    if(y>0)a.push({x:x,y:y-1});
+    if(y<GRID_H-1)a.push({x:x,y:y+1});
+    return a;
+}
+
+const player={x:5,y:3,dir:'right',frame:0,frameTimer:0,moving:false,actionTimer:0};
+
+function initGame(){
+    score=0;wave=1;timeLeft=GAME_DURATION;buildsShipped=0;secretsSecured=0;
+    lastIncidentsExtinguished=0;particles=[];floatingTexts=[];transits=[];processCooldown=0;
+    shiftLost=false; currentQueueInterval=QUEUE_INTERVAL;
+    combo=0; comboUntil=0; lastVerb='';
+    if(timeEl) timeEl.style.textShadow='';
+    stations=[];
+    for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
+        const t=LAYOUT[y][x];if(t)stations.push(createStation(x,y,t));
+    }
+    player.x=5;player.y=3;player.dir='right';player.frame=0;
+    player.frameTimer=0;player.moving=false;player.actionTimer=0;
+    // Starter objective on load: obvious first verb (per playtest: make first input immediately game-like + visually obvious objective; no hunt for action on open)
+    const stA = getStationAt(4,3) || getStationAt(5,2);
+    if (stA && !stA.hasFire) { stA.hasFire=true; stA.fireHealth=0; stA.flashTimer=0.45; }
+    const stB = getStationAt(6,3);
+    if (stB && !stB.hasBuild && !stB.hasFire) { stB.hasBuild=true; stB.flashTimer=0.3; }
+    updateHUD();
+}
+
+function updateHUD(){
+    if(scoreEl) scoreEl.textContent=score;
+    if(levelEl) levelEl.textContent=wave;
+    const avg = stations.length ? Math.round( stations.reduce((a,s)=>a+s.health,0) / stations.length ) : 100;
+    if(integrityEl){ integrityEl.textContent = avg + '%'; integrityEl.style.color = avg>60 ? '#44ff88' : avg>25 ? '#ffaa33' : '#ff3333'; }
+    const inFlight = stations.filter(s=>s.hasBuild).length + transits.length;
+    if(transitEl) transitEl.textContent = inFlight;
+    if(extEl) extEl.textContent = lastIncidentsExtinguished;
+    if(firesEl){ const nf=stations.filter(s=>s.hasFire).length; firesEl.textContent=nf; firesEl.style.color=nf>0?'#ff6644':'#c8c8d8'; }
+    if(timeEl){
+      const m=Math.floor(timeLeft/60),s=timeLeft%60;
+      timeEl.textContent=m+':'+String(s).padStart(2,'0');
+      if(timeLeft<=30){timeEl.style.color='#ff3333';timeEl.style.textShadow='0 0 10px #ff6644';}
+      else if(timeLeft<=60){timeEl.style.color='#ffaa33';timeEl.style.textShadow='';}
+      else {timeEl.style.color='#ff6b35';timeEl.style.textShadow='';}
+    }
+    // combo pressure feedback (visible only when hot)
+    const comboEl=document.getElementById('combo-val'), comboItem=document.getElementById('combo-item');
+    if(comboEl&&comboItem){ if(combo>1){ comboEl.textContent='x'+combo; comboItem.style.display='flex'; } else { comboItem.style.display='none'; } }
+}
+
+// ─── PARTICLES ───
+function spawnParticles(x,y,color,count,speed){
+    for(let i=0;i<count;i++){
+        const angle=Math.random()*Math.PI*2,spd=0.5+Math.random()*speed;
+        particles.push({x:x*CELL+CELL/2,y:y*CELL+CELL/2,
+            vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd,
+            life:1,decay:0.02+Math.random()*0.03,color,size:2+Math.random()*4});
+    }
+}
+function spawnFT(x,y,text,color){
+    floatingTexts.push({x:x*CELL+CELL/2,y:y*CELL+CELL/2-10,text,color,life:1,vy:-0.8});
+}
+function spawnTransit(sx,sy,tx,ty,color){
+    transits.push({sx:sx,sy:sy,tx:tx,ty:ty,prog:0,color:color});
+}
+function awardCombo(verb, basePts, x, y){
+  // Combo chaining: different verb within ~2.8s window (ext -> route -> secure) under pressure = more points + visible juice
+  const now=performance.now();
+  if(now < comboUntil && lastVerb && lastVerb !== verb){
+    combo = Math.min(8, combo+1);
+    const mult = 1 + (combo-1)*0.2;
+    const pts = Math.floor(basePts * mult);
+    score += (pts - basePts); // add the bonus
+    spawnFT(x,y,'COMBO x'+combo + ' +'+(pts-basePts),'#ffdd44');
+    spawnParticles(x,y,'#ffdd44',6,1.8);
+    if(combo>=3) shakeTimer=0.06; shakeIntensity=Math.max(shakeIntensity,1.5);
+  } else {
+    combo=1;
+    score += basePts;
+  }
+  comboUntil = now + 2800;
+  lastVerb = verb;
+  updateHUD();
+  return combo;
+}
+function updateParticles(dt){
+    for(let i=particles.length-1;i>=0;i--){
+        const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vx*=0.96;p.vy*=0.96;
+        p.life-=p.decay;if(p.life<=0)particles.splice(i,1);
+    }
+    for(let i=floatingTexts.length-1;i>=0;i--){
+        const t=floatingTexts[i];t.y+=t.vy;t.life-=0.015;
+        if(t.life<=0)floatingTexts.splice(i,1);
+    }
+}
+function updateTransits(dt){
+    for(let i=transits.length-1;i>=0;i--){
+        const tr=transits[i];tr.prog+=dt/0.55;if(tr.prog>=1){transits.splice(i,1);continue;}
+    }
+}
+function drawTransits(){
+    for(const tr of transits){
+        const px=tr.sx*CELL + (tr.tx-tr.sx)*CELL*tr.prog + CELL*0.5;
+        const py=tr.sy*CELL + (tr.ty-tr.sy)*CELL*tr.prog + CELL*0.5;
+        ctx.globalAlpha=Math.max(0.3,1-tr.prog*0.7);
+        ctx.fillStyle=tr.color;
+        ctx.beginPath();ctx.moveTo(px,py-5);ctx.lineTo(px+5,py);ctx.lineTo(px,py+5);ctx.lineTo(px-5,py);ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
+    }
+}
+
+// ─── FIRE ───
+function spawnFire(){
+    const cands=stations.filter(s=>!s.hasFire&&s.health>0);
+    if(!cands.length)return;
+    const s=cands[Math.floor(Math.random()*cands.length)];
+    s.hasFire=true;s.fireHealth=0;s.flashTimer=0.3;
+    sfxFire();spawnParticles(s.x,s.y,'#ff4422',8,2);
+}
+function spreadFire(){
+    const fires=stations.filter(s=>s.hasFire&&s.health>0);
+    for(const fire of fires){
+        const adj=findAdjacent(fire.x,fire.y);
+        for(const a of adj){
+            const target=getStationAt(a.x,a.y);
+            if(target&&!target.hasFire&&target.health>0&&Math.random()<(0.24+wave*0.015)){
+                target.hasFire=true;target.fireHealth=0;target.flashTimer=0.2;
+                spawnParticles(a.x,a.y,'#ff4422',9,2);
+                // directed ember particles FROM the spreading fire toward new cell — visual spreading hazard animation (crawling firebreak)
+                const fx=fire.x*CELL+CELL/2, fy=fire.y*CELL+CELL/2;
+                const tx=a.x*CELL+CELL/2, ty=a.y*CELL+CELL/2;
+                for(let k=0;k<11;k++){
+                    const ang = Math.atan2(ty-fy, tx-fx) + (Math.random()-0.5)*0.9;
+                    particles.push({x:fx+ (Math.random()-0.5)*8, y:fy+(Math.random()-0.5)*8, vx:Math.cos(ang)*(2.6+Math.random()*1.5), vy:Math.sin(ang)*(2.6+Math.random()*1.5), life:0.85+Math.random()*0.6, decay:0.032, color:'#ff6622', size:1.9+Math.random()});
+                }
+                // extra heat puff at target to telegraph incoming spread (board feels alive + dangerous)
+                for(let k=0;k<5;k++) particles.push({x:tx+(Math.random()-0.5)*9, y:ty+(Math.random()-0.5)*9, vx:(Math.random()-0.5)*1.2, vy:(Math.random()-0.5)*0.8-0.3, life:0.4+Math.random()*0.3, decay:0.05, color:'#ffaa44', size:2.2});
+            }
+        }
+    }
+}
+function extinguishNearby(){
+    const px=player.x,py=player.y;
+    const checked=[{x:px,y:py},{x:px-1,y:py},{x:px+1,y:py},{x:px,y:py-1},{x:px,y:py+1}];
+    let ex=false;
+    for(const cell of checked){
+        const s=getStationAt(cell.x,cell.y);
+        if(s&&s.hasFire){
+            s.hasFire=false;s.fireHealth=0;s.flashTimer=0.4;
+            s.health=Math.min(100,s.health+10);
+            const ptsBase=50*wave; const base=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);
+            awardCombo('ext', base, cell.x, cell.y); ex=true;
+            if(performance.now()<flowUntil+80) spawnFT(cell.x,cell.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(cell.x,cell.y,'RUSH!','#ffaa66');
+            sfxExtinguish();
+            // animated intervention: spray from player position toward fire (physical rescue reach, stronger arcade feedback)
+            const pcx=px*CELL+CELL/2, pcy=py*CELL+CELL/2+ (player.moving?Math.sin(performance.now()/120)*1.5:0);
+            for(let k=0;k<17;k++){
+              const ang = Math.atan2((cell.y*CELL+CELL/2)-pcy, (cell.x*CELL+CELL/2)-pcx) + (Math.random()-0.5)*0.65;
+              particles.push({x:pcx,y:pcy, vx:Math.cos(ang)*(3.3+Math.random()*0.7), vy:Math.sin(ang)*(3.3+Math.random()*0.7), life:0.62+Math.random()*0.35, decay:0.038, color:'#aaddff', size:2.5+Math.random()*2});
+            }
+            spawnParticles(cell.x,cell.y,'#44ddff',22,4);
+            spawnParticles(cell.x,cell.y,'#ffffff',12,2.6);
+            spawnFT(cell.x,cell.y,'+'+base+'!','#44ddff');
+            lastIncidentsExtinguished++;
+        }
+    }
+    if(ex){shakeTimer=0.15;shakeIntensity=3; flowUntil=performance.now()+2800; player.actionTimer=0.22; }
+}
+
+// ─── UNIFIED ACTION (readable controls: one verb for the prompt) ───
+function doAction(){
+    if(gameState!=='playing')return;
+    const wasFlow = performance.now() < flowUntil;
+    // Priority 1: extinguish (urgent)
+    const beforeExt = lastIncidentsExtinguished;
+    extinguishNearby();
+    if(lastIncidentsExtinguished > beforeExt){ flowUntil=performance.now()+2800; return; } // did something (flow window for next verb)
+
+    // Priority 2: process a build if adjacent (instant boost)
+    const hadBuilds = buildsShipped;
+    const pAdj = findAdjacent(player.x, player.y);
+    let didProc = false;
+    for(const a of pAdj){
+        const s = getStationAt(a.x, a.y);
+        if(s && s.hasBuild && !s.hasFire){
+            processBuilds(); // reuses the player-adj + auto logic; will award bonus
+            didProc = true;
+            break;
+        }
+    }
+    if(didProc){ flowUntil=performance.now()+2800; player.actionTimer=0.22; return; }
+
+    // Priority 3: security secure/patrol (advance the timer or re-arm)
+    for(const a of pAdj){
+        const s = getStationAt(a.x, a.y);
+        if(s && s.type===T_SEC){
+            if(!s.secured){
+                // fast-forward the secure timer
+                s.secTimer += 1.2;
+                const req = Math.max(0.8,2.8-wave*0.25);
+                if(s.secTimer >= req){
+                    s.secured=true; s.secTimer=0; s.secLevel=4;
+                    const ptsBase=30*wave; const base=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);
+                    awardCombo('sec', base, s.x, s.y); secretsSecured++;
+                    if(performance.now()<flowUntil+80) spawnFT(s.x,s.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(s.x,s.y,'RUSH!','#ffaa66');
+                    sfxSecret();
+                    // animated intervention: expanding shield pulse from station
+                    for(let k=0;k<10;k++){ const ang=k/10*Math.PI*2; particles.push({x:s.x*CELL+CELL/2+Math.cos(ang)*3, y:s.y*CELL+CELL/2+Math.sin(ang)*3, vx:Math.cos(ang)*1.8, vy:Math.sin(ang)*1.8, life:0.5, decay:0.03, color:'#aabbff', size:3}); }
+                    spawnParticles(s.x,s.y,'#8888ff',18,3.5);
+                    spawnParticles(s.x,s.y,'#ffbb33',12,2.5);
+                    spawnFT(s.x,s.y,'SECURED! +'+base,'#8888ff');
+                    shakeTimer=0.12;shakeIntensity=2;
+                } else {
+                    spawnFT(s.x,s.y,'...','#ffbb33');
+                }
+            } else if(s.secLevel < 3.5){
+                s.secLevel = Math.min(5, s.secLevel + 2.5);
+                const ptsBase=8*wave; const base=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);
+                awardCombo('patrol', base, s.x, s.y);
+                spawnFT(s.x,s.y,'+'+base+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#8888ff');
+                sfxSecret();
+            }
+            shakeTimer=0.08; shakeIntensity=1.5;
+            flowUntil=performance.now()+2800; player.actionTimer=0.22; return;
+        }
+    }
+    // Fallback: just a little pulse feedback if standing on empty
+    spawnParticles(player.x, player.y, '#00e5ff', 3, 0.8);
+}
+
+// ─── BUILDS ───
+function addBuildQueue(){
+    const producers=stations.filter(s=>s.type===T_BUILD&&!s.hasFire&&s.health>0);
+    if(!producers.length)return;
+    const s=producers[Math.floor(Math.random()*producers.length)];
+    s.hasBuild=true;s.flashTimer=0.2;sfxBuild();
+    spawnParticles(s.x,s.y,'#44ff44',5,1);
+}
+
+function processBuilds(){
+    const playerAdj=findAdjacent(player.x,player.y);
+    const playerCells=new Set(playerAdj.map(a=>a.x+','+a.y));
+    playerCells.add(player.x+','+player.y);
+    
+    let anyProcessed=false;
+    
+    // Player-adjacent processing (bonus points)
+    for(const adj of playerAdj){
+        const s=getStationAt(adj.x,adj.y);
+        if(!s||!s.hasBuild||s.hasFire)continue;
+        
+        if(s.type===T_BUILD){
+            const adj2=findAdjacent(s.x,s.y);
+            for(const a of adj2){
+                const t=getStationAt(a.x,a.y);
+                if(t&&t.type===T_TEST&&!t.hasBuild&&!t.hasFire){
+                    t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
+                    const p15=Math.floor((performance.now()<flowUntil+80?15*1.2:15)*rushFactor); awardCombo('route', p15, s.x, s.y); sfxProcess();
+                    spawnFT(s.x,s.y,'To TEST'+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#44ff44');
+                    spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
+                    anyProcessed=true;break;
+                }
+            }
+        } else if(s.type===T_TEST){
+            const adj2=findAdjacent(s.x,s.y);
+            for(const a of adj2){
+                const t=getStationAt(a.x,a.y);
+                if(t&&t.type===T_SHIP&&!t.hasBuild&&!t.hasFire){
+                    t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
+                    const p25=Math.floor((performance.now()<flowUntil+80?25*1.2:25)*rushFactor); awardCombo('route', p25, s.x, s.y); sfxProcess();
+                    spawnFT(s.x,s.y,'To SHIP'+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#44ff44');
+                    spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
+                    anyProcessed=true;break;
+                }
+            }
+        } else if(s.type===T_SHIP){
+            s.hasBuild=false;
+            const ptsBase=30*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);
+            awardCombo('ship', pts, s.x, s.y); buildsShipped++;
+            s.processAnim=0.5;
+            sfxShip(); playMotif('ship',1);
+            spawnParticles(s.x,s.y,'#aa66ff',14,2.5);
+            spawnParticles(s.x,s.y,'#ffdd44',10,2);
+            spawnFT(s.x,s.y,'SHIPPED! +'+pts+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#aa66ff');
+            shakeTimer=0.1;shakeIntensity=2.5;
+            anyProcessed=true;break;
+        }
+        if(anyProcessed)break;
+    }
+    
+    // Auto-process from build to test (fewer points, passive)
+    if(!anyProcessed){
+        const built=stations.filter(s=>s.hasBuild&&!s.hasFire);
+        for(const s of built){
+            if(s.type===T_BUILD){
+                const adj=findAdjacent(s.x,s.y);
+                for(const a of adj){
+                    const t=getStationAt(a.x,a.y);
+                    if(t&&t.type===T_TEST&&!t.hasBuild&&!t.hasFire){
+                        t.hasBuild=true;s.hasBuild=false;
+                        s.flashTimer=0.1;t.flashTimer=0.1;
+                        score+=5;
+                        spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
+                        return;
+                    }
+                }
+            } else if(s.type===T_TEST){
+                const adj=findAdjacent(s.x,s.y);
+                for(const a of adj){
+                    const t=getStationAt(a.x,a.y);
+                    if(t&&t.type===T_SHIP&&!t.hasBuild&&!t.hasFire){
+                        t.hasBuild=true;s.hasBuild=false;
+                        s.flashTimer=0.1;t.flashTimer=0.1;
+                        score+=15;
+                        spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
+                        return;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ─── SECURITY ───
+function processSecurity(dt){
+    // Global decay for secured stations: protection requires you to keep visiting under pressure
+    for(const s of stations){
+        if(s.type===T_SEC&&s.secured){
+            const before = s.secLevel;
+            s.secLevel=Math.max(0,s.secLevel-dt*0.9);
+            if(before>0.01 && s.secLevel<=0.01){
+                s.secured=false;s.secTimer=0;
+                // Consequential leak: penalty + feedback (makes "protect secrets" tense)
+                score = Math.max(0, score - 25);
+                spawnParticles(s.x,s.y,'#ff3366',9,2.5);
+                spawnFT(s.x,s.y,'LEAK! -25','#ff3366');
+                sfxFire(); playMotif('rush',0.7);
+            }
+        }
+    }
+    const adj=findAdjacent(player.x,player.y);
+    for(const a of adj){
+        const s=getStationAt(a.x,a.y);
+        if(!s||s.type!==T_SEC)continue;
+        if(!s.secured){
+            s.secTimer+=dt;
+            const reqTime=Math.max(0.8,2.8-wave*0.25);
+            if(s.secTimer>=reqTime){
+                s.secured=true;s.secTimer=0;s.secLevel=4;
+                const pts=30*wave;score+=pts;secretsSecured++;
+                sfxSecret(); playMotif('secure',0.9);
+                spawnParticles(s.x,s.y,'#8888ff',15,3);
+                spawnParticles(s.x,s.y,'#ffbb33',10,2);
+                spawnFT(s.x,s.y,'SECURED! +'+pts,'#8888ff');
+            }
+        }else{
+            // Patrolling re-arms the buffer and yields occasional vigilance points
+            if(s.secLevel<3.5){
+                s.secLevel=Math.min(5,s.secLevel+dt*3);
+                if(Math.random()<0.06){const pts=Math.floor(8*wave*rushFactor);score+=pts;spawnFT(s.x,s.y,'+'+pts+(rushFactor>1?' RUSH':''),'#8888ff');}
+            }
+        }
+    }
+}
+
+// ─── INPUT ───
+const keys={};
+let moveCooldown=0;
+
+document.addEventListener('keydown',function(e){
+    keys[e.key]=true;
+    if(e.key===' '||e.key==='x'||e.key==='X'){
+        if(gameState==='playing')doAction();
+        else if(gameState==='gameover'){ startGame(); }
+    }
+    if(e.key==='r'||e.key==='R'){
+        if(gameState==='gameover')startGame();
+    }
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].indexOf(e.key)>=0)e.preventDefault();
+});
+document.addEventListener('keyup',function(e){keys[e.key]=false;});
+
+function setupTouch(id,key){
+    const b=document.getElementById(id);if(!b)return;
+    const s=function(e){e.preventDefault();keys[key]=true;};
+    const en=function(e){e.preventDefault();keys[key]=false;};
+    b.addEventListener('touchstart',s,{passive:false});
+    b.addEventListener('touchend',en,{passive:false});
+    b.addEventListener('touchcancel',en,{passive:false});
+    b.addEventListener('mousedown',s);
+    b.addEventListener('mouseup',en);
+    b.addEventListener('mouseleave',en);
+}
+setupTouch('btn-up','ArrowUp');setupTouch('btn-down','ArrowDown');
+setupTouch('btn-left','ArrowLeft');setupTouch('btn-right','ArrowRight');
+if(mobileExt){
+  mobileExt.addEventListener('touchstart',function(e){e.preventDefault();if(gameState==='playing')doAction();},{passive:false});
+  mobileExt.addEventListener('mousedown',function(){if(gameState==='playing')doAction();});
+}
+
+// Pointer (mouse) support alongside keyboard/touch for readable controls
+if(canvas)canvas.addEventListener('mousedown',function(e){
+  if(gameState==='gameover'){ startGame(); return; }
+  if(gameState!=='playing')return;
+  const r=canvas.getBoundingClientRect();
+  const gx=Math.floor( ((e.clientX-r.left)/r.width)*CANVAS_W / CELL );
+  const gy=Math.floor( ((e.clientY-r.top)/r.height)*CANVAS_H / CELL );
+  if(!isWalkable(gx,gy))return;
+  const dx=gx-player.x, dy=gy-player.y;
+  if((Math.abs(dx)<=1&&Math.abs(dy)<=1)&&(dx||dy)){
+    player.x=gx;player.y=gy; moveCooldown=0.06;
+    if(dx>0)player.dir='right';else if(dx<0)player.dir='left';else if(dy<0)player.dir='up';else player.dir='down';
+    spawnParticles(gx,gy,'#00e5ff',2,0.6);
+  }else if(Math.abs(dx)<=2&&Math.abs(dy)<=2){ doAction(); }
+});
+
+// ─── PLAYER ───
+function updatePlayer(dt){
+    if(moveCooldown>0){moveCooldown-=dt;return;}
+    let dx=0,dy=0;
+    if(keys['ArrowUp']||keys['w']||keys['W'])dy=-1;
+    if(keys['ArrowDown']||keys['s']||keys['S'])dy=1;
+    if(keys['ArrowLeft']||keys['a']||keys['A'])dx=-1;
+    if(keys['ArrowRight']||keys['d']||keys['D'])dx=1;
+    if(dx!==0||dy!==0){
+        const nx=player.x+dx,ny=player.y+dy;
+        if(isWalkable(nx,ny)){
+            player.x=nx;player.y=ny;player.moving=true;
+            if(dx>0)player.dir='right';else if(dx<0)player.dir='left';
+            else if(dy<0)player.dir='up';else player.dir='down';
+            moveCooldown=0.09;
+            spawnParticles(nx,ny,'#00e5ff',2,0.5);
+        }
+    }else player.moving=false;
+    player.frameTimer+=dt;
+    if(player.frameTimer>0.2){player.frameTimer=0;player.frame=(player.frame+1)%4;}
+    if(player.actionTimer>0) player.actionTimer-=dt;
+}
+
+// ─── DIFFICULTY ───
+function updateDifficulty(){
+    const elapsed=GAME_DURATION-timeLeft;
+    const nw=Math.floor(elapsed/30)+1;
+    if(nw>wave){wave=nw;sfxWave();
+        spawnFT(Math.floor(GRID_W/2),Math.floor(GRID_H/2),'WAVE '+wave,'#a78bfa');
+        // juice: central burst + shake on escalation
+        spawnParticles(Math.floor(GRID_W/2),Math.floor(GRID_H/2),'#a78bfa',18,2.5);
+        shakeTimer=0.25; shakeIntensity=4;
+    }
+    nextFireSpawn=Math.max(2000,FIRE_SPAWN_MAX-(wave-1)*800);
+    currentQueueInterval=Math.max(2200,QUEUE_INTERVAL-(wave-1)*650); // escalating queues: faster spawns = visible backlog pressure to route under fire/incident load
+    if(timeLeft<=30){ // final-sprint pressure: last 30s of the 3:00 timer becomes a real "firebreak" rush (more incidents + backlog to juggle while shipping last builds)
+      nextFireSpawn=Math.max(1200,nextFireSpawn*0.6);
+      currentQueueInterval=Math.max(1400,currentQueueInterval*0.65);
+      rushFactor=1.25;
+    } else {
+      rushFactor=1;
+    }
+}
+
+// ─── RENDERING ───
+function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+}
+
+function drawStation(s,t){
+    const cx=s.x*CELL+CELL/2,cy=s.y*CELL+CELL/2;
+    const hw=CELL*0.42,hh=CELL*0.42;
+    
+    let col=COLORS[s.type];
+    if(s.hasFire)col='#3a1a1a';
+    if(s.secured)col='#2a2a4a';
+    
+    const flash=s.flashTimer>0?Math.sin(s.flashTimer*30)*0.3:0;
+    const procGlow=s.processAnim>0?Math.sin(s.processAnim*20)*0.2:0;
+    ctx.globalAlpha=0.7+flash+procGlow;
+    roundRect(cx-hw,cy-hh,hw*2,hh*2,6);ctx.fill();
+    ctx.globalAlpha=1;
+    
+    // Border with glow
+    ctx.strokeStyle=s.flashTimer>0?'#ffffff':s.secured?'#8888ff':s.hasFire?'#ff4444':BORDERS[s.type];
+    ctx.lineWidth=2;
+    if(s.secured||s.hasFire){ctx.shadowColor=s.secured?'#8888ff':'#ff4444';ctx.shadowBlur=8;}
+    roundRect(cx-hw,cy-hh,hw*2,hh*2,6);ctx.stroke();
+    ctx.shadowBlur=0;
+    
+    // Label
+    ctx.fillStyle=BORDERS[s.type]||'#888';
+    ctx.font='bold 11px monospace';ctx.textAlign='center';
+    ctx.fillText(s.label,cx,cy-4);
+    
+    // Status
+    const sy=cy+12;
+    if(s.hasBuild){
+        // Animated build crate/packet (authored 3d-ish with rivets + stamp; bobs as "alive" queued resource, not blob)
+        const bp = Math.sin((t||0)*9 + s.x*1.7 + s.y)*1.8;
+        const byy = sy-4 + bp;
+        ctx.fillStyle='#334433'; ctx.fillRect(cx-9, byy, 18, 10); // crate body
+        ctx.fillStyle='#556655'; ctx.fillRect(cx-9, byy, 18, 3); // lid
+        ctx.fillStyle='#aaff99'; ctx.fillRect(cx-5, byy+3, 3, 2); ctx.fillRect(cx+2, byy+5, 2, 2); // rivets
+        ctx.fillStyle='#ccffaa'; ctx.font='7px monospace'; ctx.fillText('YST', cx-4, byy+8); // stamp
+        // queued-work pip for BUILD backlog pressure (visible escalating queues)
+        if(s.type===T_BUILD){
+            ctx.fillStyle='#aaffcc';ctx.font='10px monospace';
+            ctx.fillText('\u2022',cx+13,byy+4);
+        }
+    }
+    
+    // Fire (layered wobbly + trailing embers for spreading hazard — authored "enemy" not blob; crawls visibly, intervention target)
+    if(s.hasFire){
+        const fp=Math.sin(t*13+s.x*2.8+s.y*4.7);
+        const fs=14.5+fp*7.2; // bigger, hotter flicker
+        // core red
+        ctx.fillStyle='#ff0a00';ctx.beginPath();ctx.arc(cx-8,sy-2,fs*0.68,0,Math.PI*2);ctx.fill();
+        // bright inner
+        ctx.fillStyle='#ffdd22';ctx.beginPath();ctx.arc(cx+8,sy-4,fs*0.5,0,Math.PI*2);ctx.fill();
+        // mid orange body
+        ctx.fillStyle='#ff2a00';ctx.beginPath();ctx.arc(cx+1,sy+6,fs*0.58,0,Math.PI*2);ctx.fill();
+        // outer heat + slow wobble tendril (spreading motion)
+        ctx.globalAlpha=0.48+Math.sin(t*16)*0.28;
+        ctx.fillStyle='#ff7700';ctx.beginPath();ctx.arc(cx-1,sy+2,fs*0.88,0,Math.PI*2);ctx.fill();
+        // animated tendril "fingers" + flying ember trails (directed creep feel)
+        ctx.fillStyle='#ff4400';
+        for(let k=0;k<5;k++){ const a=(t*6.2 + s.x*0.7 + k*1.3)%6.28; const ex=cx+Math.cos(a)*fs*0.72, ey=sy+Math.sin(a*1.35)*fs*0.6;
+          ctx.beginPath();ctx.arc(ex,ey,2.8+Math.sin(t*9+k)*0.8,0,6.28);ctx.fill();
+          // small trailing spark
+          if(k%2===0){ ctx.globalAlpha=0.4; ctx.beginPath();ctx.arc(ex-Math.cos(a)*5,ey-Math.sin(a)*4,1.4,0,6.28);ctx.fill(); ctx.globalAlpha=0.48+Math.sin(t*16)*0.28; }
+        }
+        ctx.globalAlpha=0.32; ctx.fillStyle='#ffbb11'; ctx.beginPath(); ctx.arc(cx,sy+1,fs*0.98,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+        
+        // Health bar (more prominent)
+        const bw=hw*1.7,bh=4,bx=cx-bw/2,by=cy+hh+5;
+        ctx.fillStyle='#222244';ctx.fillRect(bx,by,bw,bh);
+        const hp=s.health/100;
+        ctx.fillStyle=hp>0.5?'#44ff88':hp>0.25?'#ffcc44':'#ff2222';
+        ctx.fillRect(bx,by,bw*hp,bh);
+        if(hp<0.3){
+            const ap=Math.sin(t*11)*0.5+0.6;
+            ctx.fillStyle='rgba(255,40,40,'+ap+')';ctx.font='bold 11px monospace';ctx.textAlign='center';
+            ctx.fillText('!',cx,by-4);
+        }
+    }
+    
+    // Security (authored classified chip/folder with lock bar — central "protect secrets" element, not generic icon)
+    if(s.type===T_SEC){
+        if(s.secured){
+            // secured chip/card
+            ctx.fillStyle='#445577'; ctx.fillRect(cx-10,cy-hh-14,20,11);
+            ctx.fillStyle='#99aaff'; ctx.fillRect(cx-8,cy-hh-12,6,2); ctx.fillRect(cx+1,cy-hh-12,6,2);
+            ctx.fillStyle='#aaccff';ctx.font='7px monospace';ctx.fillText('OK',cx-2,cy-hh-5);
+            ctx.fillStyle='#88aaff';ctx.font='8px sans-serif';ctx.fillText('\u25c6',cx+7,cy-hh-4);
+        } else {
+            const pulse=Math.sin(t*3.5)*0.5+0.5;
+            ctx.globalAlpha=pulse*0.75;
+            ctx.fillStyle='#334455'; ctx.fillRect(cx-9,cy-hh-13,18,10); // folder body
+            ctx.fillStyle='#ff3366'; ctx.fillRect(cx-9,cy-hh-13,18,3); // CLASS bar
+            ctx.fillStyle='#ffddaa';ctx.font='6px monospace';ctx.fillText('CONF',cx-4,cy-hh-11);
+            ctx.fillStyle='#ff5577';ctx.font='14px sans-serif';ctx.fillText('\u26a0',cx+7,cy-hh-3);
+            ctx.globalAlpha=1;
+        }
+    }
+    
+    // Ship progress (brighter)
+    if(s.type===T_SHIP&&s.hasBuild&&!s.hasFire){
+        const sp=Math.sin(t*5);
+        ctx.fillStyle='#ffee99';ctx.font='bold 11px monospace';ctx.textAlign='center';
+        ctx.fillText('\ud83d\udce6 '+Math.round(sp*10+12)+'%',cx,cy+hh+18);
+    }
+    
+    // Tile-scale context affordance (obvious verb at tile size when near) + process ring
+    const playerAdj=findAdjacent(player.x,player.y);
+    const isPlayerNear=playerAdj.some(a=>a.x===s.x&&a.y===s.y);
+    if(isPlayerNear){
+        if(s.hasFire){
+            // big obvious EXTINGUISH glyph on the tile itself (focal rescue verb — larger/bolder per contact feedback)
+            ctx.fillStyle='rgba(255,40,25,0.98)';ctx.font='bold 17px monospace';ctx.textAlign='center';
+            ctx.fillText('EXT',cx,cy-hh-16);
+            ctx.strokeStyle='rgba(255,60,35,0.95)';ctx.lineWidth=3.5;
+            roundRect(cx-hw-6,cy-hh-6,hw*2+12,hh*2+12,5);ctx.stroke();
+        } else if(s.hasBuild&&!s.hasFire){
+            ctx.fillStyle='rgba(60,255,100,0.98)';ctx.font='bold 15px monospace';ctx.textAlign='center';
+            ctx.fillText('ROUTE',cx,cy-hh-16);
+            const pulse=Math.sin(t*7)*0.38+0.68;
+            ctx.strokeStyle='rgba(50,255,50,'+pulse+')';ctx.lineWidth=3.5;
+            roundRect(cx-hw-6,cy-hh-6,hw*2+12,hh*2+12,5);ctx.stroke();
+        } else if(s.type===T_SEC){
+            const label = !s.secured ? 'SECURE' : 'PATROL';
+            ctx.fillStyle='rgba(170,140,255,0.98)';ctx.font='bold 14px monospace';ctx.textAlign='center';
+            ctx.fillText(label,cx,cy-hh-16);
+            ctx.strokeStyle='rgba(140,110,255,0.9)';ctx.lineWidth=3;
+            roundRect(cx-hw-5,cy-hh-5,hw*2+10,hh*2+10,5);ctx.stroke();
+        }
+    }
+    // legacy small process ring for builds (kept for juice)
+    if(isPlayerNear&&!s.hasFire&&s.hasBuild){
+        const pulse=Math.sin(t*5)*0.3+0.7;
+        ctx.strokeStyle='rgba(68,255,68,'+pulse*0.5+')';ctx.lineWidth=1.5;
+        ctx.setLineDash([2,4]);
+        roundRect(cx-hw-2,cy-hh-2,hw*2+4,hh*2+4,6);ctx.stroke();
+        ctx.setLineDash([]);
+    }
+}
+
+function drawPlayer(t){
+    const cx=player.x*CELL+CELL/2,cy=player.y*CELL+CELL/2;
+    const bob=player.moving?Math.sin(t*12)*2.2:0;
+    const actPulse = (player.actionTimer||0)>0 ? Math.sin((player.actionTimer||0)*28)*0.4+0.6 : 0;
+    const nearFire = findAdjacent(player.x,player.y).some(a=>{const s=getStationAt(a.x,a.y);return s&&s.hasFire;});
+    
+    // Floor highlight under player (makes action focal point obvious on the board)
+    ctx.fillStyle='rgba(0,229,255,0.12)';ctx.beginPath();ctx.arc(cx,cy,34,0,Math.PI*2);ctx.fill();
+    
+    // Larger/brighter glow (player avatar is the clear focal rescue agent — bigger per contact feedback)
+    ctx.fillStyle='rgba(0,229,255,'+(0.36+actPulse*0.24)+')';ctx.beginPath();ctx.arc(cx,cy+bob,46,0,Math.PI*2);ctx.fill();
+    
+    // Body (larger/brighter cyan rescue avatar, weightier arcade presence)
+    ctx.fillStyle='#00f8ff';ctx.beginPath();ctx.arc(cx,cy+bob,24,0,Math.PI*2);ctx.fill();
+    
+    // Utility pack (factory agent kit) + action flash
+    ctx.fillStyle=actPulse>0.1?'#22aacc':'#007788';ctx.fillRect(cx-8,cy+bob+6,16,11);
+    ctx.fillStyle='#00ccdd';ctx.fillRect(cx-7,cy+bob+7,6,4);ctx.fillRect(cx+1,cy+bob+7,6,4);
+    
+    // Extinguisher tank (central hero tool, drawn on back always; nozzle extends on act near fire for "reach" intervention)
+    ctx.fillStyle='#334455';ctx.fillRect(cx+14,cy+bob-2,7,18);
+    ctx.fillStyle='#556677';ctx.fillRect(cx+15,cy+bob+2,5,3);
+    if(nearFire && actPulse>0.05){
+      // hose/nozzle line reaching toward fire (animated intervention, not static blob)
+      const nx=cx+22, ny=cy+bob+8; ctx.strokeStyle='#ffddaa'; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.moveTo(nx,ny); ctx.lineTo(nx+18,ny-6-Math.sin(t*30)*3); ctx.stroke(); ctx.lineWidth=1;
+    }
+    
+    // Helmet (brighter, scaled) + headlamp + stripe (authored details)
+    ctx.fillStyle='#00aacc';ctx.beginPath();ctx.arc(cx,cy+bob-8,15,Math.PI,0);ctx.fill();
+    ctx.fillStyle='#ffdd66'; ctx.fillRect(cx-3,cy+bob-19,6,3); // lamp
+    ctx.fillStyle='#113344'; ctx.fillRect(cx-10,cy+bob-11,20,2); // stripe
+    
+    // Eyes + visor glint
+    ctx.fillStyle='#fff';
+    const eo=player.dir==='left'?-6:player.dir==='right'?6:0;
+    ctx.beginPath();ctx.arc(cx-7+eo,cy+bob-7,4,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+7+eo,cy+bob-7,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.7)';ctx.fillRect(cx-2+eo,cy+bob-9,6,2);
+    
+    // Authored pixel stamp badge on kit (local code asset for crisp hero identity, not vector blob)
+    drawPixelStamp(PIXEL_HERO_BADGE, cx-4, cy+bob+8, 1.15, {1:'#0a3340',2:'#eeccaa',3:'#112233'});
+    
+    // Walking legs + dust on move (stronger animation feedback for responsive board)
+    if(player.moving){
+        const lp=Math.sin(t*14);
+        ctx.strokeStyle='#00aacc';ctx.lineWidth=3.5;ctx.beginPath();
+        ctx.moveTo(cx-7,cy+bob+18);ctx.lineTo(cx-7+lp*6,cy+bob+27);
+        ctx.moveTo(cx+7,cy+bob+18);ctx.lineTo(cx+7-lp*6,cy+bob+27);
+        ctx.stroke();
+        if(Math.random()<0.35) spawnParticles(player.x,player.y,'#00ccdd',1,0.4);
+    }
+    if(actPulse>0.1){
+        ctx.strokeStyle='rgba(255,220,120,0.85)';ctx.lineWidth=2.5;
+        ctx.beginPath();ctx.moveTo(cx-10,cy+bob+2);ctx.lineTo(cx+10,cy+bob+2);ctx.stroke();
+    }
+    
+    // Stronger action-ready ring + urgency flash when near fire (focal rescue telegraph, obvious at player)
+    const pAdj=findAdjacent(player.x,player.y);
+    const nearActionable = pAdj.some(a=>{ const s=getStationAt(a.x,a.y); return s && (s.hasFire || (s.hasBuild&&!s.hasFire) || s.type===T_SEC); });
+    if(nearActionable){
+        const ap=Math.sin(t*22)*0.5+0.5;
+        ctx.strokeStyle= nearFire ? 'rgba(255,90,70,'+(0.85+ap*0.32)+')' : 'rgba(70,255,110,'+(0.78+ap*0.38)+')';
+        ctx.lineWidth= nearFire ? 6 : 5;
+        ctx.beginPath();ctx.arc(cx,cy+bob,28,0,Math.PI*2);ctx.stroke();
+        ctx.lineWidth=1;
+    }
+}
+
+function drawParticles(){
+    for(const p of particles){
+        ctx.globalAlpha=p.life;ctx.fillStyle=p.color;
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    for(const ft of floatingTexts){
+        ctx.globalAlpha=ft.life;ctx.fillStyle=ft.color;
+        ctx.font='bold 14px monospace';ctx.textAlign='center';
+        ctx.fillText(ft.text,ft.x,ft.y);
+    }
+    ctx.globalAlpha=1;
+}
+
+function drawGrid(){
+    ctx.strokeStyle='#1a1a2e';ctx.lineWidth=0.5;
+    for(let x=0;x<=GRID_W;x++){ctx.beginPath();ctx.moveTo(x*CELL,0);ctx.lineTo(x*CELL,CANVAS_H);ctx.stroke();}
+    for(let y=0;y<=GRID_H;y++){ctx.beginPath();ctx.moveTo(0,y*CELL);ctx.lineTo(CANVAS_W,y*CELL);ctx.stroke();}
+}
+
+function drawConveyors(t){
+    const phase = ((t||0)*0.9) % 1;
+    ctx.strokeStyle='rgba(0,229,255,0.08)';ctx.lineWidth=1.5;
+    const builds=stations.filter(s=>s.type===T_BUILD);
+    const ships=stations.filter(s=>s.type===T_SHIP);
+    // Only connect sensible rightward production lanes (avoid n*m cross mesh clutter)
+    for(const b of builds){
+        // find nearest ship to the right (or any if none right)
+        let best=null, bestDx=999;
+        for(const sh of ships){
+            const dx=sh.x - b.x;
+            if(dx>0 && dx<bestDx){best=sh;bestDx=dx;}
+        }
+        if(!best && ships.length) best=ships[0];
+        if(!best) continue;
+        const x1=b.x*CELL+CELL/2, y1=b.y*CELL+CELL/2;
+        const x2=best.x*CELL+CELL/2, y2=best.y*CELL+CELL/2;
+        // base faint line
+        ctx.setLineDash([3,9]);
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+        // animated moving dashes (lineDashOffset) for clear live production routing feel
+        ctx.strokeStyle='rgba(0,229,255,0.45)';
+        ctx.lineWidth=2;
+        ctx.setLineDash([6,10]);
+        ctx.lineDashOffset = -(phase * 28);
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+        ctx.lineDashOffset=0; ctx.lineWidth=1.5; ctx.strokeStyle='rgba(0,229,255,0.08)';
+        // passive signal pips: always-visible idle traffic showing the production infrastructure is live (even with no active builds)
+        ctx.fillStyle='rgba(0,229,255,0.35)';
+        for(let k=0;k<3;k++){
+            const p = (phase + k*0.33) % 1;
+            const px = x1 + (x2-x1)*p, py = y1 + (y2-y1)*p;
+            ctx.beginPath();ctx.arc(px,py,1.8,0,Math.PI*2);ctx.fill();
+        }
+    }
+    ctx.setLineDash([]);
+}
+
+// Authored world details (pipes, bolts, hazard tape, roller marks) — makes production floor a "built" place, not generic grid (central world element per asset rules)
+function drawWorldDetails(t){
+  // Subtle pipe runs linking production (thick with joint dots)
+  ctx.strokeStyle='rgba(120,130,160,0.22)'; ctx.lineWidth=3.5;
+  const pipes = [[0,0,3,2],[3,2,6,1],[6,1,9,3],[1,4,4,5],[4,5,8,6]];
+  for(const p of pipes){ const x1=p[0]*CELL+CELL*0.5, y1=p[1]*CELL+CELL*0.5, x2=p[2]*CELL+CELL*0.5, y2=p[3]*CELL+CELL*0.5;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.fillStyle='rgba(140,150,170,0.35)'; ctx.beginPath();ctx.arc(x1,y1,3,0,6.28);ctx.fill(); ctx.beginPath();ctx.arc(x2,y2,3,0,6.28);ctx.fill();
+  }
+  ctx.lineWidth=1;
+  // Hazard tape + bolts on high-traffic edge stations (authored detail, not clutter)
+  for(const s of stations){ if(s.x<1||s.x>9||s.y===0||s.y===6){
+      const cx=s.x*CELL+CELL/0.5, cy=s.y*CELL+CELL/0.5; // approx corner emphasis
+      ctx.strokeStyle='rgba(255,200,40,0.25)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(s.x*CELL+4, s.y*CELL+4); ctx.lineTo(s.x*CELL+CELL-4, s.y*CELL+CELL-4); ctx.stroke();
+    }
+    // 4 bolt heads per station base (tiny authored rivets)
+    const bx=s.x*CELL+CELL*0.28, by=s.y*CELL+CELL*0.28;
+    ctx.fillStyle='rgba(90,95,110,0.5)';
+    ctx.fillRect(bx,by,2.5,2.5); ctx.fillRect(bx+CELL*0.42,by,2.5,2.5); ctx.fillRect(bx,by+CELL*0.42,2.5,2.5); ctx.fillRect(bx+CELL*0.42,by+CELL*0.42,2.5,2.5);
+  }
+  ctx.lineWidth=1;
+}
+
+// ─── GAME LOOP ───
+function gameLoop(timestamp){
+    if(gameState!=='playing')return;
+    const dt=Math.min((timestamp-lastFrameTime)/1000,0.1);
+    lastFrameTime=timestamp;const t=timestamp/1000;
+    
+    let shakeX=0,shakeY=0;
+    if(shakeTimer>0){shakeTimer-=dt;shakeX=(Math.random()-0.5)*shakeIntensity*2;shakeY=(Math.random()-0.5)*shakeIntensity*2;shakeIntensity*=0.9;}
+    
+    // pressure snapshot early for vignette + idle aliveness (used in render and updates)
+    const fireCountP = stations.filter(s=>s.hasFire).length;
+    const avgHP = stations.reduce((a,s)=>a+s.health,0)/Math.max(1,stations.length);
+    const pressure = Math.min(1, (fireCountP*0.18) + ( (40-avgHP)/80 ) + (timeLeft<30?0.3:0) );
+    
+    ctx.save();ctx.translate(shakeX,shakeY);
+    ctx.fillStyle='#0d0d1a';ctx.fillRect(-10,-10,CANVAS_W+20,CANVAS_H+20);
+    
+    drawGrid();drawConveyors(t);
+    drawWorldDetails(t);
+    for(const s of stations)drawStation(s,t);
+    drawPlayer(t);drawParticles();drawTransits();
+    
+    // Danger vignette + pressure pulse (stronger when fires high / integrity low / late timer / combo hot — arcade rescue feel)
+    let u = 0;
+    if(avgHP<45){ u=(45-avgHP)/45; ctx.fillStyle='rgba(255,18,18,'+(u*0.16 + pressure*0.08)+')'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H); }
+    if(pressure>0.32){ // edge pressure telegraph (earlier/more visible under escalating crisis)
+      ctx.strokeStyle='rgba(255,50,35,'+(0.22+pressure*0.28)+')'; ctx.lineWidth=7; ctx.strokeRect(2,2,CANVAS_W-4,CANVAS_H-4); ctx.lineWidth=1;
+    }
+    if(avgHP < 5 && !shiftLost){ shiftLost=true; endGame(); }
+    
+    ctx.restore();
+    
+    updatePlayer(dt);updateParticles(dt);updateTransits(dt);
+    
+    // Fire tick
+    if(timestamp-lastFireTick>Math.max(1500,FIRE_TICK_RATE-wave*100)){
+        lastFireTick=timestamp;spreadFire();
+        for(const s of stations){
+            if(s.hasFire){s.health=Math.max(0,s.health-(2.5+wave*1.1));
+                if(s.health<=0){s.hasFire=false;score=Math.max(0,score-100);
+                    spawnFT(s.x,s.y,'DESTROYED!','#ff3333');
+                    spawnParticles(s.x,s.y,'#ff2200',20,4);sfxDeath();shakeTimer=0.5;shakeIntensity=8;}
+            }
+        }
+    }
+    
+    // Queue (uses currentQueueInterval which escalates with wave for visible production backlog)
+    if(timestamp-lastQueueTick>currentQueueInterval){lastQueueTick=timestamp;addBuildQueue();}
+    
+    // Process builds
+    processCooldown-=dt;
+    if(processCooldown<=0){processBuilds();processCooldown=PROCESS_COOLDOWN;}
+    
+    // Security
+    processSecurity(dt);
+    
+    // Process animations decay
+    for(const s of stations){
+        if(s.processAnim>0)s.processAnim-=dt*2;
+    }
+    
+    // Fire spawn
+    fireSpawnTimer-=dt*1000;
+    if(fireSpawnTimer<=0){spawnFire();fireSpawnTimer=nextFireSpawn+Math.random()*3000;}
+    
+    // Make the board feel alive under pressure (subtle idle life + hazard telegraph — data pips, micro sparks, embers when hot — cheap & constant; stronger for arcade urgency)
+    if(Math.random()< (0.13 + pressure*0.11) ){
+        const live=stations.filter(s=>!s.hasFire&&s.health>40);
+        if(live.length){
+            const s=live[Math.floor(Math.random()*live.length)];
+            const col = s.type===T_BUILD?'#44ff88':s.type===T_SHIP?'#ffdd88':'#66aaff';
+            spawnParticles(s.x,s.y, col, 1 + (pressure>0.35?2:0), 0.7 + pressure*0.45);
+        }
+    }
+    if(fireCountP>0 && Math.random()<0.22){ // ambient hazard embers when incidents active (more when hot)
+      const f=stations.filter(s=>s.hasFire)[Math.floor(Math.random()*fireCountP)];
+      if(f) spawnParticles(f.x,f.y,'#ff5522',1+(pressure>0.5?1:0),1.0);
+    }
+    
+    updateDifficulty();updateHUD();
+    // Music bed reacts to live pressure (fires + rush) — makes board "feel" the escalation in audio too (music-led, not blips)
+    const fireC = stations.filter(s=>s.hasFire).length; updateMusicPressure(fireC, rushFactor>1, wave);
+
+    // Show contextual prompt when near an actionable station (makes core verbs discoverable)
+    let promptText=null;
+    const pAdj=findAdjacent(player.x,player.y);
+    for(const a of pAdj){
+        const s=getStationAt(a.x,a.y);
+        if(s){
+            if(s.hasFire){promptText='EXTINGUISH';break;}
+            if(s.hasBuild&&!s.hasFire){promptText='PROCESS BUILD';break;}
+            if(s.type===T_SEC&&!s.secured){promptText='SECURE';break;}
+            if(s.type===T_SEC&&s.secured&&s.secLevel<2){promptText='PATROL';break;}
+        }
+    }
+    if(promptText){
+        const flowNow = performance.now() < flowUntil;
+        let pHtml = '▶ '+promptText;
+        if(flowNow) pHtml += ' <span style="font-size:10px;color:#ffdd44;border:1px solid #ffdd44;padding:0 3px;border-radius:2px">FLOW</span>';
+        else if(timeLeft<=30 && rushFactor>1) pHtml += ' <span style="font-size:10px;color:#ffaa66;border:1px solid #ffaa66;padding:0 3px;border-radius:2px">RUSH</span>';
+        if(processPrompt){ processPrompt.innerHTML = pHtml;
+        // verb-specific color for readable urgency (red=extinguish fire incident under pressure; cyan=route builds; purple=patrol secrets)
+        if(promptText==='EXTINGUISH') processPrompt.style.color='#ff6644';
+        else if(promptText==='PROCESS BUILD') processPrompt.style.color='#00e5ff';
+        else processPrompt.style.color='#a78bfa';
+        processPrompt.classList.add('show'); }
+        if(mobileExt) {
+          mobileExt.innerHTML = (promptText==='EXTINGUISH'?'&#128293;EXT':promptText==='PROCESS BUILD'?'&#9654;ROUTE':promptText==='SECURE'?'&#128274;SEC':'&#128274;PAT') + '<br>SPACE';
+          // mirror verb color on large touch target for readable urgency on mobile (red=fire incident highest pressure)
+          if(promptText==='EXTINGUISH'){ mobileExt.style.color='#ffdddd'; mobileExt.style.borderColor='#ff6644'; }
+          else if(promptText==='PROCESS BUILD'){ mobileExt.style.color='#aaffff'; mobileExt.style.borderColor='#00e5ff'; }
+          else { mobileExt.style.color='#ddccff'; mobileExt.style.borderColor='#a78bfa'; }
+        }
+    } else {
+        if(processPrompt){ processPrompt.classList.remove('show');
+        processPrompt.style.color='#44ff44';
+        processPrompt.innerHTML = '&#9654; STATION READY'; }
+        if(mobileExt){ mobileExt.innerHTML = '&#129327;<br>ACTION'; mobileExt.style.color='#fff'; mobileExt.style.borderColor='#cc4444'; }
+    }
+    
+    animFrame=requestAnimationFrame(gameLoop);
+}
+
+// ─── START / END ───
+function startGame(){
+    initAudio();initProceduralMusic();initGame();gameState='playing';
+    updateHUD();
+    if(audioCtx&&audioCtx.state==='suspended'){try{audioCtx.resume().catch(function(){});}catch(e){}}
+    if(processPrompt) processPrompt.classList.remove('show');
+    lastFireTick=performance.now();lastQueueTick=performance.now();
+    fireSpawnTimer=nextFireSpawn;lastFrameTime=performance.now();
+    timerInterval=setInterval(function(){
+        if(gameState!=='playing')return;timeLeft--;updateHUD();
+        if(timeLeft<=0)endGame();
+    },1000);
+    
+    // (no persistent hint text; tile glyphs + dynamic prompt + starter objective make verbs obvious immediately)
+    hasShownHint=true;
+    
+    animFrame=requestAnimationFrame(gameLoop);
+}
+
+function endGame(){
+    gameState='gameover';clearInterval(timerInterval);cancelAnimationFrame(animFrame);
+    if(processPrompt) processPrompt.classList.remove('show');
+    const elapsed=GAME_DURATION-timeLeft;
+    let rating='D';
+    if(score>=3000)rating='S';else if(score>=2000)rating='A';
+    else if(score>=1200)rating='B';else if(score>=600)rating='C';
+    const lost = shiftLost || (stations.reduce((a,s)=>a+s.health,0)/Math.max(1,stations.length) < 8);
+    const title = lost ? 'CONTAINMENT FAILED' : 'SHIFT COMPLETE';
+    const tag = lost ? 'The floor is lost. Rebuild and try again.' : 'The factory survived... for now.';
+    // Dynamic gameover panel (no persistent overlay chrome on the arcade floor; appears only on end, pure focused end-state)
+    const go=document.createElement('div');
+    go.id='gameover-panel';
+    go.style.cssText='position:absolute;top:18%;left:50%;transform:translate(-50%,0);min-width:220px;padding:10px 16px;background:rgba(12,12,22,0.92);border:1px solid #3a3a6a;border-radius:4px;z-index:30;text-align:center;color:#c8c8d8;font-family:inherit;';
+    go.innerHTML='<h1 style="font-size:13px;color:#ff6644;margin:0 0 2px;letter-spacing:0.5px">'+title+'</h1><h2 style="font-size:10px;color:#00e5ff;margin:0;font-weight:400;opacity:0.7">Final Score</h2>'
+          +'<div style="font-size:32px;color:#00e5ff;margin:8px 0;text-shadow:0 0 12px rgba(0,229,255,0.4)">'+score+'</div>'
+          +'<p style="font-size:10px;margin:2px 0 6px;opacity:0.8">Wave '+wave+' \u00b7 '+buildsShipped+' shipped \u00b7 '+secretsSecured+' secured \u00b7 '+lastIncidentsExtinguished+' fires out \u00b7 Rating: '+rating+'<br><span style="color:#6a6a8a">'+tag+'</span></p>'
+          +'<button class="btn primary" id="restart-btn" style="padding:6px 14px;font-size:12px">\u25b6 ANOTHER SHIFT</button>';
+    const wrap=document.getElementById('canvas-wrapper'); if(wrap) wrap.appendChild(go);
+    const rb=document.getElementById('restart-btn');
+    if(rb) rb.addEventListener('click',function(){ const p=document.getElementById('gameover-panel'); if(p&&p.parentNode)p.parentNode.removeChild(p); startGame(); });
+}
+
+// (no start button; first screen is the playable arcade floor per playtest feedback)
+
+// ─── TITLE SCREEN ───
+let titleAF=null,titleParts=[],titleDemoTransits=[];
+function initTitleParticles(){
+    for(let i=0;i<25;i++){
+        titleParts.push({x:Math.random()*CANVAS_W,y:Math.random()*CANVAS_H,
+            vx:(Math.random()-0.5)*0.5,vy:-0.3-Math.random()*0.5,
+            life:0.3+Math.random()*0.7,size:1+Math.random()*2,
+            color:['#ff4422','#ffaa22','#ff6600','#00e5ff','#44ff44'][Math.floor(Math.random()*5)]});
+    }
+    // Demo transits for title: show routing action immediately (live production floor visible behind overlay)
+    titleDemoTransits=[
+        {sx:0,sy:0,tx:6,ty:2,prog:0.1,color:'#44ff44'}, // build -> ship lane
+        {sx:2,sy:0,tx:8,ty:3,prog:0.55,color:'#44ff44'},
+        {sx:1,sy:2,tx:7,ty:2,prog:0.8,color:'#44ff44'}
+    ];
+}
+function titleLoop(ts){
+    if(gameState!=='menu')return;
+    const t=ts/1000;
+    ctx.fillStyle='#0d0d1a';ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+    ctx.strokeStyle='#1a1a2e';ctx.lineWidth=0.5;
+    for(let x=0;x<=GRID_W;x++){ctx.beginPath();ctx.moveTo(x*CELL,0);ctx.lineTo(x*CELL,CANVAS_H);ctx.stroke();}
+    for(let y=0;y<=GRID_H;y++){ctx.beginPath();ctx.moveTo(0,y*CELL);ctx.lineTo(CANVAS_W,y*CELL);ctx.stroke();}
+    // faint live conveyors (routing) visible on title
+    ctx.strokeStyle='rgba(0,229,255,0.12)';ctx.lineWidth=1.5;ctx.setLineDash([3,9]);
+    const tbuilds=stations.filter(s=>s.type===T_BUILD), tships=stations.filter(s=>s.type===T_SHIP);
+    for(const b of tbuilds){
+        let best=null,bestDx=999;
+        for(const sh of tships){const dx=sh.x-b.x; if(dx>0&&dx<bestDx){best=sh;bestDx=dx;}}
+        if(!best&&tships.length)best=tships[0]; if(!best)continue;
+        const x1=b.x*CELL+CELL/2,y1=b.y*CELL+CELL/2,x2=best.x*CELL+CELL/2,y2=best.y*CELL+CELL/2;
+        ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+        // passive signal pips on title (live production floor routing visible immediately on first screen)
+        ctx.fillStyle='rgba(0,229,255,0.22)';
+        const tphase = ((ts/1000)||0)*0.9 % 1;
+        for(let k=0;k<2;k++){
+            const p = (tphase + k*0.4) % 1;
+            const px = x1 + (x2-x1)*p, py = y1 + (y2-y1)*p;
+            ctx.beginPath();ctx.arc(px,py,1.5,0,Math.PI*2);ctx.fill();
+        }
+    }
+    ctx.setLineDash([]);
+    // stations (faded but now visible through 0.58 overlay)
+    for(const s of stations){
+        const cx=s.x*CELL+CELL/2,cy=s.y*CELL+CELL/2;
+        ctx.fillStyle=COLORS[s.type]+'44';
+        roundRect(cx-CELL*0.35,cy-CELL*0.35,CELL*0.7,CELL*0.7,6);ctx.fill();
+        ctx.strokeStyle=BORDERS[s.type]+'44';ctx.lineWidth=1;
+        roundRect(cx-CELL*0.35,cy-CELL*0.35,CELL*0.7,CELL*0.7,6);ctx.stroke();
+        ctx.fillStyle=BORDERS[s.type]+'66';ctx.font='bold 10px monospace';ctx.textAlign='center';
+        ctx.fillText(s.label,cx,cy+3);
+        // demo queued pip on title (makes escalating queue + route verb visible on first screen for the polish)
+        if(s.hasBuild && s.type===T_BUILD){
+            ctx.fillStyle='#aaffcc';ctx.font='8px monospace';ctx.fillText('\u2022',cx+7,cy+3);
+        }
+        // demo fire visuals on title (larger/brighter firebreak incidents visible immediately)
+        if((s.x===1&&s.y===0)||(s.x===8&&s.y===0)){
+            const fp=Math.sin(t*8+s.x)*0.7+0.9;
+            ctx.fillStyle='#ff3311';ctx.beginPath();ctx.arc(cx-7,cy+7,6.5*fp,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#ffcc22';ctx.beginPath();ctx.arc(cx+6,cy+4,4.5*fp,0,Math.PI*2);ctx.fill();
+            ctx.globalAlpha=0.45;ctx.fillStyle='#ff8800';ctx.beginPath();ctx.arc(cx,cy+9,7*fp,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        }
+    }
+    // animated demo transits (routing under pressure, visible on first screen)
+    for(const tr of titleDemoTransits){
+        tr.prog = (tr.prog + 0.003) % 1.0;
+        const px=tr.sx*CELL + (tr.tx-tr.sx)*CELL*tr.prog + CELL*0.5;
+        const py=tr.sy*CELL + (tr.ty-tr.sy)*CELL*tr.prog + CELL*0.5;
+        ctx.globalAlpha=0.25+0.35*(1-Math.abs(tr.prog-0.5)*2);
+        ctx.fillStyle=tr.color;
+        ctx.beginPath();ctx.moveTo(px,py-4);ctx.lineTo(px+4,py);ctx.lineTo(px,py+4);ctx.lineTo(px-4,py);ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
+    }
+    for(const p of titleParts){
+        p.x+=p.vx;p.y+=p.vy;p.life-=0.003;
+        if(p.life<=0||p.y<-10){p.x=Math.random()*CANVAS_W;p.y=CANVAS_H+10;p.life=0.3+Math.random()*0.7;}
+        ctx.globalAlpha=p.life*0.5;ctx.fillStyle=p.color;
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    // demo larger/brighter agent visible on first screen (immediate playable context, no menu wall)
+    const dcx = 5*CELL + CELL*0.5 + Math.sin(ts/420)*6, dcy=3*CELL + CELL*0.5 + Math.sin(ts/310)*3;
+    ctx.fillStyle='rgba(0,240,255,0.35)';ctx.beginPath();ctx.arc(dcx,dcy,11,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(0,200,230,0.55)';ctx.beginPath();ctx.arc(dcx,dcy,6,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(0,160,190,0.4)';ctx.beginPath();ctx.arc(dcx,dcy-2,5,Math.PI,0);ctx.fill();
+    titleAF=requestAnimationFrame(titleLoop);
+}
+
+// Boot directly into live playable arcade shift (no start overlay, first screen = the arcade floor; first input is immediately scored game verb per all blocking playtest notes)
+for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
+    const t=LAYOUT[y][x];if(t)stations.push(createStation(x,y,t));
+}
+initGame(); initProceduralMusic();
+gameState='playing';
+lastFireTick=performance.now(); lastQueueTick=performance.now(); fireSpawnTimer=nextFireSpawn; lastFrameTime=performance.now();
+if(processPrompt) processPrompt.classList.remove('show');
+timerInterval=setInterval(function(){ if(gameState!=='playing')return; timeLeft--; updateHUD(); if(timeLeft<=0)endGame(); },1000);
+animFrame=requestAnimationFrame(gameLoop);
+
+})();
+</script>
+</body>
+</html>
