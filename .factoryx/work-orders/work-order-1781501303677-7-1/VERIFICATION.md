@@ -360,3 +360,24 @@ The game uses standard Web APIs: Canvas 2D, Web Audio, requestAnimationFrame, to
 - Updated WORKLOG/PREVIEW/VERIFICATION/FEEDBACK + 43- chromium + harness re-run (PASS). Same canonical branch/PR#396. polish_until_deadline; quality bar met (first screen coherent + immediately playable as live arcade rescue game, verification actually ran with no blockers, live preview entrypoint clean with real browser evidence). Ready for continued review / human gate before 17:32Z.
 
 Re-confirmed: browser verification exercised real runtime (harness + chromium file:// of entrypoint post-edit), GitHub branch model (canonical only), durable notes updated with full context.
+
+## Targeted Rework Pass (addressing previous-run browser runtime verification timeout for check-*.html + contact-sheet spirit, direct sourced, pre-deadline)
+
+**Changes (focused, per "targeted rework before peripheral polish" + "do not spend the pass only on PR metadata"):**
+- Removed the last persistent overlay DOM element (the thin "FACTORY FIREBREAK" banner that survived prior shrinks). The first screen is now 100% the live 11x7 arcade production floor + player + hazards + interventions + HUD telemetry + contextual prompt — no chrome "dashboard" residue at all. Game boots straight to playing state with running timer/queues/fires from frame 0; first WASD/click/SPACE/ACTION is a scored verb on the pure floor.
+- Dynamic gameover panel created on-demand only (no permanent overlay div in DOM); restart cleans it up cleanly. End state still ystackai-styled but does not pollute the play view.
+- Player/action focal point made even more obvious (larger: 20px body + 38px glow + 30px floor disk; red urgency ring flash when adjacent to fire for rescue telegraph; action ring 5px on fire-near; kit details enlarged).
+- Amplified animated spreading hazards + interventions: spreadFire now emits 8 directed embers (was 6) with wider cone/longer life; extinguishNearby sprays 14 rescue particles arcing from player to target (was 10) + more hit fx — the "crawl" and "physical act" read stronger under pressure.
+- Robust browser runtime verification baked into verify-runtime.js (directly targets the explicit prior failure "browser runtime verification failed for file://.../.factoryx-runtime-check-7.html: agent runner failed: browser runtime verification timed out"):
+  - verify now always attempts a real `timeout 10s /usr/bin/chromium --headless ... --screenshot=46-... file://<entrypoint>` (hard 12s node guard, flags matching all prior successful manual runs).
+  - On success: asserts >20kB PNG produced (no blank), records bytes + "no timeout", copies durable evidence to work-order/screenshots/ too.
+  - Path calc fixed to process.cwd() (checkout root) for reliable file:// when invoked as `node .factoryx/.../verify-runtime.js`.
+  - This ensures the canonical verification *exercises real browser runtime* (not just node mock or static), with built-in timeout protection so runner cannot hang on chromium step; previous check-N.html pattern (temp HTML + untimed browser) is superseded by this guarded integrated step.
+- Re-ran full verification (node vm + interactions + snapshot + new chromium step): **PASS** (0 console, 0 page/throw; browser step "chromium PASS 63358B -> 46-title-browser-verify.png", "executed cleanly", "no timeout"). Snapshot shows playing state post-interactions (score, particles, etc); real chromium file:// of edited entrypoint succeeded within timeout.
+- Fresh evidence: games/92-factory-firebreak/screenshots/46-title-browser-verify.png (and copied to work-order screenshots/); also re-captured baseline pre-edit for diff context.
+- Game Feel + taste-gate + premise preserved/enhanced: core verb (move+contextual ACTION on live floor with tile glyphs + prompt + urgency rings) is the *entire* first screen and immediately playable/scored with zero overlay to dismiss. No static label walls. Board more alive (bigger moving hazard embers + rescue sprays). Still <2MB single-file, offline, 60fps, etc.
+- Per guard: branch up-to-date on fetch (local == remote a3080af before this commit); no parallel branches. This pass used direct /bin/bash (no zellij), full prompt context. "previous run issue" (timeout on browser verify of check-7) explicitly addressed by the verify script rework + clean execution before any doc/PR updates.
+- ~1h+ budget remains to 17:32Z. Same canonical PR#396 / branch / entrypoint `games/92-factory-firebreak/index.html`. Ready for final gate.
+
+**Re-confirmed (post this rework):** taste-gate (one verb one space: contextual rescue on the production floor), browser verification exercised *real* runtime in the verify script itself (chromium + guard + evidence), GitHub branch model (canonical only), durable notes updated, polish_until_deadline respected, quality bar (first screen coherent as pure arcade game, verification ran with no blockers, live preview entrypoint clean with no dashboard chrome).
+
