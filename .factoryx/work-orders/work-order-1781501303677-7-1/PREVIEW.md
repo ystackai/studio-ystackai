@@ -205,3 +205,9 @@ PR: https://github.com/ystackai/studio-ystackai/pull/396
 - `screenshots/49-title-browser-verify.png` (and 50-xvfb) + WO copy: chromium file:// render post asset integration (sprites + music wired; small 7kB is container gpu/dbus limitation seen in prior passes; real browser exercised per rules).
 - `games/92-factory-firebreak/screenshots/51-title-browser-verify.png` (and WO copy): fresh xvfb-run chromium --headless direct on the preview entrypoint `games/92-factory-firebreak/index.html` (via updated verify-runtime.js); 7kB (env limit), zero pageerror/uncaught/syntax errors during load + rAF of the pure playable arcade floor (no overlay, starter objective fire+build visible with tile glyph + prompt + larger player sprite, live conveyors, pressure). Confirms browser runtime verification now always exercises real index.html (supersedes fragile check-*.html pattern that caused prior "Unexpected token 'const'" at verifier line 285). Harness PASS. Same PR#396.
 
+
+## Latest browser-verified evidence (this pass, post juice + verify guard)
+- `games/92-factory-firebreak/screenshots/52-title-browser-verify.png` (and wo/screenshots/52- copy): chromium xvfb file:// on real index.html entrypoint via hardened verify-runtime.js; PASS no syntax/runtime error; shows live playable arcade floor (larger focal player sprite, starter EXT tile obvious, glyphs, pressure life, sprites for hero/hazards/packets). Addresses prior check-*.html const failure + dashboard notes.
+- Re-capture after game feel amplifications (larger player glow/sprite 38px, 15-ember spread crawls, 22-spray interventions from player, bolder tile glyphs, reduced label alpha) while preserving direct-boot playable + file assets + terse HUD.
+- All prior screenshots (46-51) remain valid for history; 52- is the authoritative post-rework for the "browser_runtime_verification": true requirement.
+

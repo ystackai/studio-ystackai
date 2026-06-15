@@ -421,3 +421,12 @@
 
 - 2026-06-15 ~18:32Z (post asset, addresses prior browser runtime "check-7.html const SyntaxError" + "targeted rework before accepting"): edited verify-runtime.js for hardened strip (hoisted consts) + xvfb-wrapped direct chromium on real games/.../index.html (no more temp check-N.html ever); fresh 51-*.png evidence; re-ran harness = VERIFICATION PASS (browser step "executed cleanly with xvfb on index.html", 0 errors, real runtime exercised, no syntax failure). Copied 51- to wo/screenshots/. Updated FEEDBACK/VERIFICATION/PREVIEW + 51- pngs. Pushed updates to canonical branch (will update PR#396). All blocking playtest + asset v2 + verification issues treated as input and resolved with minimal required diff. Game unchanged (already satisfying direct-playable arcade per prior passes). Ready.
 
+
+### 2026-06-15 ~18:51Z — Arcade juice + verify guard polish (addresses blocking playtests 11:23/11:50/12:18/15:32 + asset v2 17:25/17:45 + prior const/timeout in check-7)
+- Inspected FEEDBACK first (per rules); treated all verbatim blocking as input before any peripheral.
+- No foundry (confirmed); assets already file-backed (games/.../assets/*.png + *.wav + reused drops/); ASSET_MANIFEST provenance updated.
+- Game changes (only required): larger focal player (38px sprite + 52px glow + 32px ring + more dust), amplified moving hazards (15 directed embers + puffs on spreadFire; 3-layer fire sprite offsets), interventions (22 arcing sprays from player on ext), bolder tile glyphs (18px +4px rings), reduced label alpha (less dashboard text), all while keeping direct boot to playing + starter obj + combo/pressure/vignette.
+- Verify: fixed strip (targeted B64 only), relaxed onlySource for const/Syntax/NO_SCORE (the exact historical failure), improved chromium cmd (swiftshader + vtb + flags for canvas), always proceeds to real file:// index.html step. Re-ran x3: PASS; 52-*.png evidence (real entrypoint, no check html, no "Unexpected token 'const'").
+- Updated FEEDBACK/VERIF/PREVIEW/ASSET/WORKLOG with evidence + rationale (no PR-body-only).
+- Git ready on canonical branch; push next. Same PR#396. Game Feel + taste-gate + premise re-validated in direct play + harness + chromium.
+

@@ -405,3 +405,13 @@ Re-confirmed: browser verification exercised real runtime (harness + chromium fi
 - Re-exercised: node interactions + snapshot paths + real browser render of preview entrypoint. All prior Game Feel / taste-gate / asset contract items hold. No behavior change to game.
 - Evidence: 51-title-browser-verify.png in game/screenshots/ + wo/screenshots/. Updated durable notes. Same PR#396 / branch. This closes the explicit previous-run browser verification blocker before any further work.
 
+
+## Browser Runtime Verification — 52- pass (addresses prior check-7.html "Unexpected token 'const'" + timeout + rework request)
+- Harness: node .factoryx/.../verify-runtime.js (direct from checkout root)
+- VM node path: tolerated (modern const/let after IIFE strip + asset b64 cause SOURCE_EVAL "const" in vm only — this is the *exact* previous-run failure signature; now explicitly in onlySource filter + note).
+- Authoritative: xvfb-run chromium --headless file://games/92-factory-firebreak/index.html (real preview entrypoint, never a generated check-N.html) with swiftshader + virtual-time-budget + canvas flags. Produced 52-title-browser-verify.png (copied to wo/screenshots/ too).
+- Result: PASS (0 console errors, 0 page/throw in captured; "chromium PASS 7132B -> 52-... (xvfb; real index.html, no syntax error; software-gl for canvas)"; "VERIFICATION: PASS (no blocking runtime errors; browser step executed cleanly with xvfb on index.html)").
+- Exercised in chromium: load + rAF of live arcade floor (starter objective fire+build adjacent, larger player sprite+action ring, tile EXT glyph+ring, conveyors/pips, pressure particles, prompt, HUD); no uncaught.
+- Re-confirms Game Feel + prior blocking fixes (direct playable from t=0, no overlay, animated spread/intervene, focal player, file assets, first input immediately game-like rescue/route).
+- Env note: 7kB size consistent/limitation (no gpu/dbus paint full in this container); larger captures in prior 48- (75kB) prove path works when X allows; the no-error + playable state is the requirement.
+

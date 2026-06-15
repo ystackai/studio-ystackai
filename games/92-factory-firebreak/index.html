@@ -362,15 +362,15 @@ function spreadFire(){
             if(target&&!target.hasFire&&target.health>0&&Math.random()<(0.24+wave*0.015)){
                 target.hasFire=true;target.fireHealth=0;target.flashTimer=0.2;
                 spawnParticles(a.x,a.y,'#ff4422',9,2);
-                // directed ember particles FROM the spreading fire toward new cell — visual spreading hazard animation (crawling firebreak)
+                // directed ember particles FROM the spreading fire toward new cell — visual spreading hazard animation (crawling firebreak, amplified)
                 const fx=fire.x*CELL+CELL/2, fy=fire.y*CELL+CELL/2;
                 const tx=a.x*CELL+CELL/2, ty=a.y*CELL+CELL/2;
-                for(let k=0;k<11;k++){
-                    const ang = Math.atan2(ty-fy, tx-fx) + (Math.random()-0.5)*0.9;
-                    particles.push({x:fx+ (Math.random()-0.5)*8, y:fy+(Math.random()-0.5)*8, vx:Math.cos(ang)*(2.6+Math.random()*1.5), vy:Math.sin(ang)*(2.6+Math.random()*1.5), life:0.85+Math.random()*0.6, decay:0.032, color:'#ff6622', size:1.9+Math.random()});
+                for(let k=0;k<15;k++){
+                    const ang = Math.atan2(ty-fy, tx-fx) + (Math.random()-0.5)*0.85;
+                    particles.push({x:fx+ (Math.random()-0.5)*7, y:fy+(Math.random()-0.5)*7, vx:Math.cos(ang)*(2.9+Math.random()*1.6), vy:Math.sin(ang)*(2.9+Math.random()*1.6), life:0.9+Math.random()*0.55, decay:0.03, color:'#ff6622', size:2.0+Math.random()});
                 }
                 // extra heat puff at target to telegraph incoming spread (board feels alive + dangerous)
-                for(let k=0;k<5;k++) particles.push({x:tx+(Math.random()-0.5)*9, y:ty+(Math.random()-0.5)*9, vx:(Math.random()-0.5)*1.2, vy:(Math.random()-0.5)*0.8-0.3, life:0.4+Math.random()*0.3, decay:0.05, color:'#ffaa44', size:2.2});
+                for(let k=0;k<7;k++) particles.push({x:tx+(Math.random()-0.5)*8, y:ty+(Math.random()-0.5)*8, vx:(Math.random()-0.5)*1.3, vy:(Math.random()-0.5)*0.9-0.35, life:0.42+Math.random()*0.28, decay:0.048, color:'#ffaa44', size:2.4});
             }
         }
     }
@@ -388,14 +388,14 @@ function extinguishNearby(){
             awardCombo('ext', base, cell.x, cell.y); ex=true;
             if(performance.now()<flowUntil+80) spawnFT(cell.x,cell.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(cell.x,cell.y,'RUSH!','#ffaa66');
             sfxExtinguish();
-            // animated intervention: spray from player position toward fire (physical rescue reach, stronger arcade feedback)
+            // animated intervention: spray from player position toward fire (physical rescue reach, stronger arcade feedback, more particles)
             const pcx=px*CELL+CELL/2, pcy=py*CELL+CELL/2+ (player.moving?Math.sin(performance.now()/120)*1.5:0);
-            for(let k=0;k<17;k++){
-              const ang = Math.atan2((cell.y*CELL+CELL/2)-pcy, (cell.x*CELL+CELL/2)-pcx) + (Math.random()-0.5)*0.65;
-              particles.push({x:pcx,y:pcy, vx:Math.cos(ang)*(3.3+Math.random()*0.7), vy:Math.sin(ang)*(3.3+Math.random()*0.7), life:0.62+Math.random()*0.35, decay:0.038, color:'#aaddff', size:2.5+Math.random()*2});
+            for(let k=0;k<22;k++){
+              const ang = Math.atan2((cell.y*CELL+CELL/2)-pcy, (cell.x*CELL+CELL/2)-pcx) + (Math.random()-0.5)*0.6;
+              particles.push({x:pcx,y:pcy, vx:Math.cos(ang)*(3.6+Math.random()*0.8), vy:Math.sin(ang)*(3.6+Math.random()*0.8), life:0.66+Math.random()*0.32, decay:0.036, color:'#aaddff', size:2.6+Math.random()*1.8});
             }
-            spawnParticles(cell.x,cell.y,'#44ddff',22,4);
-            spawnParticles(cell.x,cell.y,'#ffffff',12,2.6);
+            spawnParticles(cell.x,cell.y,'#44ddff',26,4.2);
+            spawnParticles(cell.x,cell.y,'#ffffff',14,2.8);
             spawnFT(cell.x,cell.y,'+'+base+'!','#44ddff');
             lastIncidentsExtinguished++;
         }
@@ -725,10 +725,12 @@ function drawStation(s,t){
     roundRect(cx-hw,cy-hh,hw*2,hh*2,6);ctx.stroke();
     ctx.shadowBlur=0;
     
-    // Label
+    // Label (kept terse for ystackai legibility but reduced prominence so board reads as live arcade floor not admin map)
     ctx.fillStyle=BORDERS[s.type]||'#888';
-    ctx.font='bold 11px monospace';ctx.textAlign='center';
-    ctx.fillText(s.label,cx,cy-4);
+    ctx.globalAlpha=0.75;
+    ctx.font='bold 9px monospace';ctx.textAlign='center';
+    ctx.fillText(s.label,cx,cy-3);
+    ctx.globalAlpha=1;
     
     // Status
     const sy=cy+12;
@@ -752,27 +754,27 @@ function drawStation(s,t){
     // Fire (larger/brighter, spreading hazard anim per feedback — more alive/urgent rescue; now uses file-backed fire-hazard.png sprite)
     if(s.hasFire){
         const fp=Math.sin(t*12+s.x*3+s.y*5);
-        const fs=15+fp*6.5;
+        const fs=17+fp*7.5;
         if(fireSprite && fireSprite.complete){
-            // multiple offset draws + alpha for flicker + "crawl" feel (animated spreading)
-            ctx.globalAlpha = 0.85 + Math.sin(t*13 + s.x)*0.15;
-            ctx.drawImage(fireSprite, cx-9-fs*0.3, sy-3-fs*0.3, fs*1.1, fs*1.1);
-            ctx.globalAlpha = 0.65 + Math.sin(t*17 + s.y)*0.25;
-            ctx.drawImage(fireSprite, cx+3, sy-7, fs*0.8, fs*0.8);
-            ctx.globalAlpha = 0.55;
-            ctx.drawImage(fireSprite, cx-2, sy+4, fs*0.95, fs*0.95);
+            // multiple offset draws + alpha for flicker + "crawl" feel (animated spreading, amplified)
+            ctx.globalAlpha = 0.9 + Math.sin(t*13 + s.x)*0.12;
+            ctx.drawImage(fireSprite, cx-10-fs*0.32, sy-4-fs*0.32, fs*1.15, fs*1.15);
+            ctx.globalAlpha = 0.68 + Math.sin(t*17 + s.y)*0.22;
+            ctx.drawImage(fireSprite, cx+4, sy-8, fs*0.85, fs*0.85);
+            ctx.globalAlpha = 0.5;
+            ctx.drawImage(fireSprite, cx-3, sy+5, fs*1.0, fs*1.0);
             ctx.globalAlpha = 1;
         } else {
             // vector fallback
-            ctx.fillStyle='#ff1100';ctx.beginPath();ctx.arc(cx-9,sy-3,fs*0.65,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle='#ffcc11';ctx.beginPath();ctx.arc(cx+9,sy-5,fs*0.48,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle='#ff3300';ctx.beginPath();ctx.arc(cx+1,sy+7,fs*0.55,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#ff1100';ctx.beginPath();ctx.arc(cx-9,sy-3,fs*0.7,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#ffcc11';ctx.beginPath();ctx.arc(cx+9,sy-5,fs*0.5,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#ff3300';ctx.beginPath();ctx.arc(cx+1,sy+7,fs*0.6,0,Math.PI*2);ctx.fill();
         }
         // keep some heat tendrils + health for pressure telegraph (animated interventions target)
-        ctx.globalAlpha=0.5+Math.sin(t*15)*0.3;
-        ctx.fillStyle='#ff8800';ctx.beginPath();ctx.arc(cx-2,sy+1,fs*0.82,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#ff5511'; for(let k=0;k<4;k++){ const a=(t*5 + s.x + k*1.6)%6.28; ctx.beginPath(); ctx.arc(cx+Math.cos(a)*fs*0.65, sy+Math.sin(a*1.4)*fs*0.55, 2.6,0,6.28); ctx.fill(); }
-        ctx.globalAlpha=0.35; ctx.fillStyle='#ffaa22'; ctx.beginPath(); ctx.arc(cx,sy+2,fs*0.95,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+        ctx.globalAlpha=0.55+Math.sin(t*15)*0.28;
+        ctx.fillStyle='#ff8800';ctx.beginPath();ctx.arc(cx-2,sy+1,fs*0.88,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ff5511'; for(let k=0;k<5;k++){ const a=(t*5 + s.x + k*1.6)%6.28; ctx.beginPath(); ctx.arc(cx+Math.cos(a)*fs*0.7, sy+Math.sin(a*1.4)*fs*0.58, 2.8,0,6.28); ctx.fill(); }
+        ctx.globalAlpha=0.38; ctx.fillStyle='#ffaa22'; ctx.beginPath(); ctx.arc(cx,sy+2,fs*1.0,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
         
         // Health bar (more prominent)
         const bw=hw*1.7,bh=4,bx=cx-bw/2,by=cy+hh+5;
@@ -815,22 +817,22 @@ function drawStation(s,t){
     if(isPlayerNear){
         if(s.hasFire){
             // big obvious EXTINGUISH glyph on the tile itself (focal rescue verb — larger/bolder per contact feedback)
-            ctx.fillStyle='rgba(255,40,25,0.98)';ctx.font='bold 17px monospace';ctx.textAlign='center';
-            ctx.fillText('EXT',cx,cy-hh-16);
-            ctx.strokeStyle='rgba(255,60,35,0.95)';ctx.lineWidth=3.5;
-            roundRect(cx-hw-6,cy-hh-6,hw*2+12,hh*2+12,5);ctx.stroke();
+            ctx.fillStyle='rgba(255,40,25,0.98)';ctx.font='bold 18px monospace';ctx.textAlign='center';
+            ctx.fillText('EXT',cx,cy-hh-17);
+            ctx.strokeStyle='rgba(255,60,35,0.95)';ctx.lineWidth=4;
+            roundRect(cx-hw-7,cy-hh-7,hw*2+14,hh*2+14,5);ctx.stroke();
         } else if(s.hasBuild&&!s.hasFire){
-            ctx.fillStyle='rgba(60,255,100,0.98)';ctx.font='bold 15px monospace';ctx.textAlign='center';
-            ctx.fillText('ROUTE',cx,cy-hh-16);
+            ctx.fillStyle='rgba(60,255,100,0.98)';ctx.font='bold 16px monospace';ctx.textAlign='center';
+            ctx.fillText('ROUTE',cx,cy-hh-17);
             const pulse=Math.sin(t*7)*0.38+0.68;
-            ctx.strokeStyle='rgba(50,255,50,'+pulse+')';ctx.lineWidth=3.5;
-            roundRect(cx-hw-6,cy-hh-6,hw*2+12,hh*2+12,5);ctx.stroke();
+            ctx.strokeStyle='rgba(50,255,50,'+pulse+')';ctx.lineWidth=4;
+            roundRect(cx-hw-7,cy-hh-7,hw*2+14,hh*2+14,5);ctx.stroke();
         } else if(s.type===T_SEC){
             const label = !s.secured ? 'SECURE' : 'PATROL';
-            ctx.fillStyle='rgba(170,140,255,0.98)';ctx.font='bold 14px monospace';ctx.textAlign='center';
-            ctx.fillText(label,cx,cy-hh-16);
-            ctx.strokeStyle='rgba(140,110,255,0.9)';ctx.lineWidth=3;
-            roundRect(cx-hw-5,cy-hh-5,hw*2+10,hh*2+10,5);ctx.stroke();
+            ctx.fillStyle='rgba(170,140,255,0.98)';ctx.font='bold 15px monospace';ctx.textAlign='center';
+            ctx.fillText(label,cx,cy-hh-17);
+            ctx.strokeStyle='rgba(140,110,255,0.9)';ctx.lineWidth=3.5;
+            roundRect(cx-hw-6,cy-hh-6,hw*2+12,hh*2+12,5);ctx.stroke();
         }
     }
     // legacy small process ring for builds (kept for juice)
@@ -849,13 +851,13 @@ function drawPlayer(t){
     const actPulse = (player.actionTimer||0)>0 ? Math.sin((player.actionTimer||0)*28)*0.4+0.6 : 0;
     const nearFire = findAdjacent(player.x,player.y).some(a=>{const s=getStationAt(a.x,a.y);return s&&s.hasFire;});
     
-    // Floor highlight + glow kept for arcade focal/telegraph (player sprite is the central hero raster now)
-    ctx.fillStyle='rgba(0,229,255,0.12)';ctx.beginPath();ctx.arc(cx,cy,34,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(0,229,255,'+(0.36+actPulse*0.24)+')';ctx.beginPath();ctx.arc(cx,cy+bob,46,0,Math.PI*2);ctx.fill();
+    // Floor highlight + glow kept for arcade focal/telegraph (player sprite is the central hero raster now) — larger/brighter per playtest focal point
+    ctx.fillStyle='rgba(0,229,255,0.13)';ctx.beginPath();ctx.arc(cx,cy,38,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(0,229,255,'+(0.42+actPulse*0.28)+')';ctx.beginPath();ctx.arc(cx,cy+bob,52,0,Math.PI*2);ctx.fill();
     
-    // FILE-BACKED HERO: use authored 32x32 player-agent.png sprite when ready (replaces vector blob per asset contract)
+    // FILE-BACKED HERO: use authored 32x32 player-agent.png sprite when ready (replaces vector blob per asset contract) — drawn larger for obvious worker avatar focal
     if(playerSprite && playerSprite.complete){
-        ctx.drawImage(playerSprite, cx-16, cy-16 + bob, 32, 32);
+        ctx.drawImage(playerSprite, cx-19, cy-19 + bob, 38, 38);
     } else {
         // fallback (only until data: decode; first frame still playable)
         ctx.fillStyle='#00f8ff';ctx.beginPath();ctx.arc(cx,cy+bob,24,0,Math.PI*2);ctx.fill();
@@ -871,22 +873,22 @@ function drawPlayer(t){
     if(player.moving){
         const lp=Math.sin(t*14);
         ctx.strokeStyle='#00aacc';ctx.lineWidth=3.5;ctx.beginPath();
-        ctx.moveTo(cx-7,cy+bob+18);ctx.lineTo(cx-7+lp*6,cy+bob+27);
-        ctx.moveTo(cx+7,cy+bob+18);ctx.lineTo(cx+7-lp*6,cy+bob+27);
+        ctx.moveTo(cx-8,cy+bob+19);ctx.lineTo(cx-8+lp*7,cy+bob+29);
+        ctx.moveTo(cx+8,cy+bob+19);ctx.lineTo(cx+8-lp*7,cy+bob+29);
         ctx.stroke();
-        if(Math.random()<0.35) spawnParticles(player.x,player.y,'#00ccdd',1,0.4);
+        if(Math.random()<0.45) spawnParticles(player.x,player.y,'#00ccdd',1+(nearFire?1:0),0.5);
     }
     if(actPulse>0.1){
-        ctx.strokeStyle='rgba(255,220,120,0.85)';ctx.lineWidth=2.5;
-        ctx.beginPath();ctx.moveTo(cx-10,cy+bob+2);ctx.lineTo(cx+10,cy+bob+2);ctx.stroke();
+        ctx.strokeStyle='rgba(255,220,120,0.9)';ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(cx-12,cy+bob+1);ctx.lineTo(cx+12,cy+bob+1);ctx.stroke();
     }
     const pAdj=findAdjacent(player.x,player.y);
     const nearActionable = pAdj.some(a=>{ const s=getStationAt(a.x,a.y); return s && (s.hasFire || (s.hasBuild&&!s.hasFire) || s.type===T_SEC); });
     if(nearActionable){
         const ap=Math.sin(t*22)*0.5+0.5;
-        ctx.strokeStyle= nearFire ? 'rgba(255,90,70,'+(0.85+ap*0.32)+')' : 'rgba(70,255,110,'+(0.78+ap*0.38)+')';
-        ctx.lineWidth= nearFire ? 6 : 5;
-        ctx.beginPath();ctx.arc(cx,cy+bob,28,0,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle= nearFire ? 'rgba(255,90,70,'+(0.88+ap*0.35)+')' : 'rgba(70,255,110,'+(0.82+ap*0.4)+')';
+        ctx.lineWidth= nearFire ? 7 : 6;
+        ctx.beginPath();ctx.arc(cx,cy+bob,32,0,Math.PI*2);ctx.stroke();
         ctx.lineWidth=1;
     }
 }

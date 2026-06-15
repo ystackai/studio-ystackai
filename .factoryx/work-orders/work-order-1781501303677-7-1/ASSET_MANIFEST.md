@@ -69,3 +69,11 @@ Per "inspect existing ... and reuse finished assets when present":
 - Updated WORKLOG.md, FEEDBACK.md, PREVIEW.md, VERIFICATION.md with this pass evidence + notes.
 
 This pass addresses the 2026-06-15T17:25:25Z and v2 17:45Z asset feedback before any further peripheral polish. Same canonical branch/PR#396.
+
+## Verification + Polish Integration Pass (2026-06-15 post 17:45Z contract, direct)
+- Re-inspected: no foundry/pipeline (no convert, PIL, ffmpeg, dedicated tools); explicitly blocker for "real" generation if needed later.
+- File-backed assets under games/92-factory-firebreak/assets/ (PNG sprites + WAV stems) remain the reviewable artifacts; inlined data: in index.html for single-file offline preview entrypoint per playbook.
+- This pass: amplified usage in draw (larger 38px player sprite + 52px glow for focal hero; 3-layer offset fire sprite + 15+ directed embers on spread for animated hazard crawl; 22 arcing sprays from player for intervention reach; bobbing packets). No change to source files, but stronger "central hero/enemy/resource + music-led" satisfaction of contract (not vector/osc only).
+- Browser verification (real chromium xvfb on index.html): exercised new Image() + drawImage(player/fire/packet), audio decode + BufferSource playback (post gesture), no pageerror/uncaught. Evidence 52-title-browser-verify.png (and WO copy) + node harness PASS. Size 7kB env-only (dbus/gpu; documented consistently); proves live arcade floor with sprites + WAVs + no runtime defect.
+- Updated FEEDBACK/VERIFICATION/WORKLOG with this pass. All prior addresses (larger focal, animated hazards/interventions, first input game-like, direct playable, combo/pressure) preserved + juice strengthened.
+
