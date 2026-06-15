@@ -93,3 +93,9 @@ Visual feedback from overnight monitor: factory-management theme is clear, but s
 - Chromium file:// screenshot of preview entrypoint: 36- clean (91.4KB), zero pageerror/uncaught during titleLoop + render.
 - `new Function()` PASS (49KB total). Game Feel Checklist + taste-gate + goal all reconfirmed (no regression; core verb immediate on visible first screen with live demo routing/fires; input/feedback/easing/gesture/touch/60fps/offline/<2MB hold).
 - Prior agent runner failure (143 + "The task is to build..." truncation) + redeploy/refresh guard addressed by this direct execution + evidence before any further polish. Same canonical branch/PR#396. Updated notes + 36- png. ~3.7h left. Ready.
+
+### Polish + re-verify 37- (final 30s sprint pressure, direct, post-36- 143 address, ~10:46Z)
+- PR inspected (OPEN, checks green, head current), direct sourced shell.
+- Harness PASS 0 errors; chromium 37- clean render of entrypoint; syntax PASS.
+- Small polish (escalating last-30s of timer: faster fires+queues + timer pulse) makes the "under pressure" climax concrete and arcade-rewarding for skilled play (ext+route+patrol chaining in the hot zone for max FLOW/score before timer or containment fail). No regression on early 30s discoverability or core loop.
+- Game Feel/taste-gate/goal re-confirmed. Updated notes + 37- png + game. Same branch. ~3.7h left. Ready.

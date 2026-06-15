@@ -209,6 +209,7 @@ function initGame(){
     score=0;wave=1;timeLeft=GAME_DURATION;buildsShipped=0;secretsSecured=0;
     lastIncidentsExtinguished=0;particles=[];floatingTexts=[];transits=[];processCooldown=0;
     shiftLost=false; currentQueueInterval=QUEUE_INTERVAL;
+    if(timeEl) timeEl.style.textShadow='';
     stations=[];
     for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
         const t=LAYOUT[y][x];if(t)stations.push(createStation(x,y,t));
@@ -230,9 +231,9 @@ function updateHUD(){
     if(firesEl){ const nf=stations.filter(s=>s.hasFire).length; firesEl.textContent=nf; firesEl.style.color=nf>0?'#ff6644':'#c8c8d8'; }
     const m=Math.floor(timeLeft/60),s=timeLeft%60;
     timeEl.textContent=m+':'+String(s).padStart(2,'0');
-    if(timeLeft<=30)timeEl.style.color='#ff3333';
-    else if(timeLeft<=60)timeEl.style.color='#ffaa33';
-    else timeEl.style.color='#ff6b35';
+    if(timeLeft<=30){timeEl.style.color='#ff3333';timeEl.style.textShadow='0 0 10px #ff6644';}
+    else if(timeLeft<=60){timeEl.style.color='#ffaa33';timeEl.style.textShadow='';}
+    else {timeEl.style.color='#ff6b35';timeEl.style.textShadow='';}
 }
 
 // ─── PARTICLES ───
@@ -587,6 +588,10 @@ function updateDifficulty(){
     }
     nextFireSpawn=Math.max(2000,FIRE_SPAWN_MAX-(wave-1)*800);
     currentQueueInterval=Math.max(2200,QUEUE_INTERVAL-(wave-1)*650); // escalating queues: faster spawns = visible backlog pressure to route under fire/incident load
+    if(timeLeft<=30){ // final-sprint pressure: last 30s of the 3:00 timer becomes a real "firebreak" rush (more incidents + backlog to juggle while shipping last builds)
+      nextFireSpawn=Math.max(1200,nextFireSpawn*0.6);
+      currentQueueInterval=Math.max(1400,currentQueueInterval*0.65);
+    }
 }
 
 // ─── RENDERING ───
