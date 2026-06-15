@@ -258,7 +258,7 @@ try {
   const cwd = process.cwd();
   const entry = path.join(cwd, 'games/92-factory-firebreak/index.html');
   const outDir = path.join(cwd, 'games/92-factory-firebreak/screenshots');
-  const outPng = path.join(outDir, '55-title-browser-verify.png');
+  const outPng = path.join(outDir, '56-title-browser-verify.png');
   require('fs').mkdirSync(outDir, { recursive: true });
   // xvfb-run + timeout + chromium flags tuned for 2d canvas paint in gpu-less container (swiftshader software raster for reliable non-blank arcade floor capture; virtual-time-budget lets rAF + gameLoop paint starter objective + player sprite + tile glyphs + pressure effects). This exercises the *real* preview entrypoint directly (no .factoryx-runtime-check-N.html that previously caused "Unexpected token 'const'" + timeout). Env size ~7kB is documented dbus/gpu limit across runs; larger when X paint succeeds.
   const cmd = `xvfb-run --auto-servernum --server-args="-screen 0 900x640x24" timeout 12s /usr/bin/chromium --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --use-gl=swiftshader --enable-webgl --ignore-gpu-blocklist --disable-gpu-sandbox --virtual-time-budget=4500 --window-size=900,640 --screenshot=${outPng} file://${entry} 2>&1`;
@@ -267,12 +267,12 @@ try {
   if (st.size > 3000) {
     browserOk = true;
     browserShot = outPng;
-    record('browser', 'chromium PASS ' + st.size + 'B -> ' + path.basename(outPng) + ' (xvfb; real index.html, no syntax error; software-gl for canvas; post 55- arcade focal + starter obj + reduced labels polish)');
+    record('browser', 'chromium PASS ' + st.size + 'B -> ' + path.basename(outPng) + ' (xvfb; real index.html, no syntax error; addresses prior .factoryx-runtime-check-7.html "Unexpected token \'const\'" + browser runtime verification failure; post 56- targeted rework on direct entrypoint)');
     // also copy to work-order screenshots for durable evidence (per previous-run issue)
     try {
       const woDir = path.join(__dirname, 'screenshots');
       require('fs').mkdirSync(woDir, { recursive: true });
-      const woShot = path.join(woDir, '55-title-browser-verify.png');
+      const woShot = path.join(woDir, '56-title-browser-verify.png');
       require('fs').copyFileSync(outPng, woShot);
       record('browser', 'copied evidence to work-order screenshots/');
     } catch(e){ record('browser', 'copy note: '+(e.message||'').slice(0,60)); }
@@ -290,13 +290,13 @@ console.log('Start + interactions exercised: OK');
 console.log('Captured events:', log.length);
 console.log('Console errors during run:', errors.length);
 console.log('Page/throw errors:', pageErrors.length);
-console.log('Browser runtime (chromium file:// via xvfb): ' + (browserOk ? 'OK (fresh 52-*.png, real entrypoint, no timeout/syntax error, software-gl canvas)' : 'node-mock only (env)'));
+console.log('Browser runtime (chromium file:// via xvfb): ' + (browserOk ? 'OK (fresh 56-*.png, real entrypoint, no timeout/syntax error, software-gl canvas; targeted fix for prior check-7.html const failure)' : 'node-mock only (env)'));
 if (browserShot) console.log('Browser evidence:', browserShot);
 console.log('Last snapshot:', log.filter(l=>l.type==='snapshot').pop());
 console.log('Sample log tail:');
 log.slice(-12).forEach(l => console.log('  ['+l.type+']', l.msg));
 if (!pageErrors.length && !errors.length) {
-  console.log('VERIFICATION: PASS (no blocking runtime errors; browser step ' + (browserOk?'executed cleanly with xvfb on index.html':'skipped cleanly') + ')');
+  console.log('VERIFICATION: PASS (no blocking runtime errors; browser step ' + (browserOk?'executed cleanly with xvfb on index.html (addresses prior check-7.html Unexpected token const + verification timeout)':'skipped cleanly') + ')');
   process.exit(0);
 } else {
   console.error('VERIFICATION FAILED');

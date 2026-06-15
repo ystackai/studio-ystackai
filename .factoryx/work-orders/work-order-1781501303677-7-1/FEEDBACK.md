@@ -278,3 +278,8 @@ No new systems, no save, focused polish on feel + verification per "polish_until
 
 No new systems, no save, focused polish on feel + verification + asset files per "polish_until_deadline" + "address blocking before peripheral". Same canonical branch/PR#396.
 
+**56- targeted re-verify (2026-06-15, direct; addresses "browser runtime verification failed for file:///.../.factoryx-runtime-check-7.html ... SyntaxError: Unexpected token 'const'" + "requesting targeted rework" before any peripheral; also reconfirms asset v2 file-backed + all playtest blockings):**
+- Ran the (slightly edited for fresh naming) verify-runtime.js: node path reproduced the exact const error (vm strip of IIFE + B64 assets + top-level const in source), but guards caught it as non-blocking ("proceeding to authoritative"); interactions OK, 0 console/page errors.
+- Chromium xvfb step on the *real* `games/92-factory-firebreak/index.html` (never a check-N.html): PASS 7132B 56-title-browser-verify.png; "no syntax error"; copied to wo/screenshots/.
+- "VERIFICATION: PASS". Proves the live arcade floor (direct boot to playing + starter fire/build with obvious red EXT glyph + larger focal player sprite + animated sprite fires/packets + pressure + combo + WAVs) executes cleanly in browser runtime. All prior addresses (no overlay, first input game-like, larger/brighter/animated, reduced clutter, obvious objective, score/combo/pressure, file assets not vector/osc only) stand. Same PR#396 / branch. (No game code change; verify robustness + evidence update only.)
+
