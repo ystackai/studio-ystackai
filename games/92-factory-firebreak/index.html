@@ -50,23 +50,20 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
 <body>
 <div id="game-container">
      <div id="hud">
-         <div class="hud-item"><span class="hud-label">Score</span><span class="hud-value" id="score-val">0</span></div>
-         <div class="hud-item"><span class="hud-label">Wave</span><span class="hud-value" id="level-val">1</span></div>
-         <div class="hud-item"><span class="hud-label">Shipped</span><span class="hud-value" id="builds-val">0</span></div>
-         <div class="hud-item"><span class="hud-label">Secrets</span><span class="hud-value" id="secrets-val">0</span></div>
-         <div class="hud-item"><span class="hud-label">Integrity</span><span class="hud-value" id="integrity-val">100%</span></div>
-         <div class="hud-item"><span class="hud-label">Transit</span><span class="hud-value" id="transit-val">0</span></div>
-         <div class="hud-item"><span class="hud-label">Ext</span><span class="hud-value" id="ext-val">0</span></div>
-         <div class="hud-item"><span class="hud-label">Fires</span><span class="hud-value" id="fires-val">0</span></div>
-         <div class="hud-item"><span class="hud-label">Time</span><span class="hud-value" id="time-val">3:00</span></div>
+         <div class="hud-item"><span class="hud-label">SCORE</span><span class="hud-value" id="score-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">TIME</span><span class="hud-value" id="time-val">3:00</span></div>
+         <div class="hud-item"><span class="hud-label">W</span><span class="hud-value" id="level-val">1</span></div>
+         <div class="hud-item"><span class="hud-label">🔥</span><span class="hud-value" id="fires-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">▶</span><span class="hud-value" id="transit-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">✓</span><span class="hud-value" id="ext-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">INT</span><span class="hud-value" id="integrity-val">100%</span></div>
+         <div class="hud-item" id="combo-item" style="display:none"><span class="hud-label">COMBO</span><span class="hud-value" id="combo-val" style="color:#ffdd44">x1</span></div>
      </div>
      <div id="canvas-wrapper">
          <canvas id="game-canvas" width="880" height="560"></canvas>
          <div id="process-prompt">&#9654; STATION READY</div>
-         <div id="overlay">
-             <h1>&#128293; FACTORY FIREBREAK</h1>
-             <h2>ystackai • click floor or SPACE to start shift</h2>
-             <button class="btn primary" id="start-btn" style="padding:6px 14px;font-size:12px;min-height:32px">&#9654; COMMIT SHIFT</button>
+         <div id="overlay" style="top:0;padding:2px 10px;min-width:180px;background:rgba(10,10,18,0.55);border:none;border-bottom:1px solid #2a2a4a">
+             <h1 style="font-size:11px;letter-spacing:0.5px;margin:0;color:#ff6644">&#128293; FACTORY FIREBREAK</h1>
          </div>
          <div id="touch-controls">
              <div class="touch-row">
@@ -164,13 +161,14 @@ function sfxSecret(){playTone(1200,0.2,'sine',0.08);playTone(1500,0.15,'sine',0.
 function sfxProcess(){playTone(700,0.06,'triangle',0.04);}
 
 // ─── GAME STATE ───
-var gameState='menu',score=0,wave=1,timeLeft=GAME_DURATION;
+var gameState='playing',score=0,wave=1,timeLeft=GAME_DURATION;
 var buildsShipped=0,secretsSecured=0,lastIncidentsExtinguished=0;
 var shiftLost=false; // set when avg health collapses (early fail)
 var stations=[],particles=[],floatingTexts=[],transits=[];
 var lastFireTick=0,lastQueueTick=0,nextFireSpawn=FIRE_SPAWN_MIN,fireSpawnTimer=FIRE_SPAWN_MIN;
 var shakeTimer=0,shakeIntensity=0,timerInterval=null,animFrame=null,lastFrameTime=0;
 var processCooldown=0,hasShownHint=false,flowUntil=0,rushFactor=1;
+var combo=0,comboUntil=0,lastVerb=''; // combo for chaining ext/route/patrol under pressure (score+visual feedback)
 
 function createStation(x,y,type){
     return{x,y,type,health:100,hasBuild:false,hasFire:false,fireHealth:0,
@@ -195,6 +193,7 @@ function initGame(){
     score=0;wave=1;timeLeft=GAME_DURATION;buildsShipped=0;secretsSecured=0;
     lastIncidentsExtinguished=0;particles=[];floatingTexts=[];transits=[];processCooldown=0;
     shiftLost=false; currentQueueInterval=QUEUE_INTERVAL;
+    combo=0; comboUntil=0; lastVerb='';
     if(timeEl) timeEl.style.textShadow='';
     stations=[];
     for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
@@ -206,20 +205,24 @@ function initGame(){
 }
 
 function updateHUD(){
-    scoreEl.textContent=score;levelEl.textContent=wave;
-    buildsEl.textContent=buildsShipped;secretsEl.textContent=secretsSecured;
+    if(scoreEl) scoreEl.textContent=score;
+    if(levelEl) levelEl.textContent=wave;
     const avg = stations.length ? Math.round( stations.reduce((a,s)=>a+s.health,0) / stations.length ) : 100;
-    integrityEl.textContent = avg + '%';
-    integrityEl.style.color = avg>60 ? '#44ff88' : avg>25 ? '#ffaa33' : '#ff3333';
+    if(integrityEl){ integrityEl.textContent = avg + '%'; integrityEl.style.color = avg>60 ? '#44ff88' : avg>25 ? '#ffaa33' : '#ff3333'; }
     const inFlight = stations.filter(s=>s.hasBuild).length + transits.length;
-    transitEl.textContent = inFlight;
+    if(transitEl) transitEl.textContent = inFlight;
     if(extEl) extEl.textContent = lastIncidentsExtinguished;
     if(firesEl){ const nf=stations.filter(s=>s.hasFire).length; firesEl.textContent=nf; firesEl.style.color=nf>0?'#ff6644':'#c8c8d8'; }
-    const m=Math.floor(timeLeft/60),s=timeLeft%60;
-    timeEl.textContent=m+':'+String(s).padStart(2,'0');
-    if(timeLeft<=30){timeEl.style.color='#ff3333';timeEl.style.textShadow='0 0 10px #ff6644';}
-    else if(timeLeft<=60){timeEl.style.color='#ffaa33';timeEl.style.textShadow='';}
-    else {timeEl.style.color='#ff6b35';timeEl.style.textShadow='';}
+    if(timeEl){
+      const m=Math.floor(timeLeft/60),s=timeLeft%60;
+      timeEl.textContent=m+':'+String(s).padStart(2,'0');
+      if(timeLeft<=30){timeEl.style.color='#ff3333';timeEl.style.textShadow='0 0 10px #ff6644';}
+      else if(timeLeft<=60){timeEl.style.color='#ffaa33';timeEl.style.textShadow='';}
+      else {timeEl.style.color='#ff6b35';timeEl.style.textShadow='';}
+    }
+    // combo pressure feedback (visible only when hot)
+    const comboEl=document.getElementById('combo-val'), comboItem=document.getElementById('combo-item');
+    if(comboEl&&comboItem){ if(combo>1){ comboEl.textContent='x'+combo; comboItem.style.display='flex'; } else { comboItem.style.display='none'; } }
 }
 
 // ─── PARTICLES ───
@@ -236,6 +239,26 @@ function spawnFT(x,y,text,color){
 }
 function spawnTransit(sx,sy,tx,ty,color){
     transits.push({sx:sx,sy:sy,tx:tx,ty:ty,prog:0,color:color});
+}
+function awardCombo(verb, basePts, x, y){
+  // Combo chaining: different verb within ~2.8s window (ext -> route -> secure) under pressure = more points + visible juice
+  const now=performance.now();
+  if(now < comboUntil && lastVerb && lastVerb !== verb){
+    combo = Math.min(8, combo+1);
+    const mult = 1 + (combo-1)*0.2;
+    const pts = Math.floor(basePts * mult);
+    score += (pts - basePts); // add the bonus
+    spawnFT(x,y,'COMBO x'+combo + ' +'+(pts-basePts),'#ffdd44');
+    spawnParticles(x,y,'#ffdd44',6,1.8);
+    if(combo>=3) shakeTimer=0.06; shakeIntensity=Math.max(shakeIntensity,1.5);
+  } else {
+    combo=1;
+    score += basePts;
+  }
+  comboUntil = now + 2800;
+  lastVerb = verb;
+  updateHUD();
+  return combo;
 }
 function updateParticles(dt){
     for(let i=particles.length-1;i>=0;i--){
@@ -280,6 +303,13 @@ function spreadFire(){
             if(target&&!target.hasFire&&target.health>0&&Math.random()<(0.24+wave*0.015)){
                 target.hasFire=true;target.fireHealth=0;target.flashTimer=0.2;
                 spawnParticles(a.x,a.y,'#ff4422',5,1.5);
+                // directed ember particles FROM the spreading fire toward new cell — visual spreading hazard animation
+                const fx=fire.x*CELL+CELL/2, fy=fire.y*CELL+CELL/2;
+                const tx=a.x*CELL+CELL/2, ty=a.y*CELL+CELL/2;
+                for(let k=0;k<4;k++){
+                    const ang = Math.atan2(ty-fy, tx-fx) + (Math.random()-0.5)*0.8;
+                    particles.push({x:fx+ (Math.random()-0.5)*6, y:fy+(Math.random()-0.5)*6, vx:Math.cos(ang)*(1.8+Math.random()*1.2), vy:Math.sin(ang)*(1.8+Math.random()*1.2), life:0.7+Math.random()*0.4, decay:0.035, color:'#ff6622', size:1.5+Math.random()});
+                }
             }
         }
     }
@@ -293,11 +323,19 @@ function extinguishNearby(){
         if(s&&s.hasFire){
             s.hasFire=false;s.fireHealth=0;s.flashTimer=0.4;
             s.health=Math.min(100,s.health+10);
-            const ptsBase=50*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor); score+=pts; ex=true; if(performance.now()<flowUntil+80) spawnFT(cell.x,cell.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(cell.x,cell.y,'RUSH!','#ffaa66');
+            const ptsBase=50*wave; const base=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);
+            awardCombo('ext', base, cell.x, cell.y); ex=true;
+            if(performance.now()<flowUntil+80) spawnFT(cell.x,cell.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(cell.x,cell.y,'RUSH!','#ffaa66');
             sfxExtinguish();
+            // animated intervention: spray from player position toward fire (makes action feel physical)
+            const pcx=px*CELL+CELL/2, pcy=py*CELL+CELL/2+ (player.moving?Math.sin(performance.now()/120)*1.5:0);
+            for(let k=0;k<7;k++){
+              const ang = Math.atan2((cell.y*CELL+CELL/2)-pcy, (cell.x*CELL+CELL/2)-pcx) + (Math.random()-0.5)*0.6;
+              particles.push({x:pcx,y:pcy, vx:Math.cos(ang)*(2.5+Math.random()), vy:Math.sin(ang)*(2.5+Math.random()), life:0.6+Math.random()*0.3, decay:0.04, color:'#aaddff', size:2+Math.random()*2});
+            }
             spawnParticles(cell.x,cell.y,'#44ddff',16,3.5);
             spawnParticles(cell.x,cell.y,'#ffffff',8,2.5);
-            spawnFT(cell.x,cell.y,'+'+pts+'!','#44ddff');
+            spawnFT(cell.x,cell.y,'+'+base+'!','#44ddff');
             lastIncidentsExtinguished++;
         }
     }
@@ -337,19 +375,24 @@ function doAction(){
                 const req = Math.max(0.8,2.8-wave*0.25);
                 if(s.secTimer >= req){
                     s.secured=true; s.secTimer=0; s.secLevel=4;
-                    const ptsBase=30*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor); score+=pts; secretsSecured++; if(performance.now()<flowUntil+80) spawnFT(s.x,s.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(s.x,s.y,'RUSH!','#ffaa66');
+                    const ptsBase=30*wave; const base=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);
+                    awardCombo('sec', base, s.x, s.y); secretsSecured++;
+                    if(performance.now()<flowUntil+80) spawnFT(s.x,s.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(s.x,s.y,'RUSH!','#ffaa66');
                     sfxSecret();
+                    // animated intervention: expanding shield pulse from station
+                    for(let k=0;k<10;k++){ const ang=k/10*Math.PI*2; particles.push({x:s.x*CELL+CELL/2+Math.cos(ang)*3, y:s.y*CELL+CELL/2+Math.sin(ang)*3, vx:Math.cos(ang)*1.8, vy:Math.sin(ang)*1.8, life:0.5, decay:0.03, color:'#aabbff', size:3}); }
                     spawnParticles(s.x,s.y,'#8888ff',18,3.5);
                     spawnParticles(s.x,s.y,'#ffbb33',12,2.5);
-                    spawnFT(s.x,s.y,'SECURED! +'+pts,'#8888ff');
+                    spawnFT(s.x,s.y,'SECURED! +'+base,'#8888ff');
                     shakeTimer=0.12;shakeIntensity=2;
                 } else {
                     spawnFT(s.x,s.y,'...','#ffbb33');
                 }
             } else if(s.secLevel < 3.5){
                 s.secLevel = Math.min(5, s.secLevel + 2.5);
-                const ptsBase=8*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor); score+=pts;
-                spawnFT(s.x,s.y,'+'+pts+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#8888ff');
+                const ptsBase=8*wave; const base=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);
+                awardCombo('patrol', base, s.x, s.y);
+                spawnFT(s.x,s.y,'+'+base+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#8888ff');
                 sfxSecret();
             }
             shakeTimer=0.08; shakeIntensity=1.5;
@@ -387,7 +430,7 @@ function processBuilds(){
                 const t=getStationAt(a.x,a.y);
                 if(t&&t.type===T_TEST&&!t.hasBuild&&!t.hasFire){
                     t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
-                    const p15=Math.floor((performance.now()<flowUntil+80?15*1.2:15)*rushFactor); score+=p15; sfxProcess();
+                    const p15=Math.floor((performance.now()<flowUntil+80?15*1.2:15)*rushFactor); awardCombo('route', p15, s.x, s.y); sfxProcess();
                     spawnFT(s.x,s.y,'To TEST'+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#44ff44');
                     spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
                     anyProcessed=true;break;
@@ -399,7 +442,7 @@ function processBuilds(){
                 const t=getStationAt(a.x,a.y);
                 if(t&&t.type===T_SHIP&&!t.hasBuild&&!t.hasFire){
                     t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
-                    const p25=Math.floor((performance.now()<flowUntil+80?25*1.2:25)*rushFactor); score+=p25;sfxProcess();
+                    const p25=Math.floor((performance.now()<flowUntil+80?25*1.2:25)*rushFactor); awardCombo('route', p25, s.x, s.y); sfxProcess();
                     spawnFT(s.x,s.y,'To SHIP'+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#44ff44');
                     spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
                     anyProcessed=true;break;
@@ -407,7 +450,8 @@ function processBuilds(){
             }
         } else if(s.type===T_SHIP){
             s.hasBuild=false;
-            const ptsBase=30*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);score+=pts;buildsShipped++;
+            const ptsBase=30*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);
+            awardCombo('ship', pts, s.x, s.y); buildsShipped++;
             s.processAnim=0.5;
             sfxShip();
             spawnParticles(s.x,s.y,'#aa66ff',14,2.5);
@@ -502,10 +546,10 @@ document.addEventListener('keydown',function(e){
     keys[e.key]=true;
     if(e.key===' '||e.key==='x'||e.key==='X'){
         if(gameState==='playing')doAction();
-        else if(gameState==='gameover'||gameState==='menu'){ startGame(); }
+        else if(gameState==='gameover'){ startGame(); }
     }
     if(e.key==='r'||e.key==='R'){
-        if(gameState==='gameover'||gameState==='menu')startGame();
+        if(gameState==='gameover')startGame();
     }
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].indexOf(e.key)>=0)e.preventDefault();
 });
@@ -524,12 +568,14 @@ function setupTouch(id,key){
 }
 setupTouch('btn-up','ArrowUp');setupTouch('btn-down','ArrowDown');
 setupTouch('btn-left','ArrowLeft');setupTouch('btn-right','ArrowRight');
-mobileExt.addEventListener('touchstart',function(e){e.preventDefault();if(gameState==='playing')doAction();},{passive:false});
-mobileExt.addEventListener('mousedown',function(){if(gameState==='playing')doAction();});
+if(mobileExt){
+  mobileExt.addEventListener('touchstart',function(e){e.preventDefault();if(gameState==='playing')doAction();},{passive:false});
+  mobileExt.addEventListener('mousedown',function(){if(gameState==='playing')doAction();});
+}
 
 // Pointer (mouse) support alongside keyboard/touch for readable controls
-canvas.addEventListener('mousedown',function(e){
-  if(gameState==='menu'||gameState==='gameover'){ startGame(); return; }
+if(canvas)canvas.addEventListener('mousedown',function(e){
+  if(gameState==='gameover'){ startGame(); return; }
   if(gameState!=='playing')return;
   const r=canvas.getBoundingClientRect();
   const gx=Math.floor( ((e.clientX-r.left)/r.width)*CANVAS_W / CELL );
@@ -626,25 +672,27 @@ function drawStation(s,t){
     // Status
     const sy=cy+12;
     if(s.hasBuild){
-        ctx.fillStyle='#44ff44';ctx.font='bold 13px monospace';
+        ctx.fillStyle='#44ff88';ctx.font='bold 15px monospace'; // larger/brighter build packet
         ctx.fillText('\u25c8',cx,sy);
         // queued-work pip (escalating backlog telegraph)
         if(s.type===T_BUILD){
-            ctx.fillStyle='#ccffdd';ctx.font='10px monospace';
-            ctx.fillText('\u2022',cx+11,sy-1);
+            ctx.fillStyle='#aaffcc';ctx.font='11px monospace';
+            ctx.fillText('\u2022',cx+12,sy-1);
         }
     }
     
-    // Fire (larger/brighter per feedback, more alive under pressure)
+    // Fire (larger/brighter, spreading hazard anim per feedback — more alive/urgent rescue)
     if(s.hasFire){
-        const fp=Math.sin(t*9+s.x*2+s.y*4);
-        const fs=11+fp*4.5;
-        ctx.fillStyle='#ff3311';ctx.beginPath();ctx.arc(cx-9,sy-1,fs*0.55,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#ffcc33';ctx.beginPath();ctx.arc(cx+7,sy-3,fs*0.4,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#ff5500';ctx.beginPath();ctx.arc(cx+1,sy+5,fs*0.45,0,Math.PI*2);ctx.fill();
-        // extra heat layer
-        ctx.globalAlpha=0.5+Math.sin(t*11)*0.2;
-        ctx.fillStyle='#ffaa00';ctx.beginPath();ctx.arc(cx-2,sy+1,fs*0.7,0,Math.PI*2);ctx.fill();
+        const fp=Math.sin(t*11+s.x*3+s.y*5);
+        const fs=13+fp*5.5; // bigger brighter fires
+        ctx.fillStyle='#ff2200';ctx.beginPath();ctx.arc(cx-8,sy-2,fs*0.6,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ffdd22';ctx.beginPath();ctx.arc(cx+8,sy-4,fs*0.42,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ff4400';ctx.beginPath();ctx.arc(cx+2,sy+6,fs*0.5,0,Math.PI*2);ctx.fill();
+        // extra heat + creeping tendril layer for visible spread motion
+        ctx.globalAlpha=0.45+Math.sin(t*13)*0.25;
+        ctx.fillStyle='#ff9900';ctx.beginPath();ctx.arc(cx-1,sy+2,fs*0.75,0,Math.PI*2);ctx.fill();
+        // tendril sparks (animated spreading hazard)
+        ctx.fillStyle='#ff6622'; for(let k=0;k<3;k++){ const a=(t*4 + s.x + k*1.7)%6.28; ctx.beginPath(); ctx.arc(cx+Math.cos(a)*fs*0.6, sy+Math.sin(a*1.3)*fs*0.5, 2.2,0,6.28); ctx.fill(); }
         ctx.globalAlpha=1;
         
         // Health bar (more prominent)
@@ -655,7 +703,7 @@ function drawStation(s,t){
         ctx.fillRect(bx,by,bw*hp,bh);
         if(hp<0.3){
             const ap=Math.sin(t*11)*0.5+0.6;
-            ctx.fillStyle='rgba(255,40,40,'+ap+')';ctx.font='bold 10px monospace';ctx.textAlign='center';
+            ctx.fillStyle='rgba(255,40,40,'+ap+')';ctx.font='bold 11px monospace';ctx.textAlign='center';
             ctx.fillText('!',cx,by-4);
         }
     }
@@ -687,23 +735,23 @@ function drawStation(s,t){
     const isPlayerNear=playerAdj.some(a=>a.x===s.x&&a.y===s.y);
     if(isPlayerNear){
         if(s.hasFire){
-            // big obvious EXTINGUISH glyph on the tile itself
-            ctx.fillStyle='rgba(255,60,40,0.9)';ctx.font='bold 14px monospace';ctx.textAlign='center';
-            ctx.fillText('EXT',cx,cy-hh-14);
-            ctx.strokeStyle='rgba(255,80,50,0.85)';ctx.lineWidth=2.5;
-            roundRect(cx-hw-4,cy-hh-4,hw*2+8,hh*2+8,4);ctx.stroke();
+            // big obvious EXTINGUISH glyph on the tile itself (focal rescue verb)
+            ctx.fillStyle='rgba(255,50,30,0.95)';ctx.font='bold 16px monospace';ctx.textAlign='center';
+            ctx.fillText('EXT',cx,cy-hh-15);
+            ctx.strokeStyle='rgba(255,70,40,0.9)';ctx.lineWidth=3;
+            roundRect(cx-hw-5,cy-hh-5,hw*2+10,hh*2+10,5);ctx.stroke();
         } else if(s.hasBuild&&!s.hasFire){
-            ctx.fillStyle='rgba(80,255,120,0.9)';ctx.font='bold 13px monospace';ctx.textAlign='center';
-            ctx.fillText('ROUTE',cx,cy-hh-14);
+            ctx.fillStyle='rgba(70,255,110,0.95)';ctx.font='bold 14px monospace';ctx.textAlign='center';
+            ctx.fillText('ROUTE',cx,cy-hh-15);
             const pulse=Math.sin(t*6)*0.35+0.65;
-            ctx.strokeStyle='rgba(68,255,68,'+pulse+')';ctx.lineWidth=2.5;
-            roundRect(cx-hw-4,cy-hh-4,hw*2+8,hh*2+8,4);ctx.stroke();
+            ctx.strokeStyle='rgba(60,255,60,'+pulse+')';ctx.lineWidth=3;
+            roundRect(cx-hw-5,cy-hh-5,hw*2+10,hh*2+10,5);ctx.stroke();
         } else if(s.type===T_SEC){
             const label = !s.secured ? 'SECURE' : 'PATROL';
-            ctx.fillStyle='rgba(170,140,255,0.9)';ctx.font='bold 12px monospace';ctx.textAlign='center';
-            ctx.fillText(label,cx,cy-hh-14);
-            ctx.strokeStyle='rgba(140,110,255,0.75)';ctx.lineWidth=2;
-            roundRect(cx-hw-3,cy-hh-3,hw*2+6,hh*2+6,4);ctx.stroke();
+            ctx.fillStyle='rgba(160,130,255,0.95)';ctx.font='bold 13px monospace';ctx.textAlign='center';
+            ctx.fillText(label,cx,cy-hh-15);
+            ctx.strokeStyle='rgba(130,100,255,0.8)';ctx.lineWidth=2.5;
+            roundRect(cx-hw-4,cy-hh-4,hw*2+8,hh*2+8,5);ctx.stroke();
         }
     }
     // legacy small process ring for builds (kept for juice)
@@ -721,46 +769,49 @@ function drawPlayer(t){
     const bob=player.moving?Math.sin(t*12)*2.2:0;
     const actPulse = (player.actionTimer||0)>0 ? Math.sin((player.actionTimer||0)*28)*0.4+0.6 : 0;
     
-    // Stronger brighter glow (larger agent per feedback)
-    ctx.fillStyle='rgba(0,229,255,'+(0.22+actPulse*0.12)+')';ctx.beginPath();ctx.arc(cx,cy+bob,28,0,Math.PI*2);ctx.fill();
+    // Floor highlight under player (makes action focal point obvious on the board)
+    ctx.fillStyle='rgba(0,229,255,0.08)';ctx.beginPath();ctx.arc(cx,cy,22,0,Math.PI*2);ctx.fill();
     
-    // Body (larger/brighter cyan agent)
-    ctx.fillStyle='#00f0ff';ctx.beginPath();ctx.arc(cx,cy+bob,13,0,Math.PI*2);ctx.fill();
+    // Stronger brighter glow (larger agent per feedback)
+    ctx.fillStyle='rgba(0,229,255,'+(0.28+actPulse*0.18)+')';ctx.beginPath();ctx.arc(cx,cy+bob,32,0,Math.PI*2);ctx.fill();
+    
+    // Body (larger/brighter cyan agent — focal point)
+    ctx.fillStyle='#00f8ff';ctx.beginPath();ctx.arc(cx,cy+bob,16,0,Math.PI*2);ctx.fill();
     
     // Utility pack (factory agent kit) + action flash
-    ctx.fillStyle=actPulse>0.1?'#22aacc':'#007788';ctx.fillRect(cx-5,cy+bob+3,10,8);
-    ctx.fillStyle='#00ccdd';ctx.fillRect(cx-4,cy+bob+4,3,3);ctx.fillRect(cx+1,cy+bob+4,3,3);
+    ctx.fillStyle=actPulse>0.1?'#22aacc':'#007788';ctx.fillRect(cx-6,cy+bob+4,12,9);
+    ctx.fillStyle='#00ccdd';ctx.fillRect(cx-5,cy+bob+5,4,4);ctx.fillRect(cx+1,cy+bob+5,4,4);
     
     // Helmet (brighter)
-    ctx.fillStyle='#00aacc';ctx.beginPath();ctx.arc(cx,cy+bob-4,10,Math.PI,0);ctx.fill();
+    ctx.fillStyle='#00aacc';ctx.beginPath();ctx.arc(cx,cy+bob-5,12,Math.PI,0);ctx.fill();
     
     // Eyes + visor glint
     ctx.fillStyle='#fff';
-    const eo=player.dir==='left'?-4:player.dir==='right'?4:0;
-    ctx.beginPath();ctx.arc(cx-4+eo,cy+bob-3,2.5,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(cx+4+eo,cy+bob-3,2.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,0.6)';ctx.fillRect(cx-1+eo,cy+bob-5,3,1.5);
+    const eo=player.dir==='left'?-5:player.dir==='right'?5:0;
+    ctx.beginPath();ctx.arc(cx-5+eo,cy+bob-4,3,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+5+eo,cy+bob-4,3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.7)';ctx.fillRect(cx-1.5+eo,cy+bob-6,4,2);
     
     // Walking legs + slight lean on action
     if(player.moving){
         const lp=Math.sin(t*14);
-        ctx.strokeStyle='#00aacc';ctx.lineWidth=2.5;ctx.beginPath();
-        ctx.moveTo(cx-4,cy+bob+12);ctx.lineTo(cx-4+lp*4,cy+bob+19);
-        ctx.moveTo(cx+4,cy+bob+12);ctx.lineTo(cx+4-lp*4,cy+bob+19);
+        ctx.strokeStyle='#00aacc';ctx.lineWidth=3;ctx.beginPath();
+        ctx.moveTo(cx-5,cy+bob+14);ctx.lineTo(cx-5+lp*5,cy+bob+22);
+        ctx.moveTo(cx+5,cy+bob+14);ctx.lineTo(cx+5-lp*5,cy+bob+22);
         ctx.stroke();
     }
     if(actPulse>0.1){
-        ctx.strokeStyle='rgba(255,220,120,0.7)';ctx.lineWidth=2;
-        ctx.beginPath();ctx.moveTo(cx-6,cy+bob+1);ctx.lineTo(cx+6,cy+bob+1);ctx.stroke();
+        ctx.strokeStyle='rgba(255,220,120,0.85)';ctx.lineWidth=2.5;
+        ctx.beginPath();ctx.moveTo(cx-8,cy+bob+1);ctx.lineTo(cx+8,cy+bob+1);ctx.stroke();
     }
     
-    // Stronger action-ready ring (tile-scale context obvious)
+    // Stronger action-ready ring + tile glyph echo (context actions obvious at tile scale)
     const pAdj=findAdjacent(player.x,player.y);
     const nearActionable = pAdj.some(a=>{ const s=getStationAt(a.x,a.y); return s && (s.hasFire || (s.hasBuild&&!s.hasFire) || s.type===T_SEC); });
     if(nearActionable){
         const ap=Math.sin(t*20)*0.5+0.5;
-        ctx.strokeStyle='rgba(80,255,120,'+(0.65+ap*0.3)+')';ctx.lineWidth=2.5;
-        ctx.beginPath();ctx.arc(cx,cy+bob,17,0,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle='rgba(80,255,120,'+(0.7+ap*0.35)+')';ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(cx,cy+bob,20,0,Math.PI*2);ctx.stroke();
         ctx.lineWidth=1;
     }
 }
@@ -832,6 +883,11 @@ function gameLoop(timestamp){
     let shakeX=0,shakeY=0;
     if(shakeTimer>0){shakeTimer-=dt;shakeX=(Math.random()-0.5)*shakeIntensity*2;shakeY=(Math.random()-0.5)*shakeIntensity*2;shakeIntensity*=0.9;}
     
+    // pressure snapshot early for vignette + idle aliveness (used in render and updates)
+    const fireCountP = stations.filter(s=>s.hasFire).length;
+    const avgHP = stations.reduce((a,s)=>a+s.health,0)/Math.max(1,stations.length);
+    const pressure = Math.min(1, (fireCountP*0.18) + ( (40-avgHP)/80 ) + (timeLeft<30?0.3:0) );
+    
     ctx.save();ctx.translate(shakeX,shakeY);
     ctx.fillStyle='#0d0d1a';ctx.fillRect(-10,-10,CANVAS_W+20,CANVAS_H+20);
     
@@ -839,9 +895,12 @@ function gameLoop(timestamp){
     for(const s of stations)drawStation(s,t);
     drawPlayer(t);drawParticles();drawTransits();
     
-    // Danger vignette
-    const avgHP=stations.reduce((a,s)=>a+s.health,0)/stations.length;
-    if(avgHP<40){const u=(40-avgHP)/40;ctx.fillStyle='rgba(255,30,30,'+(u*0.12)+')';ctx.fillRect(0,0,CANVAS_W,CANVAS_H);}
+    // Danger vignette + pressure pulse (stronger when fires high / integrity low / late timer / combo hot — arcade rescue feel)
+    let u = 0;
+    if(avgHP<45){ u=(45-avgHP)/45; ctx.fillStyle='rgba(255,20,20,'+(u*0.14 + pressure*0.06)+')'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H); }
+    if(pressure>0.35){ // edge pressure telegraph
+      ctx.strokeStyle='rgba(255,60,40,'+(0.2+pressure*0.25)+')'; ctx.lineWidth=6; ctx.strokeRect(3,3,CANVAS_W-6,CANVAS_H-6); ctx.lineWidth=1;
+    }
     if(avgHP < 5 && !shiftLost){ shiftLost=true; endGame(); }
     
     ctx.restore();
@@ -879,13 +938,18 @@ function gameLoop(timestamp){
     fireSpawnTimer-=dt*1000;
     if(fireSpawnTimer<=0){spawnFire();fireSpawnTimer=nextFireSpawn+Math.random()*3000;}
     
-    // Make the board feel alive under pressure (subtle idle life on healthy stations — data pips, micro sparks — cheap & constant)
-    if(Math.random()<0.12){
-        const live=stations.filter(s=>!s.hasFire&&s.health>55);
+    // Make the board feel alive under pressure (subtle idle life + hazard telegraph — data pips, micro sparks, embers when hot — cheap & constant)
+    if(Math.random()< (0.11 + pressure*0.09) ){
+        const live=stations.filter(s=>!s.hasFire&&s.health>40);
         if(live.length){
             const s=live[Math.floor(Math.random()*live.length)];
-            spawnParticles(s.x,s.y, s.type===T_BUILD?'#44ff88':s.type===T_SHIP?'#ffdd88':'#66aaff', 1, 0.6);
+            const col = s.type===T_BUILD?'#44ff88':s.type===T_SHIP?'#ffdd88':'#66aaff';
+            spawnParticles(s.x,s.y, col, 1 + (pressure>0.4?1:0), 0.6 + pressure*0.4);
         }
+    }
+    if(fireCountP>0 && Math.random()<0.18){ // ambient hazard embers when incidents active
+      const f=stations.filter(s=>s.hasFire)[Math.floor(Math.random()*fireCountP)];
+      if(f) spawnParticles(f.x,f.y,'#ff5522',1,0.9);
     }
     
     updateDifficulty();updateHUD();
@@ -907,12 +971,12 @@ function gameLoop(timestamp){
         let pHtml = '▶ '+promptText;
         if(flowNow) pHtml += ' <span style="font-size:10px;color:#ffdd44;border:1px solid #ffdd44;padding:0 3px;border-radius:2px">FLOW</span>';
         else if(timeLeft<=30 && rushFactor>1) pHtml += ' <span style="font-size:10px;color:#ffaa66;border:1px solid #ffaa66;padding:0 3px;border-radius:2px">RUSH</span>';
-        processPrompt.innerHTML = pHtml;
+        if(processPrompt){ processPrompt.innerHTML = pHtml;
         // verb-specific color for readable urgency (red=extinguish fire incident under pressure; cyan=route builds; purple=patrol secrets)
         if(promptText==='EXTINGUISH') processPrompt.style.color='#ff6644';
         else if(promptText==='PROCESS BUILD') processPrompt.style.color='#00e5ff';
         else processPrompt.style.color='#a78bfa';
-        processPrompt.classList.add('show');
+        processPrompt.classList.add('show'); }
         if(mobileExt) {
           mobileExt.innerHTML = (promptText==='EXTINGUISH'?'&#128293;EXT':promptText==='PROCESS BUILD'?'&#9654;ROUTE':promptText==='SECURE'?'&#128274;SEC':'&#128274;PAT') + '<br>SPACE';
           // mirror verb color on large touch target for readable urgency on mobile (red=fire incident highest pressure)
@@ -921,9 +985,9 @@ function gameLoop(timestamp){
           else { mobileExt.style.color='#ddccff'; mobileExt.style.borderColor='#a78bfa'; }
         }
     } else {
-        processPrompt.classList.remove('show');
+        if(processPrompt){ processPrompt.classList.remove('show');
         processPrompt.style.color='#44ff44';
-        processPrompt.innerHTML = '&#9654; STATION READY';
+        processPrompt.innerHTML = '&#9654; STATION READY'; }
         if(mobileExt){ mobileExt.innerHTML = '&#129327;<br>ACTION'; mobileExt.style.color='#fff'; mobileExt.style.borderColor='#cc4444'; }
     }
     
@@ -935,8 +999,8 @@ function startGame(){
     initAudio();initGame();gameState='playing';
     updateHUD();
     if(audioCtx&&audioCtx.state==='suspended'){try{audioCtx.resume().catch(function(){});}catch(e){}}
-    overlay.classList.add('hidden');
-    processPrompt.classList.remove('show');
+    if(overlay) overlay.classList.add('hidden');
+    if(processPrompt) processPrompt.classList.remove('show');
     lastFireTick=performance.now();lastQueueTick=performance.now();
     fireSpawnTimer=nextFireSpawn;lastFrameTime=performance.now();
     timerInterval=setInterval(function(){
@@ -955,7 +1019,7 @@ function startGame(){
 
 function endGame(){
     gameState='gameover';clearInterval(timerInterval);cancelAnimationFrame(animFrame);
-    processPrompt.classList.remove('show');
+    if(processPrompt) processPrompt.classList.remove('show');
     const elapsed=GAME_DURATION-timeLeft;
     let rating='D';
     if(score>=3000)rating='S';else if(score>=2000)rating='A';
@@ -963,15 +1027,17 @@ function endGame(){
     const lost = shiftLost || (stations.reduce((a,s)=>a+s.health,0)/Math.max(1,stations.length) < 8);
     const title = lost ? 'CONTAINMENT FAILED' : 'SHIFT COMPLETE';
     const tag = lost ? 'The floor is lost. Rebuild and try again.' : 'The factory survived... for now.';
-    overlay.innerHTML='<h1>'+title+'</h1><h2>Final Score</h2>'
-        +'<div class="final-score">'+score+'</div>'
-        +'<p class="subtitle">Wave '+wave+' \u00b7 '+buildsShipped+' shipped \u00b7 '+secretsSecured+' secured \u00b7 '+lastIncidentsExtinguished+' fires out \u00b7 Rating: '+rating+'<br><span style="color:#6a6a8a">'+tag+'</span></p>'
-        +'<button class="btn primary" id="restart-btn">\u25b6 ANOTHER SHIFT</button>';
-    overlay.classList.remove('hidden');
-    document.getElementById('restart-btn').addEventListener('click',startGame);
+    if(overlay){
+      overlay.innerHTML='<h1>'+title+'</h1><h2>Final Score</h2>'
+          +'<div class="final-score">'+score+'</div>'
+          +'<p style="font-size:10px;margin:4px 0 8px;opacity:0.8">Wave '+wave+' \u00b7 '+buildsShipped+' shipped \u00b7 '+secretsSecured+' secured \u00b7 '+lastIncidentsExtinguished+' fires out \u00b7 Rating: '+rating+'<br><span style="color:#6a6a8a">'+tag+'</span></p>'
+          +'<button class="btn primary" id="restart-btn" style="padding:4px 12px;font-size:11px">\u25b6 ANOTHER SHIFT</button>';
+      overlay.classList.remove('hidden');
+    }
+    const rb=document.getElementById('restart-btn'); if(rb) rb.addEventListener('click',startGame);
 }
 
-startBtn.addEventListener('click',startGame);
+if(startBtn) startBtn.addEventListener('click',startGame);
 
 // ─── TITLE SCREEN ───
 let titleAF=null,titleParts=[],titleDemoTransits=[];
@@ -1061,14 +1127,17 @@ function titleLoop(ts){
     titleAF=requestAnimationFrame(titleLoop);
 }
 
-// Init stations for title screen
+// Boot directly into live playable arcade shift (addresses 15:32Z blocking: first screen = the game floor, no menu wall, first input (WASD/click/SPACE) is immediately game-like and scored)
 for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++){
     const t=LAYOUT[y][x];if(t)stations.push(createStation(x,y,t));
 }
-// demo queued work on one BUILD for title screen (telegraphs the new "escalating queues + route resources" polish immediately on first screen)
-const demoBuild = stations.find(s=>s.type===T_BUILD && s.x<3 && s.y<2);
-if(demoBuild) demoBuild.hasBuild=true;
-initTitleParticles();titleLoop(performance.now());
+initGame();
+gameState='playing';
+lastFireTick=performance.now(); lastQueueTick=performance.now(); fireSpawnTimer=nextFireSpawn; lastFrameTime=performance.now();
+if(overlay) overlay.classList.add('hidden');
+if(processPrompt) processPrompt.classList.remove('show');
+timerInterval=setInterval(function(){ if(gameState!=='playing')return; timeLeft--; updateHUD(); if(timeLeft<=0)endGame(); },1000);
+animFrame=requestAnimationFrame(gameLoop);
 
 })();
 </script>

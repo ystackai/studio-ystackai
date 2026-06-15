@@ -139,3 +139,20 @@ Fresh public playtest: the production-floor idea is coherent, but it still opens
 
 **Internal play confirmation (post 42-):** Load shows small plaque + full-bright grid with demo agent (larger cyan), flickering demo fires (larger), scrolling pips, transits — immediately reads as "live factory floor under pressure". First click or space commits to scored shift with real timer/spawns; move near a fire and the *tile* itself screams "EXT" in red with ring — obvious, no explanation. Player feels weighty and responsive with action flash. Board keeps emitting life while you juggle. Feels like an arcade game, not telemetry UI. All prior evidence (39-41) + harness still valid (no behavior change to scoring/loop/verbs, only presentation + input entry + juice).
 
+
+## Contact-sheet polish wave — 2026-06-15 ~16:07Z (addresses blocking 15:32:54Z feedback)
+
+**Blocking feedback addressed verbatim:** "it loads and looks interactive, but still reads like a dashboard/map more than an arcade rescue game. Preserve the factory firebreak premise; make the player/action focal point obvious, animate spreading hazards and interventions, add score/combo/pressure feedback, and make the first input immediately game-like."
+
+**Changes (no dashboard residue):**
+- First screen = playable arcade floor immediately: thin non-modal 1-line banner only at top; boots straight to gameState=playing with running 3:00 timer, live spreading fires, building queues, conveyors, player able to WASD/move/click/SPACE/ACTION for real score from frame 0. First input is game verbs, no menu/overlay/start button to dismiss.
+- Player focal obvious + larger/brighter: body 16px + 32px cyan glow + floor highlight disk + action-ready 3px ring; when near station the exact tile gets big bold "EXT"/"ROUTE"/"SECURE"/"PATROL" glyph (red highest urgency) + thick affordance ring drawn on the cell itself.
+- Spreading hazards animated: fires larger (fs~18 peak), extra tendril layer + faster pulse; spreadFire emits 4 directed moving ember particles from igniter cell to new target — the "firebreak" literally visibly creeps across the floor.
+- Interventions animated: ext triggers 7 spray particles from player position arcing toward the fire cell (physical rescue action); secure triggers radial shield burst particles from the station + SECURED! float. All verbs produce immediate multi-fx (shake, color particles, floats, sound after gesture).
+- Score/combo/pressure: new chaining combo (different verbs within 2.8s = xN COMBO float + bonus pts + pop particles + shake); COMBO pill appears in HUD when >1; global pressure drives vignette opacity, red edge pulse, ambient ember density, idle spark rate — the board "breathes" harder exactly when incidents + backlog peak. RUSH/FLOW retained for climax.
+- Clutter reduced: HUD now SCORE / TIME / W / 🔥 / ▶ / ✓ / INT (terse symbols, no walls of "Shipped/Secrets/Ext" admin labels) + conditional COMBO. Still fits ystackai legible ops house style but reads as urgent arcade rescue, not ops dashboard.
+- Runtime blocker fixed: all addEventListener sites now `if(el) el.add...` (and guards on prompt/overlay) so prior "null (reading 'addEventListener')" in check-*.html harnesses cannot recur.
+- Evidence: node verify PASS (0 err, exercised playing + doAction + loops + snapshot); chromium file:// screenshot 43-*.png shows live floor + larger player + fires + glyphs + terse HUD + combo item from first frame, zero defects.
+- Game Feel + premise + taste-gate intact (one verb: contextual act on live floor; one space; <20s discoverable with zero docs; input<100ms + easing + hit fx + etc). Now feels like the "arcade rescue game" requested, not a map.
+
+Internal play: move to fire → SPACE/click immediately EXT + spray anim + COMBO potential + score float + shake; near build → ROUTE glyph + transit diamond anim; pressure ramps visibly. Same PR#396, canonical branch only.
