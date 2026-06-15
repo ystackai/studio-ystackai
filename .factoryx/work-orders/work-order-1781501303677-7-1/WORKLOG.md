@@ -248,3 +248,6 @@
 - New evidence: screenshots/28-title-browser-polish.png (91.6KB) + work-order copy. Game Feel items hold (core verb still <20s; input feedback now stronger via color+pop; easing on the new transform; hit fx unchanged; gesture audio; targets; 60fps; <2MB; offline).
 - Re-confirmed goal: theme (extinguish=red hot, route=cyan flow, protect=purple patrol) now even more concrete on the production floor. Same canonical branch. Will commit/push/gh comment. ~4h budget left. Ready.
 - Updated WORKLOG/PREVIEW/VERIFICATION + 28- + game. (direct shell)
+
+- Re-verify 30- + memory sync (direct sourced non-zellij, addresses explicit prior agent runner 143/truncation from query before peripheral polish): harness PASS (0 errors, snapshot exercised playing state + verbs), chromium 30-title-browser-redeploy.png (91.7KB) clean file:// render of entrypoint (zero pageerror/console), PR#396 re-inspected (checks green, up-to-date), branch current. No game code change. Updated notes + 30- evidence. ~4h left. Ready. (direct shell, 2026-06-15 ~10:18Z)
+- Re-confirmed: taste-gate, browser verification real runtime, GitHub branch model (canonical only), polish_until_deadline respected, quality bar met. PR: https://github.com/ystackai/studio-ystackai/pull/396

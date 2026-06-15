@@ -94,3 +94,9 @@ This re-verify pass (direct shell, full context) addresses the "redeploy reset a
 
 PR: https://github.com/ystackai/studio-ystackai/pull/396
 
+
+- `games/92-factory-firebreak/screenshots/30-title-browser-redeploy.png` (2026-06-15 ~10:18Z fresh chromium --headless --screenshot file:// of preview entrypoint post workspace state in direct sourced non-zellij shell per guard + previous-run issue "agent runner failed: grok exited with status 143" + truncation "The task is to build..." to address before peripheral polish; 91.7KB PNG, zero pageerror/uncaught/console during titleLoop + live board + demo routing/fires/conveyors/pips render; confirms first screen + core verbs clean, ~4h to 14:28Z)
+
+**Re-verify pass 30- (direct shell, full context) addresses the previous run issue + workspace refresh guard + the explicit prior agent runner failure (status 143 + truncated thought stream from the work order prompt): all verification actually executed (node harness + real chromium file://), Game Feel holds, no blockers. Same PR#396 / branch. Preview entrypoint remains `games/92-factory-firebreak/index.html` (self-contained, immediately playable first screen per playbook + goal). Ready for final review / human gate before deadline. (30- captured at ~10:18Z)**
+
+PR: https://github.com/ystackai/studio-ystackai/pull/396
