@@ -111,3 +111,11 @@ Visual feedback from overnight monitor: factory-management theme is clear, but s
 Fresh public playtest: the production-floor idea is coherent, but it still opens too much like a menu overlay on a dark board. Make the first click/space start a playable shift immediately, enlarge and brighten agents/fires/builds/secrets, make context actions obvious at tile scale, and show urgency without burying the screen in copy.
 
 **Re-verify 39- (direct, ~10:55Z):** Harness PASS (0 err) + fresh chromium 39- (91.6KB) of preview entrypoint clean (titleLoop + full visible board + demo activity + HUD + verb prompt). Core verb discoverable <20s on first screen; Game Feel + game-designer-2d + ystackai house style hold. Addresses prior 143/truncation via direct full-context execution + evidence (pre any peripheral). Same PR#396 / branch. Updated notes + 39- png. ~3.3h to deadline. Ready for human gate.
+
+**Re-verify 40- + polish 41- (RUSH for climax, direct, ~11:01Z 2026-06-15):**
+- Harness PASS 0 errors (post-rush edit); chromium 40- (pre) and 41- (post) clean renders of entrypoint; syntax PASS (~49.6KB).
+- Polish strengthens the final 30s "firebreak rush": 1.25x scoring on correct verbs (ext/route/ship/patrol) + RUSH badge on prompt/floats during the hot zone. Makes "juggle escalating queues under pressure" deliver a concrete, rewarding payoff exactly when the timer + spawns create peak tension — the theme and arcade loop now have a clear arc and skill expression in the close. No change to first 2.5min or discoverability.
+- Game Feel/taste-gate/goal re-confirmed (RUSH juice fits "hit/score feedback", "easing", "input response"; core verb still <20s on first screen with live demo + dynamic controls). ystackai style (legible climax telemetry via prompt badge) holds.
+- Updated notes + 40-/41- png + game. Same branch/PR#396. ~3.4h left. Ready for human gate.
+
+**Post 41- internal play note:** In the last 30s, routing a backlog build or extinguishing under the faster spawns now yields the RUSH bonus visibly — feels like the "protect the secrets / ship the builds / firebreak" pressure paying off. First screen (title) unchanged and immediately shows the production verbs via demo. All prior evidence valid.

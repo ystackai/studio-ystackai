@@ -184,7 +184,7 @@ var shiftLost=false; // set when avg health collapses (early fail)
 var stations=[],particles=[],floatingTexts=[],transits=[];
 var lastFireTick=0,lastQueueTick=0,nextFireSpawn=FIRE_SPAWN_MIN,fireSpawnTimer=FIRE_SPAWN_MIN;
 var shakeTimer=0,shakeIntensity=0,timerInterval=null,animFrame=null,lastFrameTime=0;
-var processCooldown=0,hasShownHint=false,flowUntil=0;
+var processCooldown=0,hasShownHint=false,flowUntil=0,rushFactor=1;
 
 function createStation(x,y,type){
     return{x,y,type,health:100,hasBuild:false,hasFire:false,fireHealth:0,
@@ -307,7 +307,7 @@ function extinguishNearby(){
         if(s&&s.hasFire){
             s.hasFire=false;s.fireHealth=0;s.flashTimer=0.4;
             s.health=Math.min(100,s.health+10);
-            const ptsBase=50*wave; const pts=(performance.now()<flowUntil+80?Math.floor(ptsBase*1.2):ptsBase); score+=pts; ex=true; if(performance.now()<flowUntil+80) spawnFT(cell.x,cell.y,'FLOW!','#ffdd44');
+            const ptsBase=50*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor); score+=pts; ex=true; if(performance.now()<flowUntil+80) spawnFT(cell.x,cell.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(cell.x,cell.y,'RUSH!','#ffaa66');
             sfxExtinguish();
             spawnParticles(cell.x,cell.y,'#44ddff',12,3);
             spawnParticles(cell.x,cell.y,'#ffffff',6,2);
@@ -351,7 +351,7 @@ function doAction(){
                 const req = Math.max(0.8,2.8-wave*0.25);
                 if(s.secTimer >= req){
                     s.secured=true; s.secTimer=0; s.secLevel=4;
-                    const ptsBase=30*wave; const pts=(performance.now()<flowUntil+80?Math.floor(ptsBase*1.2):ptsBase); score+=pts; secretsSecured++; if(performance.now()<flowUntil+80) spawnFT(s.x,s.y,'FLOW!','#ffdd44');
+                    const ptsBase=30*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor); score+=pts; secretsSecured++; if(performance.now()<flowUntil+80) spawnFT(s.x,s.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(s.x,s.y,'RUSH!','#ffaa66');
                     sfxSecret();
                     spawnParticles(s.x,s.y,'#8888ff',15,3);
                     spawnParticles(s.x,s.y,'#ffbb33',10,2);
@@ -361,8 +361,8 @@ function doAction(){
                 }
             } else if(s.secLevel < 3.5){
                 s.secLevel = Math.min(5, s.secLevel + 2.5);
-                const ptsBase=8*wave; const pts=(performance.now()<flowUntil+80?Math.floor(ptsBase*1.2):ptsBase); score+=pts;
-                spawnFT(s.x,s.y,'+'+pts+(performance.now()<flowUntil+80?' FLOW':'') ,'#8888ff');
+                const ptsBase=8*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor); score+=pts;
+                spawnFT(s.x,s.y,'+'+pts+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#8888ff');
                 sfxSecret();
             }
             shakeTimer=0.08; shakeIntensity=1.5;
@@ -400,8 +400,8 @@ function processBuilds(){
                 const t=getStationAt(a.x,a.y);
                 if(t&&t.type===T_TEST&&!t.hasBuild&&!t.hasFire){
                     t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
-                    const p15=(performance.now()<flowUntil+80?Math.floor(15*1.2):15); score+=p15; sfxProcess();
-                    spawnFT(s.x,s.y,'To TEST'+(performance.now()<flowUntil+80?' FLOW':'') ,'#44ff44');
+                    const p15=Math.floor((performance.now()<flowUntil+80?15*1.2:15)*rushFactor); score+=p15; sfxProcess();
+                    spawnFT(s.x,s.y,'To TEST'+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#44ff44');
                     spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
                     anyProcessed=true;break;
                 }
@@ -412,20 +412,20 @@ function processBuilds(){
                 const t=getStationAt(a.x,a.y);
                 if(t&&t.type===T_SHIP&&!t.hasBuild&&!t.hasFire){
                     t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
-                    const p25=(performance.now()<flowUntil+80?Math.floor(25*1.2):25); score+=p25;sfxProcess();
-                    spawnFT(s.x,s.y,'To SHIP'+(performance.now()<flowUntil+80?' FLOW':'') ,'#44ff44');
+                    const p25=Math.floor((performance.now()<flowUntil+80?25*1.2:25)*rushFactor); score+=p25;sfxProcess();
+                    spawnFT(s.x,s.y,'To SHIP'+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#44ff44');
                     spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
                     anyProcessed=true;break;
                 }
             }
         } else if(s.type===T_SHIP){
             s.hasBuild=false;
-            const ptsBase=30*wave; const pts=(performance.now()<flowUntil+80?Math.floor(ptsBase*1.2):ptsBase);score+=pts;buildsShipped++;
+            const ptsBase=30*wave; const pts=Math.floor((performance.now()<flowUntil+80?ptsBase*1.2:ptsBase)*rushFactor);score+=pts;buildsShipped++;
             s.processAnim=0.5;
             sfxShip();
             spawnParticles(s.x,s.y,'#aa66ff',10,2);
             spawnParticles(s.x,s.y,'#ffdd44',8,2);
-            spawnFT(s.x,s.y,'SHIPPED! +'+pts+(performance.now()<flowUntil+80?' FLOW':'') ,'#aa66ff');
+            spawnFT(s.x,s.y,'SHIPPED! +'+pts+(performance.now()<flowUntil+80?' FLOW':rushFactor>1?' RUSH':'') ,'#aa66ff');
             anyProcessed=true;break;
         }
         if(anyProcessed)break;
@@ -500,7 +500,7 @@ function processSecurity(dt){
             // Patrolling re-arms the buffer and yields occasional vigilance points
             if(s.secLevel<3.5){
                 s.secLevel=Math.min(5,s.secLevel+dt*3);
-                if(Math.random()<0.06){const pts=8*wave;score+=pts;spawnFT(s.x,s.y,'+'+pts,'#8888ff');}
+                if(Math.random()<0.06){const pts=Math.floor(8*wave*rushFactor);score+=pts;spawnFT(s.x,s.y,'+'+pts+(rushFactor>1?' RUSH':''),'#8888ff');}
             }
         }
     }
@@ -591,6 +591,9 @@ function updateDifficulty(){
     if(timeLeft<=30){ // final-sprint pressure: last 30s of the 3:00 timer becomes a real "firebreak" rush (more incidents + backlog to juggle while shipping last builds)
       nextFireSpawn=Math.max(1200,nextFireSpawn*0.6);
       currentQueueInterval=Math.max(1400,currentQueueInterval*0.65);
+      rushFactor=1.25;
+    } else {
+      rushFactor=1;
     }
 }
 
@@ -877,6 +880,7 @@ function gameLoop(timestamp){
         const flowNow = performance.now() < flowUntil;
         let pHtml = '▶ '+promptText;
         if(flowNow) pHtml += ' <span style="font-size:10px;color:#ffdd44;border:1px solid #ffdd44;padding:0 3px;border-radius:2px">FLOW</span>';
+        else if(timeLeft<=30 && rushFactor>1) pHtml += ' <span style="font-size:10px;color:#ffaa66;border:1px solid #ffaa66;padding:0 3px;border-radius:2px">RUSH</span>';
         processPrompt.innerHTML = pHtml;
         // verb-specific color for readable urgency (red=extinguish fire incident under pressure; cyan=route builds; purple=patrol secrets)
         if(promptText==='EXTINGUISH') processPrompt.style.color='#ff6644';
