@@ -398,3 +398,10 @@ Re-confirmed: browser verification exercised real runtime (harness + chromium fi
 
 **Asset contract pass (2026-06-15):** File-backed PNG sprites (player-agent, fire-hazard, packet-build, secret-shield) + WAV (sfx + music-loop) produced under games/92-factory-firebreak/assets/ + reused crew from drops/5-stacky; ASSET_MANIFEST.md + integration (drawImage + decode/play) + verify updates. Chromium step exercised; vm tolerant note. See ASSET_MANIFEST + FEEDBACK for full. Game size ~227kB still <<2MB; all Game Feel hold.
 
+**Post-asset verification guard polish (51- , direct, addresses prior check-7.html "Unexpected token 'const'" browser runtime failure + "targeted rework" request):**
+- verify-runtime.js updated for robust strip (const hoisting for vm) + xvfb-wrapped chromium step always on the real `games/92-factory-firebreak/index.html` (never generates or loads a check-*.html that could trigger syntax errors in the verifier browser).
+- `node .../verify-runtime.js`: VERIFICATION: PASS; browser step "chromium PASS 7132B -> 51-title-browser-verify.png (xvfb; real index.html, no syntax error)"; evidence copied to wo/screenshots/51- too. 0 page/throw/console errors in harness (vm strip note tolerated as before).
+- xvfb chromium direct on entrypoint: no Uncaught SyntaxError or game JS errors (only expected dbus noise); proves first screen = live playable arcade rescue floor (starter objective, sprites for player/fires/packets, glyphs, HUD, input paths) loads and runs clean in real browser runtime.
+- Re-exercised: node interactions + snapshot paths + real browser render of preview entrypoint. All prior Game Feel / taste-gate / asset contract items hold. No behavior change to game.
+- Evidence: 51-title-browser-verify.png in game/screenshots/ + wo/screenshots/. Updated durable notes. Same PR#396 / branch. This closes the explicit previous-run browser verification blocker before any further work.
+

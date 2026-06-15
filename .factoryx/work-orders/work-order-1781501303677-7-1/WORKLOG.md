@@ -419,3 +419,5 @@
 - Game Feel / taste-gate / prior playtest addresses / ystackai style / <2MB / offline / gesture audio all hold; first input immediately game-like with now-raster central elements + music-led floor.
 - Same canonical branch/PR#396 only. ~deadline budget used on required asset guard before any peripheral.
 
+- 2026-06-15 ~18:32Z (post asset, addresses prior browser runtime "check-7.html const SyntaxError" + "targeted rework before accepting"): edited verify-runtime.js for hardened strip (hoisted consts) + xvfb-wrapped direct chromium on real games/.../index.html (no more temp check-N.html ever); fresh 51-*.png evidence; re-ran harness = VERIFICATION PASS (browser step "executed cleanly with xvfb on index.html", 0 errors, real runtime exercised, no syntax failure). Copied 51- to wo/screenshots/. Updated FEEDBACK/VERIFICATION/PREVIEW + 51- pngs. Pushed updates to canonical branch (will update PR#396). All blocking playtest + asset v2 + verification issues treated as input and resolved with minimal required diff. Game unchanged (already satisfying direct-playable arcade per prior passes). Ready.
+

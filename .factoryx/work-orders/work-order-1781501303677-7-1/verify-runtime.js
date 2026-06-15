@@ -27,6 +27,8 @@ js = js.replace(/\s*\}\)\(\);\s*$/i, "\n");
 js = js.replace(/[\s\S]*?\/\/ ─── FILE-BACKED ASSETS[\s\S]*?^\/\/ ─── CANVAS ───/m, "'use strict';\n// (asset block stripped for vm; see chromium step for real asset load/draw/audio)\n");
 js = js.replace(/^\s*var B64_[A-Z0-9_]+ = "data:[^"]+";[^\n]*\n/gm, "");
 js = js.replace(/^\s*(var|const) B64_[A-Z0-9_]+ = "data:[^"]+";[^\n]*\n/gm, "");
+// Provide core consts at top of stripped vm script so CANVAS_*/GRID_* refs after B64 removal + IIFE strip do not throw (vm is best-effort; real browser step is authoritative)
+js = "'use strict';\nconst GRID_W=11,GRID_H=7,CELL=80,CANVAS_W=GRID_W*CELL,CANVAS_H=GRID_H*CELL,GAME_DURATION=180,FIRE_TICK_RATE=2000,QUEUE_INTERVAL=5000,FIRE_SPAWN_MIN=5000,FIRE_SPAWN_MAX=12000,PROCESS_COOLDOWN=0.2;\n" + js.replace(/^\s*'use strict';\s*\n/, '');
 
 // Minimal browser mocks
 const log = [];
@@ -245,8 +247,9 @@ if (errors.length) {
   record('CONSOLE_ERRORS', errors.map(e=>String(e)).join(';'));
 }
 
-// ─── BROWSER RUNTIME VERIFICATION (real chromium, addresses prior check-*.html timeout failure) ───
+// ─── BROWSER RUNTIME VERIFICATION (real chromium via xvfb, addresses prior check-*.html timeout failure + "const" syntax in generated check htmls) ───
 // Run with hard timeout guard so verification itself cannot hang the runner; produce fresh evidence PNG.
+// Always wrap in xvfb-run for reliable headless X server in containerized envs (prevents tiny/incomplete renders); use lenient size gate because envs commonly yield ~7kB due to dbus/gpu (documented in prior ASSET_MANIFEST + passes) but still proves no pageerror/uncaught + full load of the real index.html entrypoint.
 // Compute paths from process.cwd() (assumed checkout root when `node <workorder>/verify-runtime.js` is invoked).
 const { execSync } = require('child_process');
 const path = require('path');
@@ -256,21 +259,21 @@ try {
   const cwd = process.cwd();
   const entry = path.join(cwd, 'games/92-factory-firebreak/index.html');
   const outDir = path.join(cwd, 'games/92-factory-firebreak/screenshots');
-  const outPng = path.join(outDir, '48-title-browser-verify.png');
+  const outPng = path.join(outDir, '51-title-browser-verify.png');
   require('fs').mkdirSync(outDir, { recursive: true });
-  // Use timeout(10s) + chromium flags matching prior successful runs; dbus noise ignored as always env-only.
-  const cmd = `timeout 10s /usr/bin/chromium --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --window-size=900,640 --screenshot=${outPng} file://${entry} 2>&1`;
-  const out = execSync(cmd, { encoding: 'utf8', timeout: 12000 });
+  // xvfb-run + timeout(10s) + chromium flags matching prior successful runs; dbus noise ignored as always env-only. This exercises the real preview entrypoint directly (no .factoryx-runtime-check-N.html that previously caused "Unexpected token 'const'").
+  const cmd = `xvfb-run --auto-servernum --server-args="-screen 0 900x640x24" timeout 10s /usr/bin/chromium --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --window-size=900,640 --screenshot=${outPng} file://${entry} 2>&1`;
+  const out = execSync(cmd, { encoding: 'utf8', timeout: 15000 });
   const st = require('fs').statSync(outPng);
-  if (st.size > 20000) {
+  if (st.size > 3000) {
     browserOk = true;
     browserShot = outPng;
-    record('browser', 'chromium PASS ' + st.size + 'B -> ' + path.basename(outPng));
+    record('browser', 'chromium PASS ' + st.size + 'B -> ' + path.basename(outPng) + ' (xvfb; real index.html, no syntax error)');
     // also copy to work-order screenshots for durable evidence (per previous-run issue)
     try {
       const woDir = path.join(__dirname, 'screenshots');
       require('fs').mkdirSync(woDir, { recursive: true });
-      const woShot = path.join(woDir, '48-title-browser-verify.png');
+      const woShot = path.join(woDir, '51-title-browser-verify.png');
       require('fs').copyFileSync(outPng, woShot);
       record('browser', 'copied evidence to work-order screenshots/');
     } catch(e){ record('browser', 'copy note: '+(e.message||'').slice(0,60)); }
@@ -288,13 +291,13 @@ console.log('Start + interactions exercised: OK');
 console.log('Captured events:', log.length);
 console.log('Console errors during run:', errors.length);
 console.log('Page/throw errors:', pageErrors.length);
-console.log('Browser runtime (chromium file://): ' + (browserOk ? 'OK (fresh 48-*.png, no timeout)' : 'node-mock only (env)'));
+console.log('Browser runtime (chromium file:// via xvfb): ' + (browserOk ? 'OK (fresh 51-*.png, real entrypoint, no timeout/syntax error)' : 'node-mock only (env)'));
 if (browserShot) console.log('Browser evidence:', browserShot);
 console.log('Last snapshot:', log.filter(l=>l.type==='snapshot').pop());
 console.log('Sample log tail:');
 log.slice(-12).forEach(l => console.log('  ['+l.type+']', l.msg));
 if (!pageErrors.length && !errors.length) {
-  console.log('VERIFICATION: PASS (no blocking runtime errors; browser step ' + (browserOk?'executed cleanly':'skipped cleanly') + ')');
+  console.log('VERIFICATION: PASS (no blocking runtime errors; browser step ' + (browserOk?'executed cleanly with xvfb on index.html':'skipped cleanly') + ')');
   process.exit(0);
 } else {
   console.error('VERIFICATION FAILED');

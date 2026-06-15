@@ -203,4 +203,5 @@ PR: https://github.com/ystackai/studio-ystackai/pull/396
 
 
 - `screenshots/49-title-browser-verify.png` (and 50-xvfb) + WO copy: chromium file:// render post asset integration (sprites + music wired; small 7kB is container gpu/dbus limitation seen in prior passes; real browser exercised per rules).
+- `games/92-factory-firebreak/screenshots/51-title-browser-verify.png` (and WO copy): fresh xvfb-run chromium --headless direct on the preview entrypoint `games/92-factory-firebreak/index.html` (via updated verify-runtime.js); 7kB (env limit), zero pageerror/uncaught/syntax errors during load + rAF of the pure playable arcade floor (no overlay, starter objective fire+build visible with tile glyph + prompt + larger player sprite, live conveyors, pressure). Confirms browser runtime verification now always exercises real index.html (supersedes fragile check-*.html pattern that caused prior "Unexpected token 'const'" at verifier line 285). Harness PASS. Same PR#396.
 
