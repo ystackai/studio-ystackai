@@ -317,3 +317,11 @@
 - Game Feel + taste-gate + goal re-confirmed (strengthened): core verb still <20s on first screen; input/feedback/easing/gesture/touch/60fps/offline/<2MB hold; "escalating queues under pressure" + "extinguish incidents" now has a concrete final-sprint climax on the 3:00 timer that rewards skilled juggling (FLOW chaining + rapid extinguish/route/patrol in the hot 30s for max score). Real arcade, ystackai legible ops telemetry (pulsing timer + live Fires/Integrity/Transit).
 - "redeploy reset + prior 143/truncation" addressed in 36- (pre this); this is continuation polish_until_deadline. Same PR#396 / canonical branch only. Updated all durable notes + 37- evidence + game. Will commit/push + gh comment. ~3.7h remains. Ready for final gate. (direct shell)
 - Re-confirmed: taste-gate (one verb one space), browser verification real runtime, GitHub branch model, polish_until_deadline respected, quality bar met. PR: https://github.com/ystackai/studio-ystackai/pull/396
+
+## 2026-06-15 ~10:49Z — re-verify 38- (direct non-zellij, addresses prior 143/truncation before polish)
+- Sourced github-shell-env + GH_TOKEN (len only), gh pr view 396 (OPEN, REVIEW_REQUIRED, checks: facts/ci/deploy-preview PASS, no reviews/blocks, head d43d008 == local).
+- `node .factoryx/work-orders/work-order-1781501303677-7-1/verify-runtime.js` — PASS 0 errors/throws. Full paths: load/title/start/move/doAction (unified ext/process/secure) + gameLoop + snapshot (score/wave/builds/particles/avgHP=100/playing/Fires exercised).
+- Chromium file:// --screenshot (900x640) of exact `games/92-factory-firebreak/index.html` (direct preview): 91,222B 38-title-browser-redeploy.png clean (titleLoop+DOM+canvas+demo activity+HUD+verb prompt; dbus noise only; zero pageerror/uncaught). Copied to games/.../screenshots/ and work-order/screenshots/.
+- Static: 49,499B total, new Function() PASS; <2MB self-contained offline.
+- No game source edits (per "address previous run issue before peripheral polish" + only-modify-required). Updated all memory + 38- evidence. Branch in sync. Same PR#396. polish_until_deadline continues. Game Feel + taste-gate + goal re-confirmed.
+- Direct execution fully addresses the explicit prior agent runner failure (status 143 + truncated thought stream in the work order prompt) + guard rules. Ready.

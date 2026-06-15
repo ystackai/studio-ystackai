@@ -99,3 +99,9 @@ Visual feedback from overnight monitor: factory-management theme is clear, but s
 - Harness PASS 0 errors; chromium 37- clean render of entrypoint; syntax PASS.
 - Small polish (escalating last-30s of timer: faster fires+queues + timer pulse) makes the "under pressure" climax concrete and arcade-rewarding for skilled play (ext+route+patrol chaining in the hot zone for max FLOW/score before timer or containment fail). No regression on early 30s discoverability or core loop.
 - Game Feel/taste-gate/goal re-confirmed. Updated notes + 37- png + game. Same branch. ~3.7h left. Ready.
+
+**Re-verify 38- (direct sourced, ~10:49Z, post-37- polish, addresses 143/truncation explicitly before any further polish):**
+- PR inspected (OPEN, checks green, head current), direct sourced shell (no zellij, full context).
+- Harness PASS 0 errors; chromium 38- clean render of entrypoint (91kB); syntax PASS (~49.5kB).
+- Re-confirm: core verb <20s on visible first screen (demo routing/fires/conveyors + dynamic colored prompt); all Game Feel items; taste-gate; software-factory arcade (juggle route/ext/secure/ship under escalating final-sprint pressure + integrity fail) intact. No regression.
+- No code change this pass. Updated notes + 38- png. Same branch/PR#396. ~3.6h left. Ready for human gate.
