@@ -695,6 +695,10 @@ function drawPlayer(t){
     // Body
     ctx.fillStyle='#00e5ff';ctx.beginPath();ctx.arc(cx,cy+bob,10,0,Math.PI*2);ctx.fill();
     
+    // Utility pack (factory agent kit)
+    ctx.fillStyle='#007788';ctx.fillRect(cx-4,cy+bob+2,8,7);
+    ctx.fillStyle='#00aabb';ctx.fillRect(cx-3,cy+bob+3,2,2);ctx.fillRect(cx+1,cy+bob+3,2,2);
+    
     // Helmet
     ctx.fillStyle='#0099aa';ctx.beginPath();ctx.arc(cx,cy+bob-3,8,Math.PI,0);ctx.fill();
     
@@ -711,6 +715,16 @@ function drawPlayer(t){
         ctx.moveTo(cx-3,cy+bob+10);ctx.lineTo(cx-3+lp*3,cy+bob+16);
         ctx.moveTo(cx+3,cy+bob+10);ctx.lineTo(cx+3-lp*3,cy+bob+16);
         ctx.stroke();
+    }
+    
+    // Action-ready pip (visual affordance for core verb: lights when ▶ prompt active / near station)
+    const pAdj=findAdjacent(player.x,player.y);
+    const nearActionable = pAdj.some(a=>{ const s=getStationAt(a.x,a.y); return s && (s.hasFire || (s.hasBuild&&!s.hasFire) || s.type===T_SEC); });
+    if(nearActionable){
+        const ap=Math.sin(t*18)*0.5+0.5;
+        ctx.strokeStyle='rgba(68,255,68,'+(0.5+ap*0.5)+')';ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.arc(cx,cy+bob,14,0,Math.PI*2);ctx.stroke();
+        ctx.lineWidth=1;
     }
 }
 
@@ -761,6 +775,13 @@ function drawConveyors(t){
         ctx.lineDashOffset = -(phase * 28);
         ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
         ctx.lineDashOffset=0; ctx.lineWidth=1.5; ctx.strokeStyle='rgba(0,229,255,0.08)';
+        // passive signal pips: always-visible idle traffic showing the production infrastructure is live (even with no active builds)
+        ctx.fillStyle='rgba(0,229,255,0.35)';
+        for(let k=0;k<3;k++){
+            const p = (phase + k*0.33) % 1;
+            const px = x1 + (x2-x1)*p, py = y1 + (y2-y1)*p;
+            ctx.beginPath();ctx.arc(px,py,1.8,0,Math.PI*2);ctx.fill();
+        }
     }
     ctx.setLineDash([]);
 }
@@ -916,6 +937,14 @@ function titleLoop(ts){
         if(!best&&tships.length)best=tships[0]; if(!best)continue;
         const x1=b.x*CELL+CELL/2,y1=b.y*CELL+CELL/2,x2=best.x*CELL+CELL/2,y2=best.y*CELL+CELL/2;
         ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+        // passive signal pips on title (live production floor routing visible immediately on first screen)
+        ctx.fillStyle='rgba(0,229,255,0.22)';
+        const tphase = ((ts/1000)||0)*0.9 % 1;
+        for(let k=0;k<2;k++){
+            const p = (tphase + k*0.4) % 1;
+            const px = x1 + (x2-x1)*p, py = y1 + (y2-y1)*p;
+            ctx.beginPath();ctx.arc(px,py,1.5,0,Math.PI*2);ctx.fill();
+        }
     }
     ctx.setLineDash([]);
     // stations (faded but now visible through 0.58 overlay)
