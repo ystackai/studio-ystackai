@@ -184,7 +184,7 @@ var shiftLost=false; // set when avg health collapses (early fail)
 var stations=[],particles=[],floatingTexts=[],transits=[];
 var lastFireTick=0,lastQueueTick=0,nextFireSpawn=FIRE_SPAWN_MIN,fireSpawnTimer=FIRE_SPAWN_MIN;
 var shakeTimer=0,shakeIntensity=0,timerInterval=null,animFrame=null,lastFrameTime=0;
-var processCooldown=0,hasShownHint=false;
+var processCooldown=0,hasShownHint=false,flowUntil=0;
 
 function createStation(x,y,type){
     return{x,y,type,health:100,hasBuild:false,hasFire:false,fireHealth:0,
@@ -290,7 +290,7 @@ function spreadFire(){
         const adj=findAdjacent(fire.x,fire.y);
         for(const a of adj){
             const target=getStationAt(a.x,a.y);
-            if(target&&!target.hasFire&&target.health>0&&Math.random()<0.25){
+            if(target&&!target.hasFire&&target.health>0&&Math.random()<(0.24+wave*0.015)){
                 target.hasFire=true;target.fireHealth=0;target.flashTimer=0.2;
                 spawnParticles(a.x,a.y,'#ff4422',5,1.5);
             }
@@ -306,7 +306,7 @@ function extinguishNearby(){
         if(s&&s.hasFire){
             s.hasFire=false;s.fireHealth=0;s.flashTimer=0.4;
             s.health=Math.min(100,s.health+10);
-            const pts=50*wave;score+=pts;ex=true;
+            const ptsBase=50*wave; const pts=(performance.now()<flowUntil+80?Math.floor(ptsBase*1.2):ptsBase); score+=pts; ex=true; if(performance.now()<flowUntil+80) spawnFT(cell.x,cell.y,'FLOW!','#ffdd44');
             sfxExtinguish();
             spawnParticles(cell.x,cell.y,'#44ddff',12,3);
             spawnParticles(cell.x,cell.y,'#ffffff',6,2);
@@ -314,16 +314,17 @@ function extinguishNearby(){
             lastIncidentsExtinguished++;
         }
     }
-    if(ex){shakeTimer=0.15;shakeIntensity=3;}
+    if(ex){shakeTimer=0.15;shakeIntensity=3; flowUntil=performance.now()+2800; }
 }
 
 // ─── UNIFIED ACTION (readable controls: one verb for the prompt) ───
 function doAction(){
     if(gameState!=='playing')return;
+    const wasFlow = performance.now() < flowUntil;
     // Priority 1: extinguish (urgent)
     const beforeExt = lastIncidentsExtinguished;
     extinguishNearby();
-    if(lastIncidentsExtinguished > beforeExt) return; // did something
+    if(lastIncidentsExtinguished > beforeExt){ flowUntil=performance.now()+2800; return; } // did something (flow window for next verb)
 
     // Priority 2: process a build if adjacent (instant boost)
     const hadBuilds = buildsShipped;
@@ -337,7 +338,7 @@ function doAction(){
             break;
         }
     }
-    if(didProc) return;
+    if(didProc){ flowUntil=performance.now()+2800; return; }
 
     // Priority 3: security secure/patrol (advance the timer or re-arm)
     for(const a of pAdj){
@@ -349,7 +350,7 @@ function doAction(){
                 const req = Math.max(0.8,2.8-wave*0.25);
                 if(s.secTimer >= req){
                     s.secured=true; s.secTimer=0; s.secLevel=4;
-                    const pts=30*wave; score+=pts; secretsSecured++;
+                    const ptsBase=30*wave; const pts=(performance.now()<flowUntil+80?Math.floor(ptsBase*1.2):ptsBase); score+=pts; secretsSecured++; if(performance.now()<flowUntil+80) spawnFT(s.x,s.y,'FLOW!','#ffdd44');
                     sfxSecret();
                     spawnParticles(s.x,s.y,'#8888ff',15,3);
                     spawnParticles(s.x,s.y,'#ffbb33',10,2);
@@ -359,12 +360,12 @@ function doAction(){
                 }
             } else if(s.secLevel < 3.5){
                 s.secLevel = Math.min(5, s.secLevel + 2.5);
-                const pts=8*wave; score+=pts;
-                spawnFT(s.x,s.y,'+'+pts,'#8888ff');
+                const ptsBase=8*wave; const pts=(performance.now()<flowUntil+80?Math.floor(ptsBase*1.2):ptsBase); score+=pts;
+                spawnFT(s.x,s.y,'+'+pts+(performance.now()<flowUntil+80?' FLOW':'') ,'#8888ff');
                 sfxSecret();
             }
             shakeTimer=0.08; shakeIntensity=1.5;
-            return;
+            flowUntil=performance.now()+2800; return;
         }
     }
     // Fallback: just a little pulse feedback if standing on empty
@@ -398,8 +399,8 @@ function processBuilds(){
                 const t=getStationAt(a.x,a.y);
                 if(t&&t.type===T_TEST&&!t.hasBuild&&!t.hasFire){
                     t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
-                    score+=15;sfxProcess();
-                    spawnFT(s.x,s.y,'To TEST','#44ff44');
+                    const p15=(performance.now()<flowUntil+80?Math.floor(15*1.2):15); score+=p15; sfxProcess();
+                    spawnFT(s.x,s.y,'To TEST'+(performance.now()<flowUntil+80?' FLOW':'') ,'#44ff44');
                     spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
                     anyProcessed=true;break;
                 }
@@ -410,20 +411,20 @@ function processBuilds(){
                 const t=getStationAt(a.x,a.y);
                 if(t&&t.type===T_SHIP&&!t.hasBuild&&!t.hasFire){
                     t.hasBuild=true;s.hasBuild=false;s.processAnim=0.5;t.processAnim=0.5;
-                    score+=25;sfxProcess();
-                    spawnFT(s.x,s.y,'To SHIP','#44ff44');
+                    const p25=(performance.now()<flowUntil+80?Math.floor(25*1.2):25); score+=p25;sfxProcess();
+                    spawnFT(s.x,s.y,'To SHIP'+(performance.now()<flowUntil+80?' FLOW':'') ,'#44ff44');
                     spawnTransit(s.x,s.y,t.x,t.y,'#44ff44');
                     anyProcessed=true;break;
                 }
             }
         } else if(s.type===T_SHIP){
             s.hasBuild=false;
-            const pts=30*wave;score+=pts;buildsShipped++;
+            const ptsBase=30*wave; const pts=(performance.now()<flowUntil+80?Math.floor(ptsBase*1.2):ptsBase);score+=pts;buildsShipped++;
             s.processAnim=0.5;
             sfxShip();
             spawnParticles(s.x,s.y,'#aa66ff',10,2);
             spawnParticles(s.x,s.y,'#ffdd44',8,2);
-            spawnFT(s.x,s.y,'SHIPPED! +'+pts,'#aa66ff');
+            spawnFT(s.x,s.y,'SHIPPED! +'+pts+(performance.now()<flowUntil+80?' FLOW':'') ,'#aa66ff');
             anyProcessed=true;break;
         }
         if(anyProcessed)break;
@@ -826,7 +827,7 @@ function gameLoop(timestamp){
     if(timestamp-lastFireTick>Math.max(1500,FIRE_TICK_RATE-wave*100)){
         lastFireTick=timestamp;spreadFire();
         for(const s of stations){
-            if(s.hasFire){s.health=Math.max(0,s.health-(2+wave));
+            if(s.hasFire){s.health=Math.max(0,s.health-(2.5+wave*1.1));
                 if(s.health<=0){s.hasFire=false;score=Math.max(0,score-100);
                     spawnFT(s.x,s.y,'DESTROYED!','#ff3333');
                     spawnParticles(s.x,s.y,'#ff2200',20,4);sfxDeath();shakeTimer=0.5;shakeIntensity=8;}
@@ -868,15 +869,21 @@ function gameLoop(timestamp){
         }
     }
     if(promptText){
-        processPrompt.textContent='▶ '+promptText;
+        const flowNow = performance.now() < flowUntil;
+        let pHtml = '▶ '+promptText;
+        if(flowNow) pHtml += ' <span style="font-size:10px;color:#ffdd44;border:1px solid #ffdd44;padding:0 3px;border-radius:2px">FLOW</span>';
+        processPrompt.innerHTML = pHtml;
         // verb-specific color for readable urgency (red=extinguish fire incident under pressure; cyan=route builds; purple=patrol secrets)
         if(promptText==='EXTINGUISH') processPrompt.style.color='#ff6644';
         else if(promptText==='PROCESS BUILD') processPrompt.style.color='#00e5ff';
         else processPrompt.style.color='#a78bfa';
         processPrompt.classList.add('show');
+        if(mobileExt) mobileExt.innerHTML = (promptText==='EXTINGUISH'?'&#128293;EXT':promptText==='PROCESS BUILD'?'&#9654;ROUTE':promptText==='SECURE'?'&#128274;SEC':'&#128274;PAT') + '<br>SPACE';
     } else {
         processPrompt.classList.remove('show');
         processPrompt.style.color='#44ff44';
+        processPrompt.innerHTML = '&#9654; STATION READY';
+        if(mobileExt) mobileExt.innerHTML = '&#129327;<br>ACTION';
     }
     
     animFrame=requestAnimationFrame(gameLoop);
