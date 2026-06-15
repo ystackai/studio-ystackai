@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Factory Firebreak — ystackai</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a12;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#e2e8f0;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#game-container{display:flex;flex-direction:column;height:100vh;width:100vw;max-width:100vw}
+#hud{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(10,10,18,0.95);border-bottom:1px solid rgba(99,102,241,0.2);z-index:10;min-height:48px;flex-shrink:0}
+.hud-section{display:flex;align-items:center;gap:6px}
+.hud-label{font-size:0.7rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
+.hud-value{font-size:1rem;font-weight:800;color:#e2e8f0}
+#health-bar-wrap{width:120px;height:14px;background:#1a1a2e;border-radius:7px;overflow:hidden;border:1px solid rgba(99,102,241,0.2)}
+#health-bar{height:100%;width:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:7px;transition:width 0.3s ease,background 0.3s ease}
+#health-bar.low{background:linear-gradient(90deg,#ef4444,#f87171)}
+#health-bar.medium{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+#score-display{font-size:1.2rem;font-weight:900;color:#e2e8f0;font-variant-numeric:tabular-nums}
+#combo-display{font-size:0.75rem;font-weight:700;color:#f59e0b;opacity:0;transition:opacity 0.2s}
+#combo-display.show{opacity:1}
+#mute-btn{background:none;border:1px solid rgba(99,102,241,0.3);border-radius:6px;padding:6px 10px;color:#94a3b8;font-size:0.85rem;cursor:pointer;transition:all 0.15s}
+#mute-btn:hover{color:#6366f1;border-color:#6366f1;background:rgba(99,102,241,0.08)}
+#canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+canvas{display:block;background:#0f0f1a}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:rgba(10,10,18,0.95);transition:opacity 0.3s ease}
+#overlay.hidden{opacity:0;pointer-events:none}
+#overlay h1{font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#a5b4fc,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:0.5rem;text-align:center}
+#overlay .subtitle{color:#94a3b8;font-size:0.9rem;margin-bottom:1.5rem;text-align:center;padding:0 1rem}
+.btn-play{padding:14px 40px;font-size:1.1rem;font-weight:700;background:#6366f1;color:#fff;border:none;border-radius:10px;cursor:pointer;transition:all 0.15s;letter-spacing:0.02em}
+.btn-play:hover{background:#4f46e5;transform:translateY(-1px);box-shadow:0 4px 20px rgba(99,102,241,0.3)}
+.btn-play:active{transform:translateY(0)}
+.overlay-stats{margin-top:1rem;text-align:center;color:#64748b;font-size:0.85rem}
+.overlay-stats strong{color:#e2e8f0}
+#wave-announce{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2rem;font-weight:900;color:#e2e8f0;text-shadow:0 0 30px rgba(99,102,241,0.5);opacity:0;pointer-events:none;z-index:50;transition:opacity 0.3s}
+#wave-announce.show{opacity:1}
+.incident-type-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:700;text-transform:uppercase;margin-top:4px}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div id="hud">
+    <div class="hud-section">
+      <span class="hud-label">HP</span>
+      <div id="health-bar-wrap"><div id="health-bar"></div></div>
+      <span id="health-text" class="hud-value" style="font-size:0.8rem">100</span>
+    </div>
+    <div class="hud-section">
+      <span id="score-display" class="hud-value">0</span>
+      <div id="combo-display">x1 COMBO</div>
+    </div>
+    <div class="hud-section">
+      <span class="hud-label">Wave</span>
+      <span id="wave-display" class="hud-value">1</span>
+      <button id="mute-btn" aria-label="Toggle sound">🔊</button>
+    </div>
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="game-canvas"></canvas>
+  </div>
+</div>
+
+<div id="overlay">
+  <h1>🔥 Factory Firebreak</h1>
+  <div class="subtitle">Keep the ystackai factory alive. Click fires to send workers. Don't let it all burn down.</div>
+  <button class="btn-play" id="btn-start">▶ START SHIFT</button>
+  <div class="overlay-stats" id="overlay-stats"></div>
+</div>
+
+<div id="wave-announce"></div>
+
+<script>
+(function(){
+'use strict';
+
+// ─── CONSTANTS ──────────────────────────────────────────────────────
+const COLS = 8, ROWS = 6;
+const STATION_ICONS = ['🧠','🔬','📊','💾','⚙️','🔗','📡','🛡️'];
+const STATION_NAMES = ['ML','Research','Analytics','Storage','Build','API','Net','Shield'];
+const WORKER_COLORS = ['#818cf8','#fbbf24','#f43f5e','#34d399','#38bdf8','#c084fc'];
+const WORKER_ICONS = ['👩‍💻','👨‍🔧','🤖','👩‍🔬','👷','🧑‍💻'];
+const INCIDENT_TYPES = {
+  FIRE:      { id:'FIRE',       icon:'🔥', color:'#ef4444', glowColor:'#f97316', duration:3000, workers:1, score:100, label:'Bug Fire' },
+  LEAK:      { id:'LEAK',       icon:'🔒', color:'#f97316', glowColor:'#eab308', duration:4000, workers:1, score:150, label:'Secret Leak' },
+  OVERLOAD:  { id:'OVERLOAD',   icon:'⚡', color:'#fbbf24', glowColor:'#fde047', duration:3500, workers:2, score:200, label:'GPU Overload' },
+  BROKEN:    { id:'BROKEN',     icon:'🐛', color:'#a855f7', glowColor:'#c084fc', duration:4500, workers:1, score:175, label:'Broken PO' },
+  CASCADE:   { id:'CASCADE',    icon:'💀', color:'#dc2626', glowColor:'#991b1b', duration:5000, workers:2, score:400, label:'Cascade' }
+};
+const INCIDENT_SPAWN_CHANCE = { FIRE:0.45, LEAK:0.25, OVERLOAD:0.15, BROKEN:0.12, CASCADE:0.03 };
+
+// ─── CANVAS SETUP ──────────────────────────────────────────────────
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, cellW, cellH, gridX, gridY;
+
+function resizeCanvas(){
+  const wrap = document.getElementById('canvas-wrap');
+  const maxW = wrap.clientWidth;
+  const maxH = wrap.clientHeight;
+  const aspect = COLS / ROWS;
+  let w, h;
+  if (maxW / maxH > aspect) {
+    h = maxH; w = h * aspect;
+  } else {
+    w = maxW; h = w / aspect;
+  }
+  W = Math.floor(w); H = Math.floor(h);
+  canvas.width = W; canvas.height = H;
+  cellW = W / COLS; cellH = H / ROWS;
+  gridX = 0; gridY = 0;
+}
+
+// ─── AUDIO ENGINE ──────────────────────────────────────────────────
+let audioCtx = null;
+let masterGain = null;
+let muted = false;
+let audioStarted = false;
+
+function initAudio(){
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.connect(audioCtx.destination);
+  masterGain.gain.value = 0.5;
+  audioStarted = true;
+}
+
+function playTone(freq, duration, type, vol, detune){
+  if (!audioCtx || muted) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type || 'sine';
+  o.frequency.value = freq;
+  if (detune) o.detune.value = detune;
+  g.gain.setValueAtTime(vol || 0.15, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  o.connect(g); g.connect(masterGain);
+  o.start(); o.stop(audioCtx.currentTime + duration);
+}
+
+function sfxSpawn(){ playTone(600, 0.15, 'sine', 0.1, 200); }
+function sfxAssign(){ playTone(220, 0.1, 'triangle', 0.12); }
+function sfxResolve(combo){
+  const base = 440 + combo * 40;
+  playTone(base, 0.12, 'sine', 0.18);
+  setTimeout(()=> playTone(base * 1.25, 0.15, 'sine', 0.15), 60);
+}
+function sfxDamage(){ playTone(120, 0.3, 'sawtooth', 0.2, -100); }
+function sfxGameOver(){
+  [0,100,200,300,400].forEach((d,i)=>{
+    setTimeout(()=> playTone(400 - i*60, 0.2, 'sawtooth', 0.15, 0), d);
+  });
+}
+function sfxWave(){ playTone(523, 0.1, 'sine', 0.1); setTimeout(()=> playTone(659, 0.1, 'sine', 0.1), 100); setTimeout(()=> playTone(784, 0.15, 'sine', 0.12), 200); }
+
+// ─── GAME STATE ────────────────────────────────────────────────────
+let state = 'menu'; // menu, playing, gameover
+let health = 100;
+let score = 0;
+let highScore = parseInt(localStorage.getItem('factoryFirebreak_highScore')||'0');
+let wave = 1;
+let combo = 0;
+let comboTimer = 0;
+let spawnTimer = 0;
+let waveTimer = 0;
+let stations = [];
+let workers = [];
+let incidents = [];
+let particles = [];
+let scorePopups = [];
+let shakeAmount = 0;
+let lastTime = 0;
+let waveAnnounceTimer = 0;
+
+function initStations(){
+  stations = [];
+  for (let r = 0; r < ROWS; r++){
+    stations[r] = [];
+    for (let c = 0; c < COLS; c++){
+      stations[r][c] = { col:c, row:r, icon:STATION_ICONS[r*COLS+c], name:STATION_NAMES[r*COLS+c], incident:null };
+    }
+  }
+}
+
+function initWorkers(count){
+  workers = [];
+  for (let i = 0; i < count; i++){
+    workers.push({
+      id: i,
+      color: WORKER_COLORS[i % WORKER_COLORS.length],
+      icon: WORKER_ICONS[i % WORKER_ICONS.length],
+      x: W/2 + (Math.random()-0.5)*W*0.5,
+      y: H/2 + (Math.random()-0.5)*H*0.3,
+      targetX: null, targetY: null,
+      assignedIncident: null,
+      workProgress: 0,
+      bobPhase: Math.random()*Math.PI*2,
+      size: Math.min(cellW, cellH)*0.25
+    });
+  }
+}
+
+function getSpawnInterval(){
+  return Math.max(1500, 4000 - wave * 250);
+}
+
+function getMaxIncidents(){
+  return Math.min(12, 4 + Math.floor(wave * 0.8));
+}
+
+function getWaveHealthCost(){
+  return Math.min(20, 8 + wave);
+}
+
+// ─── INCIDENT SPAWNING ─────────────────────────────────────────────
+function spawnIncident(){
+  const occupied = stations.flat().filter(s=>s.incident).length;
+  const maxInc = getMaxIncidents();
+  if (occupied >= maxInc) return;
+
+  const freeStations = stations.flat().filter(s=>!s.incident);
+  if (freeStations.length === 0) return;
+
+  // Weighted random type based on wave
+  const availableTypes = ['FIRE','LEAK'];
+  if (wave >= 2) availableTypes.push('OVERLOAD');
+  if (wave >= 3) availableTypes.push('BROKEN');
+  if (wave >= 4 && Math.random() < INCIDENT_SPAWN_CHANCE.CASCADE) availableTypes.push('CASCADE');
+
+  const typeKey = availableTypes[Math.floor(Math.random()*availableTypes.length)];
+  const type = INCIDENT_TYPES[typeKey];
+  const station = freeStations[Math.floor(Math.random()*freeStations.length)];
+
+  station.incident = {
+    ...type,
+    station: station,
+    timeLeft: type.duration,
+    maxTime: type.duration,
+    progress: 0, // work progress (0 to 1)
+    assignedWorkers: 0,
+    spawnTime: performance.now()
+  };
+  sfxSpawn();
+}
+
+// ─── PARTICLES ─────────────────────────────────────────────────────
+function spawnParticles(x, y, color, count, spread){
+  for (let i = 0; i < count && particles.length < 200; i++){
+    particles.push({
+      x, y,
+      vx: (Math.random()-0.5)*spread,
+      vy: (Math.random()-0.5)*spread - 1,
+      life: 0.6 + Math.random()*0.4,
+      maxLife: 0.6 + Math.random()*0.4,
+      color: color,
+      size: 2 + Math.random()*4
+    });
+  }
+}
+
+function updateParticles(dt){
+  for (let i = particles.length-1; i >= 0; i--){
+    const p = particles[i];
+    p.x += p.vx * dt * 60;
+    p.y += p.vy * dt * 60;
+    p.vy -= 0.5 * dt * 60;
+    p.life -= dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function drawParticles(ctx){
+  for (const p of particles){
+    const alpha = Math.max(0, p.life / p.maxLife);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ─── SCORE POPUPS ──────────────────────────────────────────────────
+function addScorePopup(x, y, text, color){
+  scorePopups.push({ x, y, text, color, life: 1.2, maxLife: 1.2, vy: -1.5 });
+}
+
+function updateScorePopups(dt){
+  for (let i = scorePopups.length-1; i >= 0; i--){
+    const p = scorePopups[i];
+    p.y += p.vy * dt * 60;
+    p.life -= dt;
+    if (p.life <= 0) scorePopups.splice(i, 1);
+  }
+}
+
+function drawScorePopups(ctx){
+  ctx.textAlign = 'center';
+  for (const p of scorePopups){
+    const alpha = Math.min(1, p.life / (p.maxLife*0.3));
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.font = `bold ${Math.max(14, cellW*0.25)}px -apple-system, sans-serif`;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 10;
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.shadowBlur = 0;
+  }
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+}
+
+// ─── WORKER LOGIC ──────────────────────────────────────────────────
+function updateWorkers(dt, now){
+  for (const w of workers){
+    w.bobPhase += dt * 3;
+
+    if (w.assignedIncident){
+      // Moving toward target?
+      if (w.targetX !== null){
+        const dx = w.targetX - w.x;
+        const dy = w.targetY - w.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist > 2){
+          const speed = 300 * dt;
+          w.x += (dx/dist) * Math.min(speed, dist);
+          w.y += (dy/dist) * Math.min(speed, dist);
+        } else {
+          w.x = w.targetX; w.y = w.targetY;
+          w.targetX = null; w.targetY = null;
+        }
+      }
+      // Working on incident
+      const inc = w.assignedIncident;
+      if (!inc || inc.removed){
+        w.assignedIncident = null;
+        w.workProgress = 0;
+      } else {
+        const workRate = 1 / (inc.maxTime / 1000);
+        w.workProgress += workRate * dt;
+        if (w.workProgress >= 1){
+          inc.progress += 1/inc.assignedWorkers;
+          w.workProgress = 0;
+          w.assignedIncident = null;
+          if (inc.progress >= 1){
+            resolveIncident(inc);
+          }
+        }
+      }
+    } else {
+      // Wander back to center-ish area
+      if (w.targetX === null){
+        const baseX = W*0.2 + Math.random()*W*0.6;
+        const baseY = H*0.2 + Math.random()*H*0.6;
+        w.targetX = baseX; w.targetY = baseY;
+      }
+      const dx = w.targetX - w.x;
+      const dy = w.targetY - w.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > 2){
+        const speed = 80 * dt;
+        w.x += (dx/dist)*Math.min(speed, dist);
+        w.y += (dy/dist)*Math.min(speed, dist);
+      }
+    }
+  }
+}
+
+function assignWorkerToIncident(incident){
+  // Find nearest free worker
+  let best = null, bestDist = Infinity;
+  for (const w of workers){
+    if (w.assignedIncident) continue;
+    const cx = incident.station.col * cellW + cellW/2;
+    const cy = incident.station.row * cellH + cellH/2;
+    const d = Math.sqrt((w.x-cx)**2 + (w.y-cy)**2);
+    if (d < bestDist){ bestDist = d; best = w; }
+  }
+  if (!best) return false;
+  best.targetX = cx; best.targetY = cy;
+  best.assignedIncident = incident;
+  incident.assignedWorkers++;
+  sfxAssign();
+  return true;
+}
+
+function resolveIncident(incident){
+  incident.removed = true;
+  const cx = incident.station.col * cellW + cellW/2;
+  const cy = incident.station.row * cellH + cellH/2;
+
+  // Combo system
+  combo++;
+  comboTimer = 3;
+  const multiplier = Math.min(combo, 5);
+  const earned = incident.score * multiplier;
+  score += earned;
+
+  // Visual feedback
+  spawnParticles(cx, cy, incident.color, 20, 4);
+  spawnParticles(cx, cy, '#fbbf24', 10, 3);
+  addScorePopup(cx, cy - 20, '+' + earned, '#fbbf24');
+  if (combo > 1){
+    addScorePopup(cx, cy - 45, 'x' + multiplier + ' COMBO', '#818cf8');
+  }
+
+  // Audio feedback
+  sfxResolve(combo);
+
+  // Heal a tiny bit
+  health = Math.min(100, health + 1);
+
+  // Clean up
+  incident.station.incident = null;
+  incident.station = null;
+
+  // Screen shake
+  shakeAmount = Math.min(8, 3 + multiplier);
+
+  updateHUD();
+}
+
+function damagePlayer(amount){
+  health -= amount;
+  shakeAmount = Math.max(shakeAmount, 5);
+  sfxDamage();
+  updateHUD();
+  if (health <= 0){
+    health = 0;
+    gameOver();
+  }
+}
+
+// ─── INCIDENT UPDATE ───────────────────────────────────────────────
+function updateIncidents(dt, now){
+  for (let i = incidents.length-1; i >= 0; i--){
+    const inc = incidents[i];
+    if (inc.removed){
+      incidents.splice(i, 1);
+      continue;
+    }
+    // Timer only runs when not enough workers assigned
+    if (inc.assignedWorkers < inc.workers){
+      inc.timeLeft -= dt * 1000;
+      if (inc.timeLeft <= 0){
+        // Incident exploded
+        spawnParticles(
+          inc.station.col*cellW+cellW/2,
+          inc.station.row*cellH+cellH/2,
+          '#ef4444', 25, 5
+        );
+        damagePlayer(getWaveHealthCost());
+        combo = 0;
+        inc.station.incident = null;
+        inc.station = null;
+      }
+    }
+  }
+}
+
+// ─── WAVE SYSTEM ───────────────────────────────────────────────────
+function advanceWave(){
+  wave++;
+  waveTimer = 0;
+  sfxWave();
+  const el = document.getElementById('wave-announce');
+  el.textContent = '⚡ Wave ' + wave;
+  el.classList.add('show');
+  waveAnnounceTimer = 1.5;
+  // Add workers as waves progress
+  if (wave <= 3){
+    initWorkers(3 + wave);
+  }
+  updateHUD();
+}
+
+// ─── GAME FLOW ─────────────────────────────────────────────────────
+function startGame(){
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+  health = 100;
+  score = 0;
+  wave = 1;
+  combo = 0;
+  comboTimer = 0;
+  spawnTimer = 0;
+  waveTimer = 0;
+  incidents = [];
+  particles = [];
+  scorePopups = [];
+  shakeAmount = 0;
+
+  initStations();
+  initWorkers(4);
+
+  state = 'playing';
+  document.getElementById('overlay').classList.add('hidden');
+  updateHUD();
+  sfxWave();
+  const el = document.getElementById('wave-announce');
+  el.textContent = '⚡ Wave 1';
+  el.classList.add('show');
+  waveAnnounceTimer = 1.5;
+}
+
+function gameOver(){
+  state = 'gameover';
+  sfxGameOver();
+  if (score > highScore){
+    highScore = score;
+    localStorage.setItem('factoryFirebreak_highScore', highScore);
+  }
+  const overlay = document.getElementById('overlay');
+  overlay.classList.remove('hidden');
+  overlay.querySelector('h1').textContent = '💀 Factory Overrun';
+  overlay.querySelector('.subtitle').innerHTML =
+    'Your factory burned down on <strong>Wave ' + wave + '</strong>.<br>The models will remember this failure.';
+  document.getElementById('overlay-stats').innerHTML =
+    'Score: <strong>' + score + '</strong><br>High Score: <strong>' + highScore + '</strong>';
+  document.getElementById('btn-start').textContent = '↻ RETRY SHIFT';
+}
+
+function updateHUD(){
+  const hb = document.getElementById('health-bar');
+  hb.style.width = health + '%';
+  hb.className = health <= 30 ? 'low' : health <= 60 ? 'medium' : '';
+  document.getElementById('health-text').textContent = health;
+  document.getElementById('score-display').textContent = score.toLocaleString();
+  document.getElementById('wave-display').textContent = wave;
+
+  const comboEl = document.getElementById('combo-display');
+  if (combo > 1 && comboTimer > 0){
+    comboEl.textContent = 'x' + Math.min(combo,5) + ' COMBO';
+    comboEl.classList.add('show');
+  } else {
+    comboEl.classList.remove('show');
+  }
+}
+
+// ─── INPUT HANDLING ────────────────────────────────────────────────
+function handlePointerDown(ex, ey){
+  if (state !== 'playing') return;
+
+  // Convert to canvas coords
+  const rect = canvas.getBoundingClientRect();
+  const x = ex - rect.left;
+  const y = ey - rect.top;
+
+  // Scale to canvas coords
+  const cx = x * (canvas.width / rect.width);
+  const cy = y * (canvas.height / rect.height);
+
+  // Check if clicked on an incident
+  for (const inc of incidents){
+    if (inc.removed) continue;
+    const scx = inc.station.col * cellW + cellW/2;
+    const scy = inc.station.row * cellH + cellH/2;
+    const hitR = Math.max(cellW, cellH) * 0.6;
+    if ((cx-scx)**2 + (cy-scy)**2 < hitR*hitR){
+      // Assign nearest free worker
+      if (!assignWorkerToIncident(inc)){
+        // No workers available - show feedback
+        addScorePopup(scx, scy - 20, 'No workers!', '#94a3b8');
+      }
+      return;
+    }
+  }
+}
+
+canvas.addEventListener('pointerdown', function(e){
+  e.preventDefault();
+  handlePointerDown(e.clientX, e.clientY);
+});
+
+document.addEventListener('keydown', function(e){
+  if (state !== 'playing') return;
+  // Number keys 1-6 assign nearest worker to first fire
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 6){
+    const fire = incidents.find(i => !i.removed && i.workers <= num);
+    if (fire){
+      // Find nearest free worker
+      let best = null, bestDist = Infinity;
+      for (const w of workers){
+        if (w.assignedIncident) continue;
+        const cx = fire.station.col*cellW+cellW/2;
+        const cy = fire.station.row*cellH+cellH/2;
+        const d = Math.sqrt((w.x-cx)**2+(w.y-cy)**2);
+        if (d < bestDist){ bestDist=d; best=w; }
+      }
+      if (best){
+        best.targetX=cx; best.targetY=cy;
+        best.assignedIncident=fire;
+        fire.assignedWorkers++;
+        sfxAssign();
+      }
+    }
+  }
+  // Space to start game from overlay
+  if (e.key === ' ' || e.key === 'Enter'){
+    e.preventDefault();
+    if (state === 'menu' || state === 'gameover'){
+      startGame();
+    }
+  }
+});
+
+document.getElementById('btn-start').addEventListener('click', function(){
+  startGame();
+});
+
+document.getElementById('mute-btn').addEventListener('click', function(){
+  initAudio();
+  muted = !muted;
+  if (masterGain){
+    masterGain.gain.value = muted ? 0 : 0.5;
+  }
+  this.textContent = muted ? '🔇' : '🔊';
+});
+
+// ─── RENDERING ─────────────────────────────────────────────────────
+function drawGrid(ctx){
+  ctx.strokeStyle = 'rgba(99,102,241,0.08)';
+  ctx.lineWidth = 1;
+  for (let c=0; c<=COLS; c++){
+    const x = c*cellW + 0.5;
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+  }
+  for (let r=0; r<=ROWS; r++){
+    const y = r*cellH + 0.5;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  }
+}
+
+function drawStation(ctx, s, now){
+  const x = s.col*cellW;
+  const y = s.row*cellH;
+  const pad = 4;
+
+  // Station background
+  ctx.fillStyle = '#141420';
+  const r = 8;
+  ctx.beginPath();
+  ctx.roundRect(x+pad, y+pad, cellW-pad*2, cellH-pad*2, r);
+  ctx.fill();
+
+  // Station border glow
+  if (s.incident && !s.incident.removed){
+    const inc = s.incident;
+    const pulse = 0.5 + 0.5*Math.sin(now*0.005);
+    ctx.shadowColor = inc.color;
+    ctx.shadowBlur = 8 + pulse*6;
+    ctx.strokeStyle = inc.color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(x+pad, y+pad, cellW-pad*2, cellH-pad*2, r);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  } else {
+    ctx.strokeStyle = 'rgba(99,102,241,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(x+pad, y+pad, cellW-pad*2, cellH-pad*2, r);
+    ctx.stroke();
+  }
+
+  // Station icon
+  const fontSize = Math.min(cellW, cellH)*0.35;
+  ctx.font = fontSize + 'px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(s.icon, x+cellW/2, y+cellH*0.35);
+}
+
+function drawIncident(ctx, inc, now){
+  if (inc.removed) return;
+  const cx = inc.station.col*cellW+cellW/2;
+  const cy = inc.station.row*cellH+cellH/2;
+  const r = Math.min(cellW, cellH)*0.3;
+
+  // Pulse ring
+  const pulse = 0.5 + 0.5*Math.sin(now*0.006 + inc.spawnTime);
+  ctx.strokeStyle = inc.color;
+  ctx.globalAlpha = 0.3 + pulse*0.3;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 4 + pulse*4, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Timer bar
+  const barW = cellW*0.7;
+  const barH = 4;
+  const barX = cx - barW/2;
+  const barY = cy + r + 6;
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(barX, barY, barW, barH);
+  const pct = inc.timeLeft/inc.maxTime;
+  const barColor = pct > 0.5 ? '#22c55e' : pct > 0.25 ? '#f59e0b' : '#ef4444';
+  ctx.fillStyle = barColor;
+  ctx.fillRect(barX, barY, barW*pct, barH);
+
+  // Worker indicators (small dots above the station)
+  for (let i=0; i<inc.assignedWorkers; i++){
+    const dotX = cx - (inc.workers-1)*6 + i*12;
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.arc(dotX, cy - r - 8, 3, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Fire/explosion particles from station
+  if (Math.random() < 0.3){
+    const sparkX = cx + (Math.random()-0.5)*r*1.5;
+    const sparkY = cy + (Math.random()-0.5)*r*1.5;
+    spawnParticles(sparkX, sparkY, inc.color, 1, 1);
+  }
+}
+
+function drawWorker(ctx, w, now){
+  const bob = Math.sin(w.bobPhase)*2;
+  const x = w.x;
+  const y = w.y + bob;
+
+  // Glow
+  ctx.shadowColor = w.color;
+  ctx.shadowBlur = 10;
+
+  // Body circle
+  ctx.fillStyle = w.color;
+  ctx.beginPath();
+  ctx.arc(x, y, w.size, 0, Math.PI*2);
+  ctx.fill();
+
+  // Inner face
+  ctx.shadowBlur = 0;
+  const faceSize = w.size * 0.5;
+  ctx.font = (faceSize) + 'px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(w.icon, x, y);
+
+  // Worker label
+  ctx.font = '8px -apple-system, sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('W' + w.id, x, y + w.size + 8);
+
+  // If working, show progress arc
+  if (w.assignedIncident && w.assignedIncident.station){
+    const inc = w.assignedIncident;
+    const cx = inc.station.col*cellW+cellW/2;
+    const cy = inc.station.row*cellH+cellH/2;
+    // Draw small line from worker to station
+    ctx.strokeStyle = w.color;
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(cx, cy);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function draw(ctx, now){
+  // Clear
+  ctx.fillStyle = '#0a0a12';
+  ctx.fillRect(0, 0, W, H);
+
+  // Screen shake
+  ctx.save();
+  if (shakeAmount > 0){
+    ctx.translate(
+      (Math.random()-0.5)*shakeAmount,
+      (Math.random()-0.5)*shakeAmount
+    );
+    shakeAmount *= 0.9;
+    if (shakeAmount < 0.5) shakeAmount = 0;
+  }
+
+  // Grid
+  drawGrid(ctx);
+
+  // Stations
+  for (let r=0; r<ROWS; r++){
+    for (let c=0; c<COLS; c++){
+      drawStation(ctx, stations[r][c], now);
+    }
+  }
+
+  // Incidents (on top of stations)
+  for (const inc of incidents){
+    drawIncident(ctx, inc, now);
+  }
+
+  // Workers
+  for (const w of workers){
+    drawWorker(ctx, w, now);
+  }
+
+  // Particles
+  drawParticles(ctx);
+
+  // Score popups
+  drawScorePopups(ctx);
+
+  ctx.restore();
+}
+
+// ─── MAIN LOOP ─────────────────────────────────────────────────────
+function gameLoop(timestamp){
+  requestAnimationFrame(gameLoop);
+
+  if (!lastTime) lastTime = timestamp;
+  const dt = Math.min(0.1, (timestamp - lastTime)/1000);
+  lastTime = timestamp;
+
+  if (state === 'playing'){
+    // Spawn timer
+    spawnTimer += dt*1000;
+    if (spawnTimer >= getSpawnInterval()){
+      spawnTimer = 0;
+      spawnIncident();
+    }
+
+    // Wave timer
+    waveTimer += dt*1000;
+    if (waveTimer >= 30000){ // 30 seconds per wave
+      advanceWave();
+    }
+
+    // Combo timer
+    if (comboTimer > 0){
+      comboTimer -= dt;
+      if (comboTimer <= 0){ combo = 0; comboTimer = 0; }
+    }
+
+    // Wave announce timer
+    if (waveAnnounceTimer > 0){
+      waveAnnounceTimer -= dt;
+      if (waveAnnounceTimer <= 0){
+        document.getElementById('wave-announce').classList.remove('show');
+      }
+    }
+
+    updateIncidents(dt, timestamp);
+    updateWorkers(dt, timestamp);
+    updateParticles(dt);
+    updateScorePopups(dt);
+    updateHUD();
+  }
+
+  draw(ctx, timestamp);
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────
+function init(){
+  resizeCanvas();
+  initStations();
+  initWorkers(4);
+  updateHUD();
+
+  // Update high score display
+  if (highScore > 0){
+    document.getElementById('overlay-stats').innerHTML = 'High Score: <strong>' + highScore + '</strong>';
+  }
+
+  // Initial animation even on menu
+  requestAnimationFrame(gameLoop);
+}
+
+window.addEventListener('resize', function(){
+  resizeCanvas();
+  // Re-center workers
+  for (const w of workers){
+    if (w.targetX === null){
+      w.x = W*0.2 + Math.random()*W*0.6;
+      w.y = H*0.2 + Math.random()*H*0.6;
+    }
+  }
+});
+
+// Polyfill roundRect for older browsers
+if (!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+    if (typeof r === 'number') r = [r,r,r,r];
+    const [tl,tr,br,bl] = r;
+    this.moveTo(x+tl, y);
+    this.lineTo(x+w-tr, y);
+    this.quadraticCurveTo(x+w, y, x+w, y+tr);
+    this.lineTo(x+w, y+h-br);
+    this.quadraticCurveTo(x+w, y+h, x+w-br, y+h);
+    this.lineTo(x+bl, y+h);
+    this.quadraticCurveTo(x, y+h, x, y+h-bl);
+    this.lineTo(x, y+tl);
+    this.quadraticCurveTo(x, y, x+tl, y);
+    this.closePath();
+    return this;
+  };
+}
+
+init();
+})();
+</script>
+</body>
+</html>
