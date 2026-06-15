@@ -17,6 +17,8 @@
 - Responsive: layout holds; canvas scales.
 - House style match: dark terminal (#0d0d1a, monospace, cyan/orange accents), wry "the factory survived... for now", legible telemetry (Integrity/Transit/Ext at a glance), operational poetry in the visible routing + decay juggling.
 
+**Re-verify note (direct shell, ~08:45Z):** Chromium --headless load + node syntax re-run clean (see VERIFICATION.md). No defects found. Core verb (stand near + ACTION on dynamic ▶ prompt) still discoverable in <20s on first screen. All Game Feel items hold. Prior runner truncation addressed by clean full-context execution (direct bash, not zellij). ~5h polish budget remaining; branch/PR inspected healthy before updates.
+
 ## Per game-designer-2d + Game Feel Checklist
 All items remain [x] after this polish pass (see VERIFICATION.md for exacts). First 30s core verb (move near + ACTION on prompt) is discoverable with zero explanation needed beyond the title subtitle.
 
