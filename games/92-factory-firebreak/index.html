@@ -43,8 +43,8 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
 .legend-swatch{width:12px;height:12px;border-radius:2px;display:inline-block}
 #controls-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#4a4a6a;font-size:10px;z-index:10;text-align:center;white-space:nowrap;transition:opacity 2s ease}
 #controls-hint.fade{opacity:0}
-#process-prompt{position:absolute;top:55%;left:50%;transform:translate(-50%,-50%);color:#44ff44;font-size:14px;font-weight:700;z-index:12;pointer-events:none;opacity:0;transition:opacity 0.2s ease;text-shadow:0 0 10px rgba(68,255,68,0.5);background:rgba(10,10,20,0.65);padding:3px 10px;border-radius:3px;border:1px solid rgba(68,255,68,0.4)}
-#process-prompt.show{opacity:1}
+#process-prompt{position:absolute;top:55%;left:50%;transform:translate(-50%,-50%);color:#44ff44;font-size:14px;font-weight:700;z-index:12;pointer-events:none;opacity:0;transition:opacity 0.15s ease, transform 0.15s ease;text-shadow:0 0 10px rgba(68,255,68,0.5);background:rgba(10,10,20,0.65);padding:3px 10px;border-radius:3px;border:1px solid rgba(68,255,68,0.4)}
+#process-prompt.show{opacity:1; transform:translate(-50%,-52%) scale(1.02);}
 @media(pointer:coarse){#touch-controls{display:block}#mobile-extinguish{display:flex}#controls-hint{display:none}}
 @media(max-width:600px){#hud{font-size:11px;padding:6px 8px}.hud-value{font-size:13px}}
 </style>
@@ -867,8 +867,17 @@ function gameLoop(timestamp){
             if(s.type===T_SEC&&s.secured&&s.secLevel<2){promptText='PATROL';break;}
         }
     }
-    if(promptText){processPrompt.textContent='▶ '+promptText;processPrompt.classList.add('show');}
-    else{processPrompt.classList.remove('show');}
+    if(promptText){
+        processPrompt.textContent='▶ '+promptText;
+        // verb-specific color for readable urgency (red=extinguish fire incident under pressure; cyan=route builds; purple=patrol secrets)
+        if(promptText==='EXTINGUISH') processPrompt.style.color='#ff6644';
+        else if(promptText==='PROCESS BUILD') processPrompt.style.color='#00e5ff';
+        else processPrompt.style.color='#a78bfa';
+        processPrompt.classList.add('show');
+    } else {
+        processPrompt.classList.remove('show');
+        processPrompt.style.color='#44ff44';
+    }
     
     animFrame=requestAnimationFrame(gameLoop);
 }
