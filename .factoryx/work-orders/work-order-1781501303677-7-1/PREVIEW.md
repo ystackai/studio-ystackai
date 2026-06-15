@@ -27,6 +27,7 @@ https://github.com/ystackai/studio-ystackai/pull/396
 - `screenshots/07-title-browser-reset.png` (post redeploy/scrub reset re-verify, direct non-zellij sourced shell, 89.7KB chromium file:// of first screen)
 - `screenshots/08-title-browser-polish.png` (post improved scrolling conveyor dashes via lineDashOffset for visible live routing)
 - `screenshots/09-title-browser-final.png` (post mouse pointer controls + hint/subtitle polish for discoverability; clean chromium load)
+- `screenshots/10-title-browser-redeploy.png` (2026-06-15 ~09:06Z fresh chromium --headless --screenshot file:// of preview entrypoint post redeploy/scrub reset re-verify in direct non-zellij sourced shell; 90.3KB PNG, zero pageerror/console during titleLoop + live board render; confirms first screen + core verbs still clean pre-deadline)
 
 Title screen: dark terminal aesthetic (monospace, #0d0d1a, cyan #00e5ff / orange accents matching ystackai house style) with animated ember particles, live station grid, faint conveyors, demo transits and flickering fires visible through the semi-transparent overlay (per monitor feedback) + legend + START SHIFT button. The production floor and core verbs are visible immediately.
 
