@@ -365,7 +365,7 @@ function spreadFire(){
                 // directed ember particles FROM the spreading fire toward new cell — visual spreading hazard animation (crawling firebreak, amplified)
                 const fx=fire.x*CELL+CELL/2, fy=fire.y*CELL+CELL/2;
                 const tx=a.x*CELL+CELL/2, ty=a.y*CELL+CELL/2;
-                for(let k=0;k<15;k++){
+                for(let k=0;k<18;k++){
                     const ang = Math.atan2(ty-fy, tx-fx) + (Math.random()-0.5)*0.85;
                     particles.push({x:fx+ (Math.random()-0.5)*7, y:fy+(Math.random()-0.5)*7, vx:Math.cos(ang)*(2.9+Math.random()*1.6), vy:Math.sin(ang)*(2.9+Math.random()*1.6), life:0.9+Math.random()*0.55, decay:0.03, color:'#ff6622', size:2.0+Math.random()});
                 }
@@ -390,7 +390,7 @@ function extinguishNearby(){
             sfxExtinguish();
             // animated intervention: spray from player position toward fire (physical rescue reach, stronger arcade feedback, more particles)
             const pcx=px*CELL+CELL/2, pcy=py*CELL+CELL/2+ (player.moving?Math.sin(performance.now()/120)*1.5:0);
-            for(let k=0;k<22;k++){
+            for(let k=0;k<26;k++){
               const ang = Math.atan2((cell.y*CELL+CELL/2)-pcy, (cell.x*CELL+CELL/2)-pcx) + (Math.random()-0.5)*0.6;
               particles.push({x:pcx,y:pcy, vx:Math.cos(ang)*(3.6+Math.random()*0.8), vy:Math.sin(ang)*(3.6+Math.random()*0.8), life:0.66+Math.random()*0.32, decay:0.036, color:'#aaddff', size:2.6+Math.random()*1.8});
             }
@@ -877,9 +877,9 @@ function drawPlayer(t){
     ctx.fillStyle='rgba(0,229,255,0.16)';ctx.beginPath();ctx.arc(cx,cy,42,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='rgba(0,229,255,'+(0.48+actPulse*0.32)+')';ctx.beginPath();ctx.arc(cx,cy+bob,58,0,Math.PI*2);ctx.fill();
     
-    // FILE-BACKED HERO: use authored 32x32 player-agent.png sprite when ready (replaces vector blob per asset contract) — drawn larger for obvious worker avatar focal
+    // FILE-BACKED HERO: use authored 32x32 player-agent.png sprite when ready (replaces vector blob per asset contract) — drawn larger/focal for obvious worker avatar + rescue focal point (per contact-sheet + playtest)
     if(playerSprite && playerSprite.complete){
-        ctx.drawImage(playerSprite, cx-21, cy-21 + bob, 42, 42);
+        ctx.drawImage(playerSprite, cx-23, cy-23 + bob, 46, 46);
     } else {
         // fallback (only until data: decode; first frame still playable)
         ctx.fillStyle='#00f8ff';ctx.beginPath();ctx.arc(cx,cy+bob,24,0,Math.PI*2);ctx.fill();

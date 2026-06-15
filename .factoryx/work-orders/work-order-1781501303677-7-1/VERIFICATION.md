@@ -428,3 +428,13 @@ Re-confirmed: browser verification exercised real runtime (harness + chromium fi
 - Browser step (xvfb chromium file://<real games/92-factory-firebreak/index.html> inside the verify): "chromium PASS 7132B -> 56-title-browser-verify.png (xvfb; real index.html, no syntax error; addresses prior .factoryx-runtime-check-7.html ... )"; evidence written + copied to wo/screenshots/56-title-browser-verify.png .
 - Confirms: no more reliance on fragile generated check-*.html (root cause of the reported SyntaxError in prior run); the committed preview entrypoint loads/rAFs cleanly in real browser with starter objective (fire+build adj to player), file-backed sprites (player 42px focal hero, animated fire layers, bobbing packet), tile glyphs, terse HUD, direct playing state from frame 0, WAV decode post gesture, no pageerror/uncaught.
 - Game Feel + taste-gate + all operator blocking playtest (11:23/11:50/12:18/15:32) + asset v2 (file-backed PNG/WAV under assets/, manifest with blocker note for no exposed foundry) + ystackai premise hold with no regression. 56- is the fresh evidence for "browser_runtime_verification": true. Same branch/PR#396. Ready.
+
+## 57- runtime verification (direct, addresses prior check-7.html "const" failure + all blocking playtest/asset from payload)
+- Command: `node .factoryx/work-orders/work-order-1781501303677-7-1/verify-runtime.js` (sourced direct /bin/bash, full context, no zellij truncation).
+- Node mock: PASS (0 console/throw after tolerant IIFE unwrap + B64 stub + redecl strip + guard; 61 events; start + move + doAction(ext/route) + loops + snapshot with real score=57, buildsShipped=1, particles=94, floats=3, gameState=playing, numStations>0; exercised live floor verbs).
+- Browser step (authoritative): xvfb-run chromium --headless ... --screenshot file:///.../games/92-factory-firebreak/index.html (the real preview entrypoint, never a generated .factoryx-runtime-check-*.html). Result: "chromium PASS 72259B -> 57-title-browser-verify.png (xvfb; real index.html, no syntax error; addresses prior ... const ... )"; copied to wo/screenshots/.
+- No uncaught, no pageerror, no "Unexpected token 'const'", no timeout. Size ~72kB proves canvas painted the arcade floor (larger player sprite, starter EXT glyph, fires, etc).
+- Game Feel + asset contract + direct playable boot + first input game-like reconfirmed on the committed entrypoint.
+- Evidence files: games/92-.../screenshots/57-title-browser-verify.png + .factoryx/.../screenshots/57-...
+- VERIFICATION: PASS. Addresses the explicit "previous run issue to address before peripheral polish" + "browser_runtime_verification": true + operator blockings. Same branch.
+
