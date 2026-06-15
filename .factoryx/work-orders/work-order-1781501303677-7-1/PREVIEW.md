@@ -36,3 +36,9 @@ Gameplay screen: 11×7 grid factory floor, color-coded stations w/ health bars +
 Game over: big final score, breakdown, letter rating; can be "CONTAINMENT FAILED" if integrity collapses. R / ACTION restarts.
 
 This is a real playable arcade game, not a dashboard mockup: the software factory theme (route resources visibly, extinguish incidents, protect secrets under decay pressure, ship builds, juggle escalating queues) is the core loop, concrete and escalating from second one. All per Game Feel Checklist.
+
+- `screenshots/11-title-browser-redeploy.png` (2026-06-15 ~09:10Z fresh chromium --headless --screenshot file:// of preview entrypoint post workspace refresh/redeploy/scrub reset re-verify in direct non-zellij sourced shell; 90.3KB PNG, zero pageerror/console during titleLoop + live board render; confirms first screen + core verbs still clean pre-deadline, ~5h to 14:28Z)
+
+Title screen (re-captured post-refresh): dark terminal aesthetic (monospace, #0d0d1a, cyan #00e5ff / orange accents matching ystackai house style) with animated ember particles, live station grid, faint conveyors, demo transits and flickering fires visible through the semi-transparent overlay + legend + START SHIFT button. The production floor and core verbs (route, firebreak) are visible immediately on first screen.
+
+This re-verify pass (direct shell, full context) re-addresses the "redeploy reset after zellij env scrub image" previous run issue + workspace refresh guard: all verification actually executed (node harness + real chromium file://), Game Feel holds, no blockers. Same PR#396 / branch. Preview entrypoint remains `games/92-factory-firebreak/index.html` (self-contained, immediately playable first screen per playbook + goal). Ready for continued review.
