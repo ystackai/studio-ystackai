@@ -42,7 +42,7 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
 .legend-swatch{width:12px;height:12px;border-radius:2px;display:inline-block}
 #controls-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#4a4a6a;font-size:10px;z-index:10;text-align:center;white-space:nowrap;transition:opacity 2s ease}
 #controls-hint.fade{opacity:0}
-#process-prompt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#44ff44;font-size:14px;font-weight:700;z-index:12;pointer-events:none;opacity:0;transition:opacity 0.2s ease;text-shadow:0 0 10px rgba(68,255,68,0.5)}
+#process-prompt{position:absolute;top:62%;left:50%;transform:translate(-50%,-50%);color:#44ff44;font-size:13px;font-weight:700;z-index:12;pointer-events:none;opacity:0;transition:opacity 0.2s ease;text-shadow:0 0 10px rgba(68,255,68,0.5);background:rgba(10,10,20,0.6);padding:2px 8px;border-radius:3px;border:1px solid rgba(68,255,68,0.3)}
 #process-prompt.show{opacity:1}
 @media(pointer:coarse){#touch-controls{display:block}#mobile-extinguish{display:flex}#controls-hint{display:none}}
 @media(max-width:600px){#hud{font-size:11px;padding:6px 8px}.hud-value{font-size:13px}}
@@ -57,6 +57,7 @@ canvas{display:block;background:#111122;image-rendering:pixelated;image-renderin
          <div class="hud-item"><span class="hud-label">Secrets</span><span class="hud-value" id="secrets-val">0</span></div>
          <div class="hud-item"><span class="hud-label">Integrity</span><span class="hud-value" id="integrity-val">100%</span></div>
          <div class="hud-item"><span class="hud-label">Transit</span><span class="hud-value" id="transit-val">0</span></div>
+         <div class="hud-item"><span class="hud-label">Ext</span><span class="hud-value" id="ext-val">0</span></div>
          <div class="hud-item"><span class="hud-label">Time</span><span class="hud-value" id="time-val">3:00</span></div>
      </div>
      <div id="canvas-wrapper">
@@ -144,6 +145,7 @@ const buildsEl=document.getElementById('builds-val');
 const secretsEl=document.getElementById('secrets-val');
 const integrityEl=document.getElementById('integrity-val');
 const transitEl=document.getElementById('transit-val');
+const extEl=document.getElementById('ext-val');
 const processPrompt=document.getElementById('process-prompt');
 const controlsHint=document.getElementById('controls-hint');
 const mobileExt=document.getElementById('mobile-extinguish');
@@ -221,6 +223,7 @@ function updateHUD(){
     integrityEl.style.color = avg>60 ? '#44ff88' : avg>25 ? '#ffaa33' : '#ff3333';
     const inFlight = stations.filter(s=>s.hasBuild).length + transits.length;
     transitEl.textContent = inFlight;
+    if(extEl) extEl.textContent = lastIncidentsExtinguished;
     const m=Math.floor(timeLeft/60),s=timeLeft%60;
     timeEl.textContent=m+':'+String(s).padStart(2,'0');
     if(timeLeft<=30)timeEl.style.color='#ff3333';
@@ -722,9 +725,18 @@ function drawConveyors(t){
     ctx.strokeStyle='rgba(0,229,255,0.08)';ctx.lineWidth=1.5;
     const builds=stations.filter(s=>s.type===T_BUILD);
     const ships=stations.filter(s=>s.type===T_SHIP);
-    for(const b of builds)for(const sh of ships){
+    // Only connect sensible rightward production lanes (avoid n*m cross mesh clutter)
+    for(const b of builds){
+        // find nearest ship to the right (or any if none right)
+        let best=null, bestDx=999;
+        for(const sh of ships){
+            const dx=sh.x - b.x;
+            if(dx>0 && dx<bestDx){best=sh;bestDx=dx;}
+        }
+        if(!best && ships.length) best=ships[0];
+        if(!best) continue;
         const x1=b.x*CELL+CELL/2, y1=b.y*CELL+CELL/2;
-        const x2=sh.x*CELL+CELL/2, y2=sh.y*CELL+CELL/2;
+        const x2=best.x*CELL+CELL/2, y2=best.y*CELL+CELL/2;
         // base faint line
         ctx.setLineDash([3,9]);
         ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();

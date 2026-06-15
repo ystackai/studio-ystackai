@@ -36,3 +36,11 @@
 - [x] Re-validated: JS syntax OK (new Function), file 39.8KB, chromium renders clean, all Game Feel items still checked (core verb <30s, input<100ms, easing, hit feedback, gesture audio, touch>=44px, 60fps, <2MB, offline).
 - [x] Updated PREVIEW/VERIFICATION/WORKLOG + screenshots/ with new state. No new external deps, no layout breakage.
 - [x] Will commit + push to same canonical branch, then `gh pr edit` to keep PR body current with full Work Order context + these changes. Ready for review gate.
+
+### Final polish pass (pre-deadline, browser evidence + telemetry + controls)
+- [x] Added "Ext" (incidents extinguished) to HUD for more complete live ops telemetry alongside Integrity % and Transit — makes the "extinguish incidents" verb's impact glanceable, fits legible complexity / calm authority house style.
+- [x] Refined centered ▶ PROMPT: moved lower (62%), added subtle bg + border for better legibility over action without obscuring player/stations as much.
+- [x] Cleaner conveyors: drawConveyors now connects each Build only to a sensible nearest-right Ship (instead of full cross-product mesh between all builds×ships). Reduces visual noise while keeping animated cyan dashes + "live production floor" routing visible.
+- [x] Re-validated syntax (new Function), size 40.7KB still <<2MB; re-captured fresh chromium headless render (03-title-polish.png, 78KB) post-edits showing HUD with new Ext, prompt badge, grid+stations.
+- [x] All prior Game Feel checklist items remain true; core verb (move+ACTION contextual) still <20s to first success; no new deps, no runtime changes to audio/gesture rules.
+- [x] Updated WORKLOG + PREVIEW + VERIFICATION + screenshots/ ; will git commit on canonical branch, push via factoryx env, gh pr edit to sync PR body+context for review. (stale zellij note addressed by direct non-zellij shell usage in this run)

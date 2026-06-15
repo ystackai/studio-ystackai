@@ -21,6 +21,7 @@ https://github.com/ystackai/studio-ystackai/pull/396
 - `screenshots/01-title-browser.png` (original)
 - `screenshots/02-title-browser-fresh.png`
 - `screenshots/03-title-polish.png` (after unified ACTION, HUD additions, conveyors)
+- `screenshots/04-title-browser-final.png` (post-final-polish: Ext HUD, lower prompt badge, de-cluttered conveyors)
 
 Title screen: dark terminal aesthetic (monospace, #0d0d1a, cyan #00e5ff / orange accents matching ystackai house style) with animated ember particles over the station grid + legend + START SHIFT button.
 
