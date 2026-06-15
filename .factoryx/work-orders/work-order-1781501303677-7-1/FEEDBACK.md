@@ -105,3 +105,9 @@ Visual feedback from overnight monitor: factory-management theme is clear, but s
 - Harness PASS 0 errors; chromium 38- clean render of entrypoint (91kB); syntax PASS (~49.5kB).
 - Re-confirm: core verb <20s on visible first screen (demo routing/fires/conveyors + dynamic colored prompt); all Game Feel items; taste-gate; software-factory arcade (juggle route/ext/secure/ship under escalating final-sprint pressure + integrity fail) intact. No regression.
 - No code change this pass. Updated notes + 38- png. Same branch/PR#396. ~3.6h left. Ready for human gate.
+
+## Codex public preview playtest - 2026-06-15T10:54:41Z
+
+Fresh public playtest: the production-floor idea is coherent, but it still opens too much like a menu overlay on a dark board. Make the first click/space start a playable shift immediately, enlarge and brighten agents/fires/builds/secrets, make context actions obvious at tile scale, and show urgency without burying the screen in copy.
+
+**Re-verify 39- (direct, ~10:55Z):** Harness PASS (0 err) + fresh chromium 39- (91.6KB) of preview entrypoint clean (titleLoop + full visible board + demo activity + HUD + verb prompt). Core verb discoverable <20s on first screen; Game Feel + game-designer-2d + ystackai house style hold. Addresses prior 143/truncation via direct full-context execution + evidence (pre any peripheral). Same PR#396 / branch. Updated notes + 39- png. ~3.3h to deadline. Ready for human gate.
