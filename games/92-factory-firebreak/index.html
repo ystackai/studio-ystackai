@@ -878,12 +878,18 @@ function gameLoop(timestamp){
         else if(promptText==='PROCESS BUILD') processPrompt.style.color='#00e5ff';
         else processPrompt.style.color='#a78bfa';
         processPrompt.classList.add('show');
-        if(mobileExt) mobileExt.innerHTML = (promptText==='EXTINGUISH'?'&#128293;EXT':promptText==='PROCESS BUILD'?'&#9654;ROUTE':promptText==='SECURE'?'&#128274;SEC':'&#128274;PAT') + '<br>SPACE';
+        if(mobileExt) {
+          mobileExt.innerHTML = (promptText==='EXTINGUISH'?'&#128293;EXT':promptText==='PROCESS BUILD'?'&#9654;ROUTE':promptText==='SECURE'?'&#128274;SEC':'&#128274;PAT') + '<br>SPACE';
+          // mirror verb color on large touch target for readable urgency on mobile (red=fire incident highest pressure)
+          if(promptText==='EXTINGUISH'){ mobileExt.style.color='#ffdddd'; mobileExt.style.borderColor='#ff6644'; }
+          else if(promptText==='PROCESS BUILD'){ mobileExt.style.color='#aaffff'; mobileExt.style.borderColor='#00e5ff'; }
+          else { mobileExt.style.color='#ddccff'; mobileExt.style.borderColor='#a78bfa'; }
+        }
     } else {
         processPrompt.classList.remove('show');
         processPrompt.style.color='#44ff44';
         processPrompt.innerHTML = '&#9654; STATION READY';
-        if(mobileExt) mobileExt.innerHTML = '&#129327;<br>ACTION';
+        if(mobileExt){ mobileExt.innerHTML = '&#129327;<br>ACTION'; mobileExt.style.color='#fff'; mobileExt.style.borderColor='#cc4444'; }
     }
     
     animFrame=requestAnimationFrame(gameLoop);
