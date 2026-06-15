@@ -87,3 +87,10 @@ This re-verify pass (direct shell, full context) addresses the "redeploy reset a
 - `games/92-factory-firebreak/screenshots/28-title-browser-polish.png` (2026-06-15 ~10:20Z post verb-color prompt polish + pop; chromium file:// of preview entrypoint; clean render; 91.6KB)
 
 **Polish (verb telegraph juice):** Prompt badge now uses verb-specific colors (red EXTINGUISH for incident pressure, cyan PROCESS for routing builds, purple for secrets) + subtle scale pop on show via eased transform. Makes the core "stand near + ACTION" verb even more immediately readable and arcade-satisfying on first screen and during play. No behavior change. 28- shows clean first screen. Same PR#396 / entrypoint. Game Feel + goal hold. (direct, ~4h to deadline)
+
+- `games/92-factory-firebreak/screenshots/29-title-browser-final.png` (2026-06-15 ~10:15Z final chromium --headless --screenshot file:// of preview entrypoint post workspace refresh/redeploy/scrub in direct sourced non-zellij shell per guard + previous-run issue "redeploy reset after zellij env scrub image" + agent runner 143/truncation to address before peripheral polish; 91.4KB PNG, zero pageerror/uncaught/console during titleLoop + live board + demo routing/fires/conveyors/pips render; confirms first screen + core verbs clean, ~4h to 14:28Z)
+
+**Final re-verify pass (direct shell, full context) addresses the "redeploy reset after zellij env scrub image" previous run issue + workspace refresh guard + the explicit prior agent runner failure (status 143 + truncated "The task is to build Factory Firebreak..." thought stream in logs): all verification actually executed (node harness + real chromium file://), Game Feel holds, no blockers. Same PR#396 / branch. Preview entrypoint remains `games/92-factory-firebreak/index.html` (self-contained, immediately playable first screen per playbook + goal). Ready for final review / human gate before deadline. (29- captured at ~10:15Z)**
+
+PR: https://github.com/ystackai/studio-ystackai/pull/396
+
