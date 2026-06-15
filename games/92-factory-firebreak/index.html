@@ -303,12 +303,12 @@ function spreadFire(){
             if(target&&!target.hasFire&&target.health>0&&Math.random()<(0.24+wave*0.015)){
                 target.hasFire=true;target.fireHealth=0;target.flashTimer=0.2;
                 spawnParticles(a.x,a.y,'#ff4422',5,1.5);
-                // directed ember particles FROM the spreading fire toward new cell — visual spreading hazard animation
+                // directed ember particles FROM the spreading fire toward new cell — visual spreading hazard animation (more for alive board)
                 const fx=fire.x*CELL+CELL/2, fy=fire.y*CELL+CELL/2;
                 const tx=a.x*CELL+CELL/2, ty=a.y*CELL+CELL/2;
-                for(let k=0;k<4;k++){
-                    const ang = Math.atan2(ty-fy, tx-fx) + (Math.random()-0.5)*0.8;
-                    particles.push({x:fx+ (Math.random()-0.5)*6, y:fy+(Math.random()-0.5)*6, vx:Math.cos(ang)*(1.8+Math.random()*1.2), vy:Math.sin(ang)*(1.8+Math.random()*1.2), life:0.7+Math.random()*0.4, decay:0.035, color:'#ff6622', size:1.5+Math.random()});
+                for(let k=0;k<6;k++){
+                    const ang = Math.atan2(ty-fy, tx-fx) + (Math.random()-0.5)*0.7;
+                    particles.push({x:fx+ (Math.random()-0.5)*6, y:fy+(Math.random()-0.5)*6, vx:Math.cos(ang)*(2.0+Math.random()*1.3), vy:Math.sin(ang)*(2.0+Math.random()*1.3), life:0.65+Math.random()*0.45, decay:0.038, color:'#ff6622', size:1.6+Math.random()});
                 }
             }
         }
@@ -327,14 +327,14 @@ function extinguishNearby(){
             awardCombo('ext', base, cell.x, cell.y); ex=true;
             if(performance.now()<flowUntil+80) spawnFT(cell.x,cell.y,'FLOW!','#ffdd44'); else if(rushFactor>1) spawnFT(cell.x,cell.y,'RUSH!','#ffaa66');
             sfxExtinguish();
-            // animated intervention: spray from player position toward fire (makes action feel physical)
+            // animated intervention: spray from player position toward fire (makes action feel physical rescue)
             const pcx=px*CELL+CELL/2, pcy=py*CELL+CELL/2+ (player.moving?Math.sin(performance.now()/120)*1.5:0);
-            for(let k=0;k<7;k++){
-              const ang = Math.atan2((cell.y*CELL+CELL/2)-pcy, (cell.x*CELL+CELL/2)-pcx) + (Math.random()-0.5)*0.6;
-              particles.push({x:pcx,y:pcy, vx:Math.cos(ang)*(2.5+Math.random()), vy:Math.sin(ang)*(2.5+Math.random()), life:0.6+Math.random()*0.3, decay:0.04, color:'#aaddff', size:2+Math.random()*2});
+            for(let k=0;k<10;k++){
+              const ang = Math.atan2((cell.y*CELL+CELL/2)-pcy, (cell.x*CELL+CELL/2)-pcx) + (Math.random()-0.5)*0.55;
+              particles.push({x:pcx,y:pcy, vx:Math.cos(ang)*(2.8+Math.random()), vy:Math.sin(ang)*(2.8+Math.random()), life:0.55+Math.random()*0.35, decay:0.042, color:'#aaddff', size:2.2+Math.random()*2});
             }
-            spawnParticles(cell.x,cell.y,'#44ddff',16,3.5);
-            spawnParticles(cell.x,cell.y,'#ffffff',8,2.5);
+            spawnParticles(cell.x,cell.y,'#44ddff',20,3.8);
+            spawnParticles(cell.x,cell.y,'#ffffff',10,2.8);
             spawnFT(cell.x,cell.y,'+'+base+'!','#44ddff');
             lastIncidentsExtinguished++;
         }
@@ -683,17 +683,17 @@ function drawStation(s,t){
     
     // Fire (larger/brighter, spreading hazard anim per feedback — more alive/urgent rescue)
     if(s.hasFire){
-        const fp=Math.sin(t*11+s.x*3+s.y*5);
-        const fs=13+fp*5.5; // bigger brighter fires
-        ctx.fillStyle='#ff2200';ctx.beginPath();ctx.arc(cx-8,sy-2,fs*0.6,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#ffdd22';ctx.beginPath();ctx.arc(cx+8,sy-4,fs*0.42,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#ff4400';ctx.beginPath();ctx.arc(cx+2,sy+6,fs*0.5,0,Math.PI*2);ctx.fill();
-        // extra heat + creeping tendril layer for visible spread motion
-        ctx.globalAlpha=0.45+Math.sin(t*13)*0.25;
-        ctx.fillStyle='#ff9900';ctx.beginPath();ctx.arc(cx-1,sy+2,fs*0.75,0,Math.PI*2);ctx.fill();
-        // tendril sparks (animated spreading hazard)
-        ctx.fillStyle='#ff6622'; for(let k=0;k<3;k++){ const a=(t*4 + s.x + k*1.7)%6.28; ctx.beginPath(); ctx.arc(cx+Math.cos(a)*fs*0.6, sy+Math.sin(a*1.3)*fs*0.5, 2.2,0,6.28); ctx.fill(); }
-        ctx.globalAlpha=1;
+        const fp=Math.sin(t*12+s.x*3+s.y*5);
+        const fs=15+fp*6.5; // bigger brighter fires, faster flicker for pressure
+        ctx.fillStyle='#ff1100';ctx.beginPath();ctx.arc(cx-9,sy-3,fs*0.65,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ffcc11';ctx.beginPath();ctx.arc(cx+9,sy-5,fs*0.48,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ff3300';ctx.beginPath();ctx.arc(cx+1,sy+7,fs*0.55,0,Math.PI*2);ctx.fill();
+        // extra heat + creeping tendril layer for visible spread motion (animated intervention target)
+        ctx.globalAlpha=0.5+Math.sin(t*15)*0.3;
+        ctx.fillStyle='#ff8800';ctx.beginPath();ctx.arc(cx-2,sy+1,fs*0.82,0,Math.PI*2);ctx.fill();
+        // tendril sparks + extra outer glow (animated spreading hazards)
+        ctx.fillStyle='#ff5511'; for(let k=0;k<4;k++){ const a=(t*5 + s.x + k*1.6)%6.28; ctx.beginPath(); ctx.arc(cx+Math.cos(a)*fs*0.65, sy+Math.sin(a*1.4)*fs*0.55, 2.6,0,6.28); ctx.fill(); }
+        ctx.globalAlpha=0.35; ctx.fillStyle='#ffaa22'; ctx.beginPath(); ctx.arc(cx,sy+2,fs*0.95,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
         
         // Health bar (more prominent)
         const bw=hw*1.7,bh=4,bx=cx-bw/2,by=cy+hh+5;
@@ -735,23 +735,23 @@ function drawStation(s,t){
     const isPlayerNear=playerAdj.some(a=>a.x===s.x&&a.y===s.y);
     if(isPlayerNear){
         if(s.hasFire){
-            // big obvious EXTINGUISH glyph on the tile itself (focal rescue verb)
-            ctx.fillStyle='rgba(255,50,30,0.95)';ctx.font='bold 16px monospace';ctx.textAlign='center';
-            ctx.fillText('EXT',cx,cy-hh-15);
-            ctx.strokeStyle='rgba(255,70,40,0.9)';ctx.lineWidth=3;
-            roundRect(cx-hw-5,cy-hh-5,hw*2+10,hh*2+10,5);ctx.stroke();
+            // big obvious EXTINGUISH glyph on the tile itself (focal rescue verb — larger/bolder per contact feedback)
+            ctx.fillStyle='rgba(255,40,25,0.98)';ctx.font='bold 17px monospace';ctx.textAlign='center';
+            ctx.fillText('EXT',cx,cy-hh-16);
+            ctx.strokeStyle='rgba(255,60,35,0.95)';ctx.lineWidth=3.5;
+            roundRect(cx-hw-6,cy-hh-6,hw*2+12,hh*2+12,5);ctx.stroke();
         } else if(s.hasBuild&&!s.hasFire){
-            ctx.fillStyle='rgba(70,255,110,0.95)';ctx.font='bold 14px monospace';ctx.textAlign='center';
-            ctx.fillText('ROUTE',cx,cy-hh-15);
-            const pulse=Math.sin(t*6)*0.35+0.65;
-            ctx.strokeStyle='rgba(60,255,60,'+pulse+')';ctx.lineWidth=3;
-            roundRect(cx-hw-5,cy-hh-5,hw*2+10,hh*2+10,5);ctx.stroke();
+            ctx.fillStyle='rgba(60,255,100,0.98)';ctx.font='bold 15px monospace';ctx.textAlign='center';
+            ctx.fillText('ROUTE',cx,cy-hh-16);
+            const pulse=Math.sin(t*7)*0.38+0.68;
+            ctx.strokeStyle='rgba(50,255,50,'+pulse+')';ctx.lineWidth=3.5;
+            roundRect(cx-hw-6,cy-hh-6,hw*2+12,hh*2+12,5);ctx.stroke();
         } else if(s.type===T_SEC){
             const label = !s.secured ? 'SECURE' : 'PATROL';
-            ctx.fillStyle='rgba(160,130,255,0.95)';ctx.font='bold 13px monospace';ctx.textAlign='center';
-            ctx.fillText(label,cx,cy-hh-15);
-            ctx.strokeStyle='rgba(130,100,255,0.8)';ctx.lineWidth=2.5;
-            roundRect(cx-hw-4,cy-hh-4,hw*2+8,hh*2+8,5);ctx.stroke();
+            ctx.fillStyle='rgba(170,140,255,0.98)';ctx.font='bold 14px monospace';ctx.textAlign='center';
+            ctx.fillText(label,cx,cy-hh-16);
+            ctx.strokeStyle='rgba(140,110,255,0.9)';ctx.lineWidth=3;
+            roundRect(cx-hw-5,cy-hh-5,hw*2+10,hh*2+10,5);ctx.stroke();
         }
     }
     // legacy small process ring for builds (kept for juice)
@@ -770,13 +770,13 @@ function drawPlayer(t){
     const actPulse = (player.actionTimer||0)>0 ? Math.sin((player.actionTimer||0)*28)*0.4+0.6 : 0;
     
     // Floor highlight under player (makes action focal point obvious on the board)
-    ctx.fillStyle='rgba(0,229,255,0.08)';ctx.beginPath();ctx.arc(cx,cy,22,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(0,229,255,0.09)';ctx.beginPath();ctx.arc(cx,cy,26,0,Math.PI*2);ctx.fill();
     
-    // Stronger brighter glow (larger agent per feedback)
-    ctx.fillStyle='rgba(0,229,255,'+(0.28+actPulse*0.18)+')';ctx.beginPath();ctx.arc(cx,cy+bob,32,0,Math.PI*2);ctx.fill();
+    // Stronger brighter glow (larger agent per feedback — arcade focal)
+    ctx.fillStyle='rgba(0,229,255,'+(0.30+actPulse*0.2)+')';ctx.beginPath();ctx.arc(cx,cy+bob,36,0,Math.PI*2);ctx.fill();
     
-    // Body (larger/brighter cyan agent — focal point)
-    ctx.fillStyle='#00f8ff';ctx.beginPath();ctx.arc(cx,cy+bob,16,0,Math.PI*2);ctx.fill();
+    // Body (larger/brighter cyan agent — focal point, rescue avatar)
+    ctx.fillStyle='#00f8ff';ctx.beginPath();ctx.arc(cx,cy+bob,18,0,Math.PI*2);ctx.fill();
     
     // Utility pack (factory agent kit) + action flash
     ctx.fillStyle=actPulse>0.1?'#22aacc':'#007788';ctx.fillRect(cx-6,cy+bob+4,12,9);
@@ -805,13 +805,13 @@ function drawPlayer(t){
         ctx.beginPath();ctx.moveTo(cx-8,cy+bob+1);ctx.lineTo(cx+8,cy+bob+1);ctx.stroke();
     }
     
-    // Stronger action-ready ring + tile glyph echo (context actions obvious at tile scale)
+    // Stronger action-ready ring + tile glyph echo (context actions obvious at tile scale — focal)
     const pAdj=findAdjacent(player.x,player.y);
     const nearActionable = pAdj.some(a=>{ const s=getStationAt(a.x,a.y); return s && (s.hasFire || (s.hasBuild&&!s.hasFire) || s.type===T_SEC); });
     if(nearActionable){
-        const ap=Math.sin(t*20)*0.5+0.5;
-        ctx.strokeStyle='rgba(80,255,120,'+(0.7+ap*0.35)+')';ctx.lineWidth=3;
-        ctx.beginPath();ctx.arc(cx,cy+bob,20,0,Math.PI*2);ctx.stroke();
+        const ap=Math.sin(t*22)*0.5+0.5;
+        ctx.strokeStyle='rgba(70,255,110,'+(0.75+ap*0.4)+')';ctx.lineWidth=4;
+        ctx.beginPath();ctx.arc(cx,cy+bob,23,0,Math.PI*2);ctx.stroke();
         ctx.lineWidth=1;
     }
 }
@@ -897,9 +897,9 @@ function gameLoop(timestamp){
     
     // Danger vignette + pressure pulse (stronger when fires high / integrity low / late timer / combo hot — arcade rescue feel)
     let u = 0;
-    if(avgHP<45){ u=(45-avgHP)/45; ctx.fillStyle='rgba(255,20,20,'+(u*0.14 + pressure*0.06)+')'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H); }
-    if(pressure>0.35){ // edge pressure telegraph
-      ctx.strokeStyle='rgba(255,60,40,'+(0.2+pressure*0.25)+')'; ctx.lineWidth=6; ctx.strokeRect(3,3,CANVAS_W-6,CANVAS_H-6); ctx.lineWidth=1;
+    if(avgHP<45){ u=(45-avgHP)/45; ctx.fillStyle='rgba(255,18,18,'+(u*0.16 + pressure*0.08)+')'; ctx.fillRect(0,0,CANVAS_W,CANVAS_H); }
+    if(pressure>0.32){ // edge pressure telegraph (earlier/more visible under escalating crisis)
+      ctx.strokeStyle='rgba(255,50,35,'+(0.22+pressure*0.28)+')'; ctx.lineWidth=7; ctx.strokeRect(2,2,CANVAS_W-4,CANVAS_H-4); ctx.lineWidth=1;
     }
     if(avgHP < 5 && !shiftLost){ shiftLost=true; endGame(); }
     
@@ -938,18 +938,18 @@ function gameLoop(timestamp){
     fireSpawnTimer-=dt*1000;
     if(fireSpawnTimer<=0){spawnFire();fireSpawnTimer=nextFireSpawn+Math.random()*3000;}
     
-    // Make the board feel alive under pressure (subtle idle life + hazard telegraph — data pips, micro sparks, embers when hot — cheap & constant)
-    if(Math.random()< (0.11 + pressure*0.09) ){
+    // Make the board feel alive under pressure (subtle idle life + hazard telegraph — data pips, micro sparks, embers when hot — cheap & constant; stronger for arcade urgency)
+    if(Math.random()< (0.13 + pressure*0.11) ){
         const live=stations.filter(s=>!s.hasFire&&s.health>40);
         if(live.length){
             const s=live[Math.floor(Math.random()*live.length)];
             const col = s.type===T_BUILD?'#44ff88':s.type===T_SHIP?'#ffdd88':'#66aaff';
-            spawnParticles(s.x,s.y, col, 1 + (pressure>0.4?1:0), 0.6 + pressure*0.4);
+            spawnParticles(s.x,s.y, col, 1 + (pressure>0.35?2:0), 0.7 + pressure*0.45);
         }
     }
-    if(fireCountP>0 && Math.random()<0.18){ // ambient hazard embers when incidents active
+    if(fireCountP>0 && Math.random()<0.22){ // ambient hazard embers when incidents active (more when hot)
       const f=stations.filter(s=>s.hasFire)[Math.floor(Math.random()*fireCountP)];
-      if(f) spawnParticles(f.x,f.y,'#ff5522',1,0.9);
+      if(f) spawnParticles(f.x,f.y,'#ff5522',1+(pressure>0.5?1:0),1.0);
     }
     
     updateDifficulty();updateHUD();
