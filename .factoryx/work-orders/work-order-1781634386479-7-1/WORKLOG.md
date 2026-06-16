@@ -75,3 +75,10 @@
 - Ready for human review gate on the deliverable node. Code changes left in place.
 
 (Direct execution, full prompt context preserved. No other PRs or branches created.)
+
+## Final push + PR sync (post gh create)
+- Fetch confirmed remote tip e17ac94 on canonical branch.
+- gh pr view 397: OPEN, headRefOid matches local, files list includes the +13-line premise/legend diff (plus full deliverable materialization + memory as expected for first WO commit on branch).
+- All verification artifacts (rework-01 chromium 81kB PNG showing premise + legend + live board, harness PASS with playing snapshot) in place.
+- Execution complete. PR: https://github.com/ystackai/studio-ystackai/pull/397
+- Code left in place per instructions. Ready for review.
