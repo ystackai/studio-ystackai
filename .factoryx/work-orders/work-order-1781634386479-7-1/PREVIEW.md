@@ -41,8 +41,9 @@
 
 ## PR / Branch
 - Canonical: factoryx/factory-ystackai/work-order-1781634386479-7-1 (this branch only; no parallel).
-- Will update PR body with FactoryX Work Order Context (full prompt) + link to this PREVIEW + the deliverable decision context.
+- PR: https://github.com/ystackai/studio-ystackai/pull/397 (opened with FactoryX Work Order Context section + full prompt reference in body per rules; one PR only).
 - Same entrypoint as prior: games/92-factory-firebreak/index.html
+- Pushed + PR created after full verification (node harness PASS + chromium file:// clean on exact entrypoint).
 
 Execution follows WORKFLOW.md, branch model, guard rules (inspect before push, direct shell where needed, durable notes here, polish size from risk, browser verification executed).
 
