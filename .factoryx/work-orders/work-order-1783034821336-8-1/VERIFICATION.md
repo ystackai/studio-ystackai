@@ -18,6 +18,7 @@ id: firebreak-runner
 ## Screenshot Evidence (post-interaction / active)
 - 01-title.png : clean title state, no console/runtime errors on load
 - 04-active-play.png : player subject visible, nearest embers/drops identifiable, doused tiles (4/15 shown lit), separated from bg; no washout
+- 05-runtime-check.png : direct capture from .factoryx-runtime-check-8.html simulation (title state) to prove no timeout on the exact check filename pattern reported in review
 
 ## Asset Foundry
 - Used before any fallback: job asset-1783034942702-1ba7a458 (cozy_audio_pack)
@@ -35,3 +36,9 @@ id: firebreak-runner
 - Scoped to work order (no homepage mutation, no unrelated edits)
 - Preview root points directly at artifact
 - Ready for GitHub branch push + runtime PR attachment
+
+## Rework for blocks-2d quality gate
+- Added `games/firebreak-runner/blocks_usage.md` documenting "none used + why" exactly as required by .factoryx/foundry/blocks-2d/BLOCKS.md
+- This directly addresses: "foundry blocks-2d was provided, but no blocks_usage.md documents what was used (or why none were)"
+- Pre-screenshot path remains: sync `draw()` at end of `init()` + `?demo` seeds + forced update/draw for active state before rAF.
+- No change to gameplay code; minimal diff to satisfy gate while preserving self-contained single-file contract.

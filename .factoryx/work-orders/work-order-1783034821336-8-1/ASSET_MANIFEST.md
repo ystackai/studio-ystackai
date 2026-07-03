@@ -52,3 +52,6 @@ All copied with job_id preserved. Review passed per Foundry (no errors, min size
 ## Rework (addressing review changes_requested)
 - Restored missing foundry_music_loop.wav from http://factoryx-ystackai-asset-foundry:18113/outputs/asset-1783034942702-1ba7a458/music_v2/foundry_music_loop.wav (source path + job preserved) to ensure zero 4xx asset requests on loadBuffer in any verification path.
 - Confirmed all 4 audio assets from job now present before browser smoke.
+
+## Documentation artifacts (for review gates)
+- `games/firebreak-runner/blocks_usage.md` added to satisfy blocks-2d quality floor (documents "none used" + rationale tied to self-contained + scope constraints). Not a generated asset but required for acceptance per foundry contract.
