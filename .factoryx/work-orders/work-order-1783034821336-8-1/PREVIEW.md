@@ -28,3 +28,7 @@ Deliverable: firebreak-runner
 - No accounts, no server, one screen, one core mechanic.
 - Changes limited to `games/firebreak-runner/` + work-order context + preview pointer.
 - House style: dark operational palette, IBM Plex Mono, calm legible UI.
+
+## Post-review update
+- Addressed changes_requested (pre-screenshot timeout): added synchronous draw() for immediate initial paint on load; restored complete audio assets from Foundry job outputs.
+- Fresh smoke screenshots captured with chromium --headless on title and ?demo active states.

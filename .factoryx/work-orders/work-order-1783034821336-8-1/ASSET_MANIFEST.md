@@ -48,3 +48,7 @@ All copied with job_id preserved. Review passed per Foundry (no errors, min size
 - Audio assets from job asset-1783034942702-1ba7a458 exercised via fetch+decode in main loop (splash on collect, hiss gain rises with ember danger count, wind on complete)
 - No runtime errors in load or 5k+ virtual-time frames; one-screen loop stable.
 - Preview entrypoint: .factoryx/preview-entrypoint -> games/firebreak-runner/index.html (direct)
+
+## Rework (addressing review changes_requested)
+- Restored missing foundry_music_loop.wav from http://factoryx-ystackai-asset-foundry:18113/outputs/asset-1783034942702-1ba7a458/music_v2/foundry_music_loop.wav (source path + job preserved) to ensure zero 4xx asset requests on loadBuffer in any verification path.
+- Confirmed all 4 audio assets from job now present before browser smoke.

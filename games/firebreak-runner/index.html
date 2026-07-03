@@ -409,6 +409,7 @@ function init() {
   if (params.get('demo') == null) {
     resetGame(false);
   }
+  draw(); // sync initial frame so pre-screenshot / headless browser runners capture content without rAF scheduling delay
   loop();
   // small hint
   setTimeout(()=>{ if(!running) document.getElementById('status-val').textContent='READY'; }, 120);

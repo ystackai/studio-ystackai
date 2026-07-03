@@ -6,11 +6,14 @@ id: firebreak-runner
 ## Runtime Verification
 - Loaded via file:// + chromium --headless (no npm, no installs; used installed chromium + swiftshader)
 - Start screen renders without error (overlay, title, instructions, hud)
+- Pre-screenshot timeout addressed by ensuring sync draw() of initial frame before rAF loop (targeted fix for review changes_requested on .factoryx-runtime-check-*.html)
 - Active play (?demo seeds + forced draw + loop): player, embers, drops, tiles, lane dividers all painted
 - 15 douse goal reachable; on collect douse counter and tile lighting advance; win triggers wind sfx path
 - Hit ember ends run cleanly
 - Controls: arrows/A D, canvas clicks map to lanes, touch zones present
 - Audio init on gesture (or demo path); buffers decode from Foundry WAVs
+- All asset fetches (incl music) return 200; no 4xx during smoke
+
 
 ## Screenshot Evidence (post-interaction / active)
 - 01-title.png : clean title state, no console/runtime errors on load
