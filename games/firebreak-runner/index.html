@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Firebreak Runner — ystackai</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#0a0c14;color:#c8c8d8;font-family:'IBM Plex Mono','Space Mono',monospace;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+#game-container{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:relative}
+#hud{width:100%;max-width:720px;display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#11131f;border-bottom:1px solid #252a40;font-size:13px;flex-shrink:0;z-index:10}
+.hud-item{display:flex;align-items:center;gap:4px}
+.hud-label{color:#6a6a8a;font-size:10px;text-transform:uppercase;letter-spacing:1px}
+.hud-value{font-weight:700;font-size:14px}
+#doused-val{color:#22d3ee}
+#canvas-wrapper{position:relative;flex:1;width:100%;max-width:720px;display:flex;align-items:center;justify-content:center;min-height:0;background:#0b0d16}
+canvas{display:block;background:#0b0d16;image-rendering:pixelated;touch-action:none}
+#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,20,0.85);z-index:20;flex-direction:column;text-align:center}
+#overlay.hidden{display:none}
+#overlay h1{font-size:28px;font-weight:700;letter-spacing:2px;margin-bottom:6px;color:#f4a261}
+#overlay .sub{color:#8a8fa8;font-size:13px;margin-bottom:16px}
+.btn{background:#1a1f2e;color:#c8c8d8;border:1px solid #3a4158;padding:10px 28px;font-family:inherit;font-size:14px;cursor:pointer;border-radius:3px;margin:4px;transition:all .1s}
+.btn:hover{background:#252b3d;border-color:#5a627a}
+.btn.primary{background:#c2410c;border-color:#f97316;color:#fff}
+#touch-zones{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:space-between;padding:0 12px;z-index:30;pointer-events:none}
+.tz-btn{pointer-events:auto;width:32%;height:64px;background:rgba(20,24,36,0.6);border:1px solid #3a4158;border-radius:4px;color:#9aa0b8;font-size:11px;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.tz-btn:active{background:rgba(40,48,72,0.85);color:#c8c8d8}
+#legend{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:10px;color:#5a6078;z-index:15;pointer-events:none}
+.legend-item{display:inline-block;margin:0 8px}
+@media (pointer:coarse) {#touch-zones{display:flex}}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div id="hud">
+    <div class="hud-item"><span class="hud-label">LANES</span> <span class="hud-value">3</span></div>
+    <div class="hud-item"><span class="hud-label">DOUSED</span> <span id="doused-val" class="hud-value">0/15</span></div>
+    <div class="hud-item"><span class="hud-label">STATUS</span> <span id="status-val" class="hud-value">RUNNING</span></div>
+  </div>
+  <div id="canvas-wrapper">
+    <canvas id="game" width="720" height="520"></canvas>
+    <div id="overlay">
+      <h1>FIREBREAK RUNNER</h1>
+      <div class="sub">switch lanes • dodge embers • collect drops • clear 15 tiles</div>
+      <button id="start-btn" class="btn primary">START RUN</button>
+      <div style="margin-top:8px;font-size:11px;color:#666">arrows / a d • tap zones • space restart</div>
+    </div>
+    <div id="touch-zones">
+      <div class="tz-btn" id="tz-left">◀ LANE</div>
+      <div class="tz-btn" id="tz-mid">CENTER</div>
+      <div class="tz-btn" id="tz-right">LANE ▶</div>
+    </div>
+    <div id="legend">
+      <span class="legend-item">● ember</span>
+      <span class="legend-item">◆ drop</span>
+    </div>
+  </div>
+</div>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d', { alpha: true });
+const W = canvas.width, H = canvas.height;
+const LANES = 3;
+const LANE_W = W / LANES;
+const PLAYER_Y = H - 70;
+let playerLane = 1; // 0,1,2
+let doused = 0;
+let running = false;
+let ended = false;
+let objects = []; // {lane, y, type:'ember'|'drop'}
+let lastSpawn = 0;
+let spawnInterval = 420;
+let danger = 0;
+let audioCtx = null;
+let buffers = {};
+let hissSrc = null, hissGain = null;
+let sfxGain = null;
+
+// Asset paths (Foundry copies; relative for preview + self contained)
+const ASSET_BASE = 'assets/';
+const SFX_DANGER = ASSET_BASE + 'sfx_danger.wav';
+const SFX_SPLASH = ASSET_BASE + 'sfx_interaction.wav';
+const SFX_WIND = ASSET_BASE + 'sfx_reveal.wav';
+const MUSIC = ASSET_BASE + 'foundry_music_loop.wav';
+
+function initAudio() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sfxGain = audioCtx.createGain(); sfxGain.gain.value = 0.7; sfxGain.connect(audioCtx.destination);
+    hissGain = audioCtx.createGain(); hissGain.gain.value = 0.0; hissGain.connect(audioCtx.destination);
+  } catch(e){}
+}
+
+async function loadBuffer(url, key) {
+  if (!audioCtx) return;
+  try {
+    const res = await fetch(url);
+    const arr = await res.arrayBuffer();
+    const buf = await audioCtx.decodeAudioData(arr);
+    buffers[key] = buf;
+  } catch(e){ /* silent fallback ok for missing asset in some envs */ }
+}
+
+function playBuffer(key, vol=0.8, rate=1.0) {
+  if (!audioCtx || !buffers[key]) return false;
+  try {
+    const src = audioCtx.createBufferSource();
+    src.buffer = buffers[key];
+    src.playbackRate.value = rate;
+    const g = audioCtx.createGain(); g.gain.value = vol;
+    src.connect(g); g.connect(sfxGain || audioCtx.destination);
+    src.start(0);
+    return true;
+  } catch(e){ return false; }
+}
+
+function startHiss() {
+  if (!audioCtx || !buffers['danger'] || hissSrc) return;
+  try {
+    hissSrc = audioCtx.createBufferSource();
+    hissSrc.buffer = buffers['danger'];
+    hissSrc.loop = true;
+    const g = audioCtx.createGain(); g.gain.value = 0.001;
+    hissSrc.connect(g); g.connect(hissGain);
+    hissSrc.start(0);
+    hissGain.gain.value = 0.08;
+  } catch(e){}
+}
+
+function stopHiss() {
+  if (hissSrc) { try { hissSrc.stop(0); } catch(e){} hissSrc = null; }
+  if (hissGain) hissGain.gain.value = 0.0;
+}
+
+function updateHiss() {
+  if (!hissGain) return;
+  // rises with danger: ember count + closeness
+  const near = objects.filter(o => o.type==='ember' && Math.abs(o.lane - playerLane) <= 1).length;
+  const lvl = Math.min(1.0, (objects.length * 0.12) + (near * 0.25) + (doused > 10 ? 0.15 : 0));
+  const target = 0.03 + lvl * 0.55;
+  hissGain.gain.value = Math.max(0.02, Math.min(0.7, target));
+}
+
+function spawn() {
+  const lane = Math.floor(Math.random() * LANES);
+  const type = Math.random() < 0.62 ? 'ember' : 'drop';
+  objects.push({ lane, y: -20, type, speed: 1.6 + Math.random()*1.1 + (doused*0.015) });
+}
+
+function resetGame(startRunning) {
+  objects = [];
+  playerLane = 1;
+  doused = 0;
+  running = !!startRunning;
+  ended = false;
+  lastSpawn = Date.now();
+  spawnInterval = 380;
+  danger = 0;
+  document.getElementById('doused-val').textContent = '0/15';
+  document.getElementById('status-val').textContent = running ? 'RUNNING' : 'READY';
+  document.getElementById('overlay').classList.toggle('hidden', running);
+  stopHiss();
+}
+
+function endRun(success) {
+  running = false;
+  ended = true;
+  document.getElementById('status-val').textContent = success ? 'FIREBREAK' : 'BURNED';
+  const ov = document.getElementById('overlay');
+  ov.classList.remove('hidden');
+  ov.innerHTML = success
+    ? '<h1 style="color:#67e8f9">FIREBREAK CLEAR</h1><div class="sub">15 tiles doused • the line holds</div><button class="btn primary" onclick="resetAndStart()">RUN AGAIN</button>'
+    : '<h1 style="color:#f87171">BURNED OUT</h1><div class="sub">ember caught you</div><button class="btn primary" onclick="resetAndStart()">TRY AGAIN</button>';
+  stopHiss();
+  if (success) {
+    playBuffer('wind', 0.55);
+    // quiet wind layer: also low music if present
+    if (buffers['music']) {
+      try {
+        const src = audioCtx.createBufferSource(); src.buffer = buffers['music']; src.loop = true;
+        const g = audioCtx.createGain(); g.gain.value = 0.035;
+        src.connect(g); g.connect(audioCtx.destination); src.start(0);
+        setTimeout(()=>{ try{src.stop(0);}catch(e){} }, 4200);
+      } catch(e){}
+    }
+  }
+}
+
+function resetAndStart() {
+  const ov = document.getElementById('overlay');
+  ov.innerHTML = '<h1>FIREBREAK RUNNER</h1><div class="sub">switch lanes • dodge embers • collect drops • clear 15 tiles</div><button id="start-btn" class="btn primary">START RUN</button><div style="margin-top:8px;font-size:11px;color:#666">arrows / a d • tap zones • space restart</div>';
+  document.getElementById('start-btn').onclick = startRun;
+  resetGame(true);
+  initAudio();
+  // ensure loads on gesture
+  if (!buffers['splash']) loadBuffer(SFX_SPLASH, 'splash');
+  if (!buffers['danger']) loadBuffer(SFX_DANGER, 'danger').then(startHiss);
+  if (!buffers['wind']) loadBuffer(SFX_WIND, 'wind');
+  if (!buffers['music']) loadBuffer(MUSIC, 'music');
+}
+
+function startRun() {
+  resetGame(true);
+  initAudio();
+  loadBuffer(SFX_SPLASH, 'splash');
+  loadBuffer(SFX_DANGER, 'danger').then(startHiss);
+  loadBuffer(SFX_WIND, 'wind');
+  loadBuffer(MUSIC, 'music');
+  // immediate first objects for feel
+  objects.push({lane:0, y:80, type:'ember', speed:1.9});
+  objects.push({lane:2, y:140, type:'drop', speed:1.7});
+}
+
+function handleInput(dir) {
+  // dir -1 left, +1 right
+  if (!running) return;
+  const next = Math.max(0, Math.min(2, playerLane + dir));
+  if (next !== playerLane) {
+    playerLane = next;
+    playBuffer('splash', 0.12, 1.6); // subtle lane blip using splash at low
+  }
+}
+
+function onKey(e) {
+  if (e.key === ' ' || e.key === 'Spacebar') {
+    e.preventDefault();
+    if (!running) { resetAndStart(); return; }
+  }
+  if (!running) return;
+  if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') handleInput(-1);
+  if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') handleInput(1);
+}
+
+function setupInput() {
+  window.addEventListener('keydown', onKey);
+  // click zones on canvas for lanes
+  canvas.addEventListener('mousedown', (e) => {
+    if (!running) { resetAndStart(); return; }
+    const r = canvas.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width * W;
+    const target = Math.floor(x / LANE_W);
+    if (target < playerLane) handleInput(-1);
+    else if (target > playerLane) handleInput(1);
+  });
+  // touch zones
+  ['left','mid','right'].forEach((id,i) => {
+    const el = document.getElementById('tz-'+id);
+    if (!el) return;
+    el.addEventListener('touchstart', (ev)=>{ ev.preventDefault(); if(!running){resetAndStart();return;} const t = i-1; if(t<playerLane)handleInput(-1); else if(t>playerLane)handleInput(1); }, {passive:false});
+    el.addEventListener('click', (ev)=>{ ev.preventDefault(); if(!running){resetAndStart();return;} const t = i-1; if(t<playerLane)handleInput(-1); else if(t>playerLane)handleInput(1); });
+  });
+  // global tap on wrapper for start
+  document.getElementById('canvas-wrapper').addEventListener('click', (e)=>{
+    if (!running && document.getElementById('overlay').classList.contains('hidden') === false) {
+      resetAndStart();
+    }
+  });
+}
+
+function update() {
+  if (!running) return;
+  const now = Date.now();
+  if (now - lastSpawn > spawnInterval) {
+    spawn();
+    lastSpawn = now;
+    // slight pressure ramp
+    spawnInterval = Math.max(210, 380 - doused * 9);
+  }
+
+  // move objects
+  for (let i=objects.length-1; i>=0; i--) {
+    const o = objects[i];
+    o.y += o.speed;
+    if (o.y > H + 10) {
+      objects.splice(i,1);
+      continue;
+    }
+    // collision check
+    if (Math.abs(o.lane - playerLane) < 0.1 && o.y > PLAYER_Y - 22 && o.y < PLAYER_Y + 28) {
+      if (o.type === 'drop') {
+        doused = Math.min(15, doused + 1);
+        document.getElementById('doused-val').textContent = doused + '/15';
+        playBuffer('splash', 0.95);
+        objects.splice(i,1);
+        if (doused >= 15) {
+          endRun(true);
+          return;
+        }
+      } else {
+        // ember hit
+        objects.splice(i,1);
+        endRun(false);
+        return;
+      }
+    }
+  }
+
+  // cleanup far
+  objects = objects.filter(o => o.y < H + 30);
+
+  updateHiss();
+  danger = objects.filter(o=>o.type==='ember').length;
+}
+
+function draw() {
+  ctx.fillStyle = '#0b0d16';
+  ctx.fillRect(0,0,W,H);
+
+  // lanes
+  ctx.strokeStyle = '#1f2433';
+  ctx.lineWidth = 1;
+  for (let i=1; i<LANES; i++) {
+    const x = Math.floor(i * LANE_W) + 0.5;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+
+  // top firebreak tiles (15)
+  const tileW = 18, tileGap=3, startX = (W - (15*tileW + 14*tileGap))/2;
+  for (let i=0; i<15; i++) {
+    const x = startX + i*(tileW+tileGap);
+    const lit = i < doused;
+    ctx.fillStyle = lit ? '#22d3ee' : '#3f2a1f';
+    ctx.fillRect(x, 18, tileW, 11);
+    ctx.strokeStyle = lit ? '#67e8f9' : '#5a4030';
+    ctx.strokeRect(x+0.5, 18.5, tileW-1, 10);
+  }
+
+  // falling objects
+  for (const o of objects) {
+    const cx = o.lane * LANE_W + LANE_W/2;
+    if (o.type === 'ember') {
+      // glowing ember
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath(); ctx.arc(cx, o.y, 7, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath(); ctx.arc(cx-1, o.y-1, 3.5, 0, Math.PI*2); ctx.fill();
+      // small sparks
+      ctx.fillStyle = 'rgba(251,191,36,0.6)';
+      ctx.fillRect(cx+5, o.y-6, 1, 2);
+      ctx.fillRect(cx-4, o.y+4, 2, 1);
+    } else {
+      // water drop
+      ctx.fillStyle = '#67e8f9';
+      ctx.beginPath();
+      ctx.moveTo(cx, o.y-8);
+      ctx.quadraticCurveTo(cx+8, o.y+2, cx, o.y+10);
+      ctx.quadraticCurveTo(cx-8, o.y+2, cx, o.y-8);
+      ctx.fill();
+      ctx.fillStyle = '#a5f3fc';
+      ctx.beginPath(); ctx.arc(cx-2, o.y-2, 2.5, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // player (simple runner silhouette, lane centered)
+  const px = playerLane * LANE_W + LANE_W/2;
+  ctx.fillStyle = '#e0e7ff';
+  // head
+  ctx.beginPath(); ctx.arc(px, PLAYER_Y-18, 6, 0, Math.PI*2); ctx.fill();
+  // body
+  ctx.fillRect(px-5, PLAYER_Y-10, 10, 16);
+  // legs stance
+  ctx.fillStyle = '#a5b4fc';
+  ctx.fillRect(px-6, PLAYER_Y+6, 4, 11);
+  ctx.fillRect(px+2, PLAYER_Y+6, 4, 11);
+  // visor / accent
+  ctx.fillStyle = '#f97316';
+  ctx.fillRect(px-3, PLAYER_Y-17, 6, 2);
+
+  // ground line
+  ctx.strokeStyle = '#252a40';
+  ctx.beginPath(); ctx.moveTo(0, PLAYER_Y+22); ctx.lineTo(W, PLAYER_Y+22); ctx.stroke();
+
+  // danger vignette when high
+  if (danger > 2) {
+    ctx.fillStyle = 'rgba(190,60,20,' + Math.min(0.22, 0.06 + danger*0.03) + ')';
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function init() {
+  setupInput();
+  const startBtn = document.getElementById('start-btn');
+  startBtn.onclick = () => { initAudio(); startRun(); };
+  // allow immediate demo via ?demo (for screenshot active play without gesture)
+  const params = new URLSearchParams(location.search);
+  if (params.get('demo') != null) {
+    resetGame(true);
+    initAudio();
+    // seed active scene immediately for reliable capture
+    doused = 4;
+    document.getElementById('doused-val').textContent = '4/15';
+    objects.push({lane:1,y:70,type:'ember',speed:1.8});
+    objects.push({lane:0,y:130,type:'drop',speed:1.6});
+    objects.push({lane:2,y:175,type:'ember',speed:1.9});
+    objects.push({lane:1,y:230,type:'drop',speed:1.7});
+    objects.push({lane:0,y:295,type:'ember',speed:2.0});
+    document.getElementById('overlay').classList.add('hidden');
+    // exercise audio fetch+decode (Foundry assets) so verification smoke covers load paths without gesture
+    loadBuffer(SFX_SPLASH, 'splash');
+    loadBuffer(SFX_DANGER, 'danger');
+    loadBuffer(SFX_WIND, 'wind');
+    loadBuffer(MUSIC, 'music');
+    // force a paint for the capture frame
+    for(let k=0;k<3;k++){ update(); }
+    draw();
+  }
+  if (params.get('demo') == null) {
+    resetGame(false);
+  }
+  draw(); // sync initial frame so pre-screenshot / headless browser runners capture content without rAF scheduling delay
+  loop();
+  // small hint
+  setTimeout(()=>{ if(!running) document.getElementById('status-val').textContent='READY'; }, 120);
+}
+
+init();
+</script>
+</body>
+</html>
