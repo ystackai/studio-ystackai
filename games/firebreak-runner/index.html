@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Firebreak Runner — ystackai</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0503;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#f1e7d9;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#game-container{display:flex;flex-direction:column;height:100vh;width:100vw;max-width:100vw}
+#hud{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(12,8,6,0.96);border-bottom:1px solid rgba(249,115,22,0.25);z-index:10;min-height:52px;flex-shrink:0}
+.hud-section{display:flex;align-items:center;gap:8px}
+.hud-label{font-size:0.65rem;color:#c28a5f;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
+.hud-value{font-size:1rem;font-weight:900;color:#f4d9b8;font-variant-numeric:tabular-nums}
+#tiles{display:flex;gap:3px;align-items:center}
+.tile{width:14px;height:14px;border-radius:2px;border:1px solid rgba(249,115,22,0.5);background:#3a1f12}
+.tile.doused{background:#0e5a6b;border-color:#38bdf8}
+#douse-count{font-size:0.95rem;font-weight:800;color:#f4d9b8;margin-left:4px}
+#canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#0a0503}
+canvas{display:block;background:#0f0805;image-rendering:crisp-edges}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:rgba(10,5,3,0.92);transition:opacity .25s ease}
+#overlay.hidden{opacity:0;pointer-events:none}
+#overlay h1{font-size:2.1rem;font-weight:900;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.25rem;text-align:center;letter-spacing:-0.01em}
+#overlay .subtitle{color:#c28a5f;font-size:.92rem;margin-bottom:1.25rem;text-align:center;padding:0 1rem;max-width:520px;line-height:1.35}
+.btn-play{padding:13px 38px;font-size:1rem;font-weight:800;background:#f59e0b;color:#1c120a;border:none;border-radius:9px;cursor:pointer;transition:all .12s;letter-spacing:.01em}
+.btn-play:hover{background:#fbbf24;transform:translateY(-1px)}
+.btn-play:active{transform:translateY(0)}
+.overlay-stats{margin-top:.6rem;text-align:center;color:#8a6644;font-size:.8rem}
+#legend{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:14px;font-size:.7rem;color:#8a6644;pointer-events:none;z-index:20}
+#legend span{display:flex;align-items:center;gap:4px}
+#mute-btn{background:none;border:1px solid rgba(249,115,22,0.35);border-radius:5px;padding:4px 9px;color:#c28a5f;font-size:.8rem;cursor:pointer;transition:all .12s}
+#mute-btn:hover{color:#f59e0b;border-color:#f59e0b}
+#danger{display:flex;align-items:center;gap:6px}
+#danger-bar{width:68px;height:6px;background:#2a1a12;border-radius:3px;overflow:hidden;border:1px solid rgba(249,115,22,0.3)}
+#danger-fill{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);transition:width .2s linear}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div id="hud">
+    <div class="hud-section">
+      <span class="hud-label">FIREBREAK</span>
+      <div id="tiles"></div>
+      <span id="douse-count">0/15</span>
+    </div>
+    <div class="hud-section">
+      <div id="danger">
+        <span class="hud-label">HISS</span>
+        <div id="danger-bar"><div id="danger-fill"></div></div>
+      </div>
+      <button id="mute-btn" aria-label="Toggle sound">🔊</button>
+    </div>
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="game-canvas" width="720" height="620"></canvas>
+  </div>
+</div>
+
+<div id="overlay">
+  <h1>🔥 Firebreak Runner</h1>
+  <div class="subtitle">One lane at a time. Switch lanes to dodge falling embers and catch water drops. Douse 15 tiles to clear the firebreak.</div>
+  <button class="btn-play" id="btn-start">▶ RUN THE LINE</button>
+  <div class="overlay-stats">← → or tap lanes &nbsp;•&nbsp; collect <span style="color:#38bdf8">💧</span> to douse &nbsp;•&nbsp; avoid <span style="color:#f59e0b">🔥</span></div>
+</div>
+
+<div id="legend">
+  <span>← A / → D &nbsp;switch</span>
+  <span>tap left • center • right</span>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+const W = canvas.width, H = canvas.height;
+
+const LANES = 3;
+const LANE_WIDTH = W / LANES;
+const PLAYER_Y = H - 78;
+const PLAYER_SIZE = 42;
+
+let player = { lane: 1, x: LANE_WIDTH * 1 + LANE_WIDTH/2, y: PLAYER_Y, vx: 0 };
+let entities = [];
+let particles = [];
+let doused = 0;
+let state = 'menu'; // menu, playing, win, lose
+let lastTime = 0;
+let spawnTimer = 0;
+let spawnInterval = 420;
+let speed = 210;
+let hissLevel = 0.0;
+let audioCtx = null;
+let masterGain = null;
+let hissOsc = null, hissGain = null, hissNoise = null, hissFilter = null, hissNoiseGain = null;
+let muted = false;
+let audioStarted = false;
+let windTimer = 0;
+
+const TILE_COUNT = 15;
+const tilesEl = document.getElementById('tiles');
+const douseEl = document.getElementById('douse-count');
+const dangerFill = document.getElementById('danger-fill');
+const overlay = document.getElementById('overlay');
+const muteBtn = document.getElementById('mute-btn');
+
+let playerImg = new Image();
+let assetsReady = false;
+const PLAYER_B64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABACAYAAABcIPRGAAABwUlEQVR4nO2ZLVfDMBSG7ziompnqmpkqBJiJaRRiZma/A8FPmEDxI6YRKPTEzBCompnqmpraYQj0tEnz9eaEHO4jc2+S++YmzUeJGIZhYjIL1fDleHsZdbb8gPcHb1AW+KhToBCogH7wbdON7PM8++0YJOIK0QiRPvhhuUmmTIAIMAleZkeIgGWASB+8rZ8J3vNQjGLbdHSzWxvX+3x6/VkTPusBmoEYsIDYsACxAPublAmIBUwE2olt9gEi7I4MmUL9IHSZQB8n4Gehc73V+i2K/d87CxGZjyjyNHrtWvF4XzqfY1R1l++VtbDkP6NaxW+rxeRIl8XcO4iqbiftD4ezMs7kM8ACYuP8FULzUmwmrDulJfkMBBXwuD2FbJ6IAgoQwYcWwVNIxnDUQ2YBLkAVbCgR8M/o8/4O3eQkvAZik7wA55uRuJTklq8RMprvh4B/eaFhAbHx3gca4Fu/C8lnwPt9pixXykt/VR1mtn62JJ8BFhAbFhAbFhAbFhCb5AVALvVd14zKsix39rPBOwOyoGTlpn62eAkoiun/ZMJu6ueC8ynQp1MVdc134vRwFmCabrTfEK8M6DoVdlM/F74AU+mllB2aL9sAAAAASUVORK5CYII=";
+playerImg.onload = () => { assetsReady = true; };
+playerImg.src = PLAYER_B64;
+
+// Build tile HUD
+function rebuildTiles(){
+  tilesEl.innerHTML = '';
+  for(let i=0; i<TILE_COUNT; i++){
+    const t = document.createElement('div');
+    t.className = 'tile' + (i < doused ? ' doused' : '');
+    tilesEl.appendChild(t);
+  }
+}
+rebuildTiles();
+
+function updateHUD(){
+  douseEl.textContent = doused + '/15';
+  const pct = Math.min(100, Math.floor((doused / TILE_COUNT) * 100));
+  dangerFill.style.width = Math.floor(hissLevel * 100) + '%';
+  rebuildTiles();
+}
+
+function setState(s){
+  state = s;
+  if(s === 'menu' || s === 'win' || s === 'lose'){
+    overlay.classList.remove('hidden');
+    if(s === 'win'){
+      overlay.querySelector('h1').textContent = '🔥 FIREBREAK CLEAR';
+      overlay.querySelector('.subtitle').textContent = 'The line holds. 15 tiles doused. Quiet wind rises.';
+    } else if(s === 'lose'){
+      overlay.querySelector('h1').textContent = 'BURNED OUT';
+      overlay.querySelector('.subtitle').textContent = 'An ember hit. You cleared ' + doused + ' tiles.';
+    } else {
+      overlay.querySelector('h1').textContent = '🔥 Firebreak Runner';
+      overlay.querySelector('.subtitle').textContent = 'One lane at a time. Switch lanes to dodge falling embers and catch water drops. Douse 15 tiles to clear the firebreak.';
+    }
+  } else {
+    overlay.classList.add('hidden');
+  }
+}
+
+function initAudio(){
+  if(audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = muted ? 0.0001 : 0.9;
+    masterGain.connect(audioCtx.destination);
+
+    // Hiss: low saw + filtered noise for ember hiss
+    hissOsc = audioCtx.createOscillator();
+    hissOsc.type = 'sawtooth';
+    hissOsc.frequency.value = 92;
+
+    hissGain = audioCtx.createGain();
+    hissGain.gain.value = 0.0001;
+
+    hissFilter = audioCtx.createBiquadFilter();
+    hissFilter.type = 'lowpass';
+    hissFilter.frequency.value = 420;
+
+    // noise for texture
+    const bufferSize = 2 * audioCtx.sampleRate;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for(let i=0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    hissNoise = audioCtx.createBufferSource();
+    hissNoise.buffer = noiseBuffer;
+    hissNoise.loop = true;
+    hissNoiseGain = audioCtx.createGain();
+    hissNoiseGain.gain.value = 0.0001;
+
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 260;
+    noiseFilter.Q.value = 0.8;
+
+    hissOsc.connect(hissFilter);
+    hissFilter.connect(hissGain);
+    hissNoise.connect(noiseFilter);
+    noiseFilter.connect(hissNoiseGain);
+    hissGain.connect(masterGain);
+    hissNoiseGain.connect(masterGain);
+
+    hissOsc.start();
+    hissNoise.start();
+    audioStarted = true;
+  } catch(e){}
+}
+
+function setHiss(level){
+  hissLevel = Math.max(0, Math.min(1, level));
+  if(!audioCtx || !hissGain || muted) return;
+  const target = 0.012 + hissLevel * 0.18;
+  hissGain.gain.value = target;
+  hissNoiseGain.gain.value = 0.006 + hissLevel * 0.07;
+  hissFilter.frequency.value = 280 + hissLevel * 220;
+}
+
+function playSplash(){
+  if(!audioCtx || muted) return;
+  const t = audioCtx.currentTime;
+  // bright water impact
+  const o = audioCtx.createOscillator();
+  o.type = 'triangle';
+  o.frequency.value = 1280;
+  const g = audioCtx.createGain();
+  g.gain.value = 0.22;
+  const f = audioCtx.createBiquadFilter();
+  f.type = 'lowpass';
+  f.frequency.value = 2100;
+
+  const n = audioCtx.createBufferSource();
+  const nb = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.4, audioCtx.sampleRate);
+  const nd = nb.getChannelData(0);
+  for(let i=0;i<nd.length;i++) nd[i] = (Math.random()*2-1) * (1 - i/nd.length);
+  n.buffer = nb;
+  const ng = audioCtx.createGain(); ng.gain.value = 0.16;
+  const nf = audioCtx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=1650; nf.Q.value=1.2;
+
+  g.gain.setValueAtTime(0.22, t);
+  g.gain.exponentialRampToValueAtTime(0.0008, t + 0.48);
+  ng.gain.setValueAtTime(0.16, t);
+  ng.gain.exponentialRampToValueAtTime(0.0005, t + 0.42);
+
+  o.connect(f); f.connect(g); g.connect(masterGain);
+  n.connect(nf); nf.connect(ng); ng.connect(masterGain);
+  o.start(t); o.stop(t+0.5);
+  n.start(t);
+}
+
+function playWind(){
+  if(!audioCtx || muted) return;
+  const t = audioCtx.currentTime;
+  // soft low wind layers
+  for(let k=0; k<3; k++){
+    const o = audioCtx.createOscillator();
+    o.type = (k===0)?'sine':'triangle';
+    o.frequency.value = 68 + k*26;
+    const g = audioCtx.createGain();
+    g.gain.value = 0.0;
+    const f = audioCtx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.value = 380 + k*40;
+
+    const noise = audioCtx.createBufferSource();
+    const nb = audioCtx.createBuffer(1, audioCtx.sampleRate * 3.2, audioCtx.sampleRate);
+    const nd = nb.getChannelData(0);
+    for(let i=0;i<nd.length;i++){
+      nd[i] = (Math.random()*2-1) * (0.6 + 0.4*Math.sin(i*0.0007));
+    }
+    noise.buffer = nb;
+    const ng = audioCtx.createGain(); ng.gain.value = 0.0;
+    const nf = audioCtx.createBiquadFilter(); nf.type='lowpass'; nf.frequency.value=210;
+
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.032 + k*0.012, t + 0.6);
+    g.gain.linearRampToValueAtTime(0.0008, t + 2.8);
+    ng.gain.setValueAtTime(0.0001, t);
+    ng.gain.linearRampToValueAtTime(0.045 + k*0.01, t + 0.7);
+    ng.gain.linearRampToValueAtTime(0.0006, t + 2.9);
+
+    o.connect(f); f.connect(g); g.connect(masterGain);
+    noise.connect(nf); nf.connect(ng); ng.connect(masterGain);
+    o.start(t); o.stop(t + 3.1);
+    noise.start(t);
+  }
+}
+
+function toggleMute(){
+  muted = !muted;
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+  if(masterGain){
+    masterGain.gain.value = muted ? 0.0001 : 0.9;
+  }
+  if(muted && hissGain){ hissGain.gain.value = 0.0001; if(hissNoiseGain) hissNoiseGain.gain.value=0.0001; }
+}
+
+muteBtn.addEventListener('click', toggleMute);
+
+function switchLane(delta){
+  if(state !== 'playing') return;
+  const next = Math.max(0, Math.min(LANES-1, player.lane + delta));
+  if(next !== player.lane){
+    player.lane = next;
+    player.vx = (next - player.lane) * 18; // will lerp in update
+  }
+}
+
+function setLane(target){
+  if(state !== 'playing') return;
+  const next = Math.max(0, Math.min(LANES-1, target));
+  player.lane = next;
+}
+
+function laneX(lane){ return lane * LANE_WIDTH + LANE_WIDTH * 0.5; }
+
+function spawnEntity(){
+  const lane = Math.floor(Math.random() * LANES);
+  const type = (Math.random() < 0.26) ? 'drop' : 'ember'; // ~26% drops
+  const y = -12 - Math.random() * 30;
+  const e = { lane, y, type, wobble: Math.random() * 6.28 };
+  entities.push(e);
+  // ramp difficulty
+  if(doused > 4 && Math.random() < 0.35){
+    const e2 = { lane: (lane + 1 + Math.floor(Math.random()*2)) % LANES , y: y - 18, type: (type==='drop' && Math.random()<0.5)?'drop':'ember', wobble: Math.random()*6.28 };
+    entities.push(e2);
+  }
+}
+
+function update(dt){
+  if(state !== 'playing') return;
+
+  // player x follow lane
+  const targetX = laneX(player.lane);
+  player.x += (targetX - player.x) * Math.min(1, dt * 9.5);
+  player.y = PLAYER_Y;
+
+  // speed + spawn ramp
+  const progress = doused / TILE_COUNT;
+  speed = 195 + progress * 125;
+  spawnInterval = Math.max(195, 430 - progress * 210);
+
+  // entities
+  for(let i = entities.length-1; i>=0; i--){
+    const e = entities[i];
+    e.y += speed * dt;
+    e.wobble += dt * 5.5;
+    // collision band
+    const ey = e.y;
+    const py = player.y;
+    if(ey > py - 22 && ey < py + 18 && e.lane === player.lane){
+      if(e.type === 'ember'){
+        // hit ember = lose
+        spawnHitParticles(e, '#f59e0b');
+        entities.splice(i,1);
+        doLose();
+        return;
+      } else {
+        // collect drop
+        doused = Math.min(TILE_COUNT, doused + 1);
+        playSplash();
+        spawnSplashParticles(e);
+        entities.splice(i,1);
+        updateHUD();
+        if(doused >= TILE_COUNT){
+          doWin();
+          return;
+        }
+      }
+    }
+    if(e.y > H + 20){
+      entities.splice(i,1);
+    }
+  }
+
+  // spawn
+  spawnTimer += dt * 1000;
+  if(spawnTimer > spawnInterval){
+    spawnTimer = 0;
+    spawnEntity();
+    // occasional extra ember for pressure
+    if(progress > 0.2 && Math.random() < 0.6) spawnEntity();
+  }
+
+  // particles
+  for(let i=particles.length-1; i>=0; i--){
+    const p = particles[i];
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 180 * dt; // gravity-ish
+    p.life -= dt;
+    if(p.life <= 0) particles.splice(i,1);
+  }
+
+  // hiss rises with danger (entities + progress)
+  const danger = Math.min(1.0, (entities.length * 0.11) + (progress * 0.55));
+  setHiss(danger);
+  updateHUD();
+}
+
+function spawnHitParticles(e, color){
+  for(let k=0; k<9; k++){
+    particles.push({
+      x: e.lane * LANE_WIDTH + LANE_WIDTH*0.5 + (Math.random()-0.5)*18,
+      y: e.y + (Math.random()-0.5)*10,
+      vx: (Math.random()-0.5)*95,
+      vy: (Math.random()-0.6)*70 - 30,
+      life: 0.28 + Math.random()*0.22,
+      color: color || '#f59e0b',
+      size: 2.2 + Math.random()*1.6
+    });
+  }
+}
+
+function spawnSplashParticles(e){
+  for(let k=0; k<11; k++){
+    particles.push({
+      x: e.lane * LANE_WIDTH + LANE_WIDTH*0.5 + (Math.random()-0.5)*14,
+      y: e.y + (Math.random()-0.5)*6,
+      vx: (Math.random()-0.5)*120,
+      vy: -55 - Math.random()*75,
+      life: 0.32 + Math.random()*0.25,
+      color: '#67d4ff',
+      size: 1.8 + Math.random()*1.4
+    });
+  }
+}
+
+function draw(){
+  ctx.save();
+  ctx.fillStyle = '#0f0805';
+  ctx.fillRect(0,0,W,H);
+
+  // subtle lane lines + floor
+  ctx.strokeStyle = 'rgba(249,115,22,0.18)';
+  ctx.lineWidth = 2;
+  for(let i=1; i<LANES; i++){
+    const x = i * LANE_WIDTH;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, H);
+    ctx.stroke();
+  }
+  // ground band
+  const grad = ctx.createLinearGradient(0, H-92, 0, H);
+  grad.addColorStop(0, 'rgba(60,25,12,0.0)');
+  grad.addColorStop(1, 'rgba(80,32,14,0.65)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, H-92, W, 92);
+
+  // faint horizon fire glow
+  const hg = ctx.createLinearGradient(0, 60, 0, 220);
+  hg.addColorStop(0, 'rgba(249,115,22,0.035)');
+  hg.addColorStop(1, 'rgba(10,5,3,0)');
+  ctx.fillStyle = hg;
+  ctx.fillRect(0, 40, W, 180);
+
+  // draw entities
+  for(const e of entities){
+    const cx = e.lane * LANE_WIDTH + LANE_WIDTH * 0.5;
+    const cy = e.y + Math.sin(e.wobble) * 1.6;
+    if(e.type === 'ember'){
+      // drawn ember (glowing)
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(0,0,7,0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(0,-2,4.2,0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(-1.5,-3.5,2.2,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    } else {
+      // drawn water drop
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.ellipse(0,1,5,7,0,0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#67d4ff';
+      ctx.beginPath();
+      ctx.ellipse(-1.2,-2,2.4,3,0,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // particles
+  for(const p of particles){
+    const a = Math.max(0.15, p.life / 0.55);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = a;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // player (use authored asset when ready, else fallback)
+  const px = player.x;
+  const py = player.y;
+  if(assetsReady && playerImg.complete){
+    const pw = PLAYER_SIZE * 0.92;
+    const ph = PLAYER_SIZE * 1.22;
+    ctx.drawImage(playerImg, px - pw/2, py - ph*0.78, pw, ph);
+  } else {
+    // fallback simple runner
+    ctx.fillStyle = '#c2410f';
+    ctx.fillRect(px-9, py-18, 18, 22);
+    ctx.fillStyle = '#f4c56a';
+    ctx.beginPath(); ctx.arc(px, py-24, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#1e3a5f';
+    ctx.fillRect(px-6, py-27, 12, 4);
+    ctx.fillStyle = '#3a2a1f';
+    ctx.fillRect(px-7, py+4, 5, 11);
+    ctx.fillRect(px+2, py+4, 5, 11);
+  }
+
+  // lane feet indicator
+  ctx.fillStyle = 'rgba(249,115,22,0.5)';
+  ctx.fillRect(px-6, py+18, 12, 3);
+
+  // top label reminder
+  ctx.fillStyle = 'rgba(194,138,95,0.6)';
+  ctx.font = '600 11px system-ui, sans-serif';
+  ctx.fillText('DODGE  •  COLLECT  •  15 TILES', 18, 26);
+
+  ctx.restore();
+}
+
+function doWin(){
+  state = 'win';
+  entities.length = 0;
+  setHiss(0.12);
+  playWind();
+  windTimer = 2.8;
+  setTimeout(() => {
+    setState('win');
+    updateHUD();
+  }, 80);
+}
+
+function doLose(){
+  state = 'lose';
+  setHiss(0);
+  if(audioCtx){
+    // harsh stop
+    if(hissGain) hissGain.gain.value = 0.0001;
+    if(hissNoiseGain) hissNoiseGain.gain.value = 0.0001;
+  }
+  setTimeout(() => {
+    setState('lose');
+    updateHUD();
+  }, 60);
+}
+
+function resetGame(){
+  entities.length = 0;
+  particles.length = 0;
+  doused = 0;
+  player.lane = 1;
+  player.x = laneX(1);
+  player.y = PLAYER_Y;
+  spawnTimer = 180;
+  speed = 205;
+  spawnInterval = 410;
+  hissLevel = 0.0;
+  setHiss(0.03);
+  updateHUD();
+  setState('playing');
+}
+
+function gameLoop(ts){
+  if(!lastTime) lastTime = ts;
+  const dt = Math.min(0.05, (ts - lastTime) / 1000);
+  lastTime = ts;
+
+  if(state === 'playing'){
+    update(dt);
+  } else if(state === 'win' && windTimer > 0){
+    windTimer -= dt;
+    if(windTimer <= 0 && hissGain) setHiss(0.02);
+  }
+
+  draw();
+
+  // light idle hiss in menu
+  if(state === 'menu' && audioStarted && !muted){
+    setHiss(0.02);
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+function startGame(){
+  initAudio();
+  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  resetGame();
+  // first hiss bump
+  setTimeout(() => { if(state==='playing') setHiss(0.08); }, 120);
+}
+
+// input
+document.addEventListener('keydown', function(e){
+  if(state === 'menu' && (e.key === ' ' || e.key === 'Enter')){
+    e.preventDefault();
+    startGame();
+    return;
+  }
+  if(e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a'){ e.preventDefault(); switchLane(-1); }
+  if(e.key === 'ArrowRight' || e.key.toLowerCase() === 'd'){ e.preventDefault(); switchLane(1); }
+  if(e.key.toLowerCase() === 'm'){ toggleMute(); }
+  if((e.key === 'r' || e.key === 'R') && (state==='win' || state==='lose')){
+    startGame();
+  }
+});
+
+canvas.addEventListener('pointerdown', function(e){
+  if(state === 'menu'){
+    startGame();
+    return;
+  }
+  const rect = canvas.getBoundingClientRect();
+  const cx = (e.clientX - rect.left) * (W / rect.width);
+  const lane = Math.floor(cx / LANE_WIDTH);
+  setLane(lane);
+});
+
+document.getElementById('btn-start').addEventListener('click', function(){
+  startGame();
+});
+
+// first gesture init audio
+['pointerdown','keydown'].forEach(ev => {
+  window.addEventListener(ev, function once(){
+    initAudio();
+    if(audioCtx && audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
+  }, {once:true, passive:true});
+});
+
+// boot
+updateHUD();
+setState('menu');
+draw();
+requestAnimationFrame(gameLoop);
+
+// small idle entities for title screen preview (visual only)
+setTimeout(() => {
+  if(state==='menu'){
+    entities.push({lane:0, y:120, type:'ember', wobble:1.1});
+    entities.push({lane:2, y:210, type:'drop', wobble:2.4});
+    entities.push({lane:1, y:290, type:'ember', wobble:0.6});
+    draw();
+  }
+}, 420);
+
+})();
+</script>
+</body>
+</html>
