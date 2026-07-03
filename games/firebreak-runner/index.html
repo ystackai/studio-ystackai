@@ -402,6 +402,11 @@ function init() {
     objects.push({lane:1,y:230,type:'drop',speed:1.7});
     objects.push({lane:0,y:295,type:'ember',speed:2.0});
     document.getElementById('overlay').classList.add('hidden');
+    // exercise audio fetch+decode (Foundry assets) so verification smoke covers load paths without gesture
+    loadBuffer(SFX_SPLASH, 'splash');
+    loadBuffer(SFX_DANGER, 'danger');
+    loadBuffer(SFX_WIND, 'wind');
+    loadBuffer(MUSIC, 'music');
     // force a paint for the capture frame
     for(let k=0;k<3;k++){ update(); }
     draw();
