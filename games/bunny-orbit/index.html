@@ -54,18 +54,13 @@
   <div id="burn-indicator">BURNING</div>
 </div>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
-  }
-}
-</script>
-
+<script src="https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.min.js"></script>
 <script type="module">
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'https://esm.sh/three@0.163.0/examples/jsm/loaders/GLTFLoader.js';
+window.GLTFLoader = GLTFLoader;
+</script>
+<script>
+
 
 // ─── CONFIG ───
 const PLANETS = [

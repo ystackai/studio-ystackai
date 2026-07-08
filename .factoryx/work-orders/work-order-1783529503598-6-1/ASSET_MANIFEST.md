@@ -10,6 +10,13 @@ Single mechanic: hold to burn (thrust), release to drift in orbit. No accounts, 
 - Audio pack was regenerated (job `asset-1783529737942-1918e9f0`) since prior outputs expired.
 - This retry fixes the stall by completing all asset generation and game assembly in a focused sequence.
 
+
+### Importmap / Module Syntax Fix
+- The prior run's `index.html` used `<script type="importmap">` for Three.js CDN loading.
+- The FactoryX browser runtime verification extracted the importmap as an inline script and parsed its JSON content as JavaScript, producing `SyntaxError: Unexpected token ':'`.
+- Fix: replaced the importmap with a classic `<script src="...three.min.js">` tag, plus a small `<script type="module">` shim for GLTFLoader (loaded from esm.sh). Main game code is now in a plain `<script>` block.
+- All three script blocks verified with `node --check`.
+
 ## Asset Foundry Jobs
 
 ### 3D Model: Bunny Astronaut

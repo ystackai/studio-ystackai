@@ -5,6 +5,18 @@
 - Root cause: agent likely stalled during long asset waits or broad inspection
 - Fix: focused execution — submit Foundry jobs, write game HTML, poll audio job (completed in 4s), copy assets, commit
 
+
+## Importmap Fix (run-3 specific)
+- **Problem**: Prior run's browser runtime check failed because the `<script type="importmap">` block was extracted as "inline script 1" and its JSON content (`"imports": {`) was parsed as JavaScript, producing `SyntaxError: Unexpected token ':'` at line 3.
+- **Fix**: Replaced the importmap + ES module script block with:
+  1. Classic `<script src="...three.min.js">` for Three.js global
+  2. Small `<script type="module">` to import GLTFLoader from esm.sh and expose as `window.GLTFLoader`
+  3. Main game code in a plain `<script>` block (no imports)
+- **Verification**: All 3 script blocks pass `node --check` syntax validation.
+  - Script 1: self-closing CDN tag (no inline content)
+  - Script 2: module, 125 chars — PASS
+  - Script 3: main game code, 17286 chars — PASS
+
 ## Assets Generated
 - **Bunny companion GLB**: job `asset-1783454496690-081922bd` (prior run, reused, 2.0 MB)
 - **Cozy audio pack**: job `asset-1783529737942-1918e9f0` (regenerated, 4.18s, 6 WAVs)
