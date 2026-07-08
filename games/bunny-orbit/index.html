@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bunny Orbit</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #000; font-family: 'Segoe UI', system-ui, sans-serif; }
+  canvas { display: block; }
+  #hud { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 10; }
+  #hud-top { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 16px; }
+  .hud-panel { background: rgba(10, 10, 30, 0.6); border: 1px solid rgba(140, 180, 255, 0.2); border-radius: 8px; padding: 8px 14px; color: #c8d8ff; font-size: 13px; }
+  #fuel-bar { width: 140px; height: 8px; background: rgba(255,255,255,0.15); border-radius: 4px; margin-top: 4px; }
+  #fuel-fill { height: 100%; background: linear-gradient(90deg, #ff8844, #ffcc44); border-radius: 4px; transition: width 0.1s; width: 100%; }
+  #planet-name { font-size: 15px; font-weight: 600; color: #ffe0a0; margin-bottom: 2px; }
+  #burn-indicator { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: #ffcc44; font-size: 14px; opacity: 0; transition: opacity 0.2s; }
+  #burn-indicator.active { opacity: 1; }
+  #start-screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, #0a0a2e 0%, #000 70%); z-index: 100; }
+  #start-screen h1 { font-size: 42px; color: #ffe0a0; text-shadow: 0 0 30px rgba(255,200,100,0.4); margin-bottom: 8px; }
+  #start-screen p { color: #8899cc; font-size: 14px; margin-bottom: 24px; text-align: center; line-height: 1.6; }
+  #start-btn { pointer-events: all; background: linear-gradient(135deg, #ff8844, #ffaa66); color: #fff; border: none; border-radius: 24px; padding: 14px 40px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 20px rgba(255,136,68,0.3); transition: transform 0.15s; }
+  #start-btn:hover { transform: scale(1.05); }
+  #win-screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(5, 5, 20, 0.85); z-index: 100; }
+  #win-screen h1 { font-size: 36px; color: #a0ff88; text-shadow: 0 0 30px rgba(160,255,136,0.4); margin-bottom: 12px; }
+  #win-screen p { color: #c8d8ff; font-size: 15px; margin-bottom: 20px; }
+  #replay-btn { pointer-events: all; background: linear-gradient(135deg, #44cc66, #66ee88); color: #fff; border: none; border-radius: 24px; padding: 12px 36px; font-size: 16px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div id="start-screen">
+  <h1>Bunny Orbit</h1>
+  <p>Orbit-hop between planets to reach the Carrot Moon.<br>Hold <b>Space</b> or <b>click/tap</b> to thrust.<br>Release to drift.</p>
+  <button id="start-btn">Launch</button>
+</div>
+
+<div id="win-screen">
+  <h1>You Reached the Carrot Moon!</h1>
+  <p id="win-msg">Beautiful journey, little astronaut.</p>
+  <button id="replay-btn">Play Again</button>
+</div>
+
+<div id="hud">
+  <div id="hud-top">
+    <div class="hud-panel">
+      <div id="planet-name">Planet 1: Dust</div>
+      <div id="fuel-bar"><div id="fuel-fill"></div></div>
+    </div>
+    <div class="hud-panel">
+      <span id="distance-label">Distance</span>
+    </div>
+  </div>
+  <div id="burn-indicator">BURNING</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.min.js"></script>
+<script type="module">
+import { GLTFLoader } from 'https://esm.sh/three@0.163.0/examples/jsm/loaders/GLTFLoader.js';
+window.GLTFLoader = GLTFLoader;
+</script>
+<script>
+
+
+// ─── CONFIG ───
+const PLANETS = [
+  { name: 'Dust', color: 0xcc8866, radius: 1.0, emissive: 0x332211 },
+  { name: 'Moss', color: 0x55aa55, radius: 1.2, emissive: 0x113311 },
+  { name: 'Tide', color: 0x4488cc, radius: 1.1, emissive: 0x112244 },
+  { name: 'Ember', color: 0xcc5533, radius: 0.9, emissive: 0x441100 },
+  { name: 'Frost', color: 0x88aadd, radius: 1.3, emissive: 0x223355 },
+  { name: 'Carrot Moon', color: 0xff8833, radius: 1.0, emissive: 0x663300 }
+];
+
+const FUEL_MAX = 100;
+const FUEL_BURN_RATE = 30;
+const FUEL_REGEN_RATE = 8;
+const THRUST_FORCE = 2.5;
+const GRAVITY_BASE = 3.0;
+const ORBIT_SPEED_INIT = 1.8;
+const LANDING_DIST = 1.8;
+const LANDING_VELOCITY_MAX = 2.0;
+const PLANET_SPACING = 12;
+
+// ─── STATE ───
+let scene, camera, renderer, clock;
+let bunnyGroup = null;
+let currentPlanetIndex = 0;
+let fuel = FUEL_MAX;
+let velocity = new THREE.Vector3();
+let position = new THREE.Vector3();
+let isBurning = false;
+let gameStarted = false;
+let gameWon = false;
+let planets3D = [];
+let starField = null;
+let thrustSource = null;
+let musicSource = null;
+
+// Audio
+let audioCtx;
+let musicGain, thrustGain, landGain, chimeGain;
+let audioBuffers = {};
+let audioReady = false;
+
+const audioConfig = {
+  music: 'assets/generated/foundry_music_loop.wav',
+  thrust: 'assets/generated/sfx_movement.wav',
+  land: 'assets/generated/sfx_impact.wav',
+  chime: 'assets/generated/sfx_reveal.wav'
+};
+
+// ─── INIT ───
+function init() {
+  scene = new THREE.Scene();
+  clock = new THREE.Clock();
+
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500);
+  camera.position.set(0, 5, 10);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  document.body.prepend(renderer.domElement);
+
+  const ambient = new THREE.AmbientLight(0x445588, 0.6);
+  scene.add(ambient);
+
+  const sun = new THREE.DirectionalLight(0xffeedd, 1.2);
+  sun.position.set(20, 30, 10);
+  scene.add(sun);
+
+  const rimLight = new THREE.DirectionalLight(0x6688cc, 0.4);
+  rimLight.position.set(-15, 10, -10);
+  scene.add(rimLight);
+
+  createStarField();
+  createPlanets();
+  createBunnyPlaceholder();
+  loadBunnyGLB();
+  resetBunnyPosition();
+  setupInput();
+  window.addEventListener('resize', onResize);
+  animate();
+}
+
+function createStarField() {
+  const geo = new THREE.BufferGeometry();
+  const count = 2000;
+  const verts = new Float32Array(count * 3);
+  for (let i = 0; i < count * 3; i++) {
+    verts[i] = (Math.random() - 0.5) * 400;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+  const mat = new THREE.PointsMaterial({ color: 0xccddff, size: 0.5, sizeAttenuation: true });
+  starField = new THREE.Points(geo, mat);
+  scene.add(starField);
+}
+
+function createPlanets() {
+  for (let i = 0; i < PLANETS.length; i++) {
+    const p = PLANETS[i];
+    const geo = new THREE.SphereGeometry(p.radius, 32, 24);
+
+    let mat;
+    if (i === PLANETS.length - 1) {
+      mat = new THREE.MeshStandardMaterial({
+        color: p.color, emissive: p.emissive, emissiveIntensity: 0.5,
+        roughness: 0.6, metalness: 0.1
+      });
+    } else {
+      mat = new THREE.MeshStandardMaterial({
+        color: p.color, emissive: p.emissive, emissiveIntensity: 0.2,
+        roughness: 0.7, metalness: 0.05
+      });
+    }
+
+    const mesh = new THREE.Mesh(geo, mat);
+    const x = i * PLANET_SPACING;
+    const y = Math.sin(i * 0.7) * 2;
+    const z = Math.cos(i * 0.5) * 3;
+    mesh.position.set(x, y, z);
+    scene.add(mesh);
+    planets3D.push({ mesh, spec: p, pos: mesh.position.clone() });
+
+    // Atmosphere glow ring
+    if (i < PLANETS.length - 1) {
+      const ringGeo = new THREE.RingGeometry(p.radius * 1.3, p.radius * 1.5, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: p.color, transparent: true, opacity: 0.12, side: THREE.DoubleSide
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.position.copy(mesh.position);
+      ring.rotation.x = Math.PI * 0.5;
+      scene.add(ring);
+    }
+
+    // Name label
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffe0a0';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.name, 128, 38);
+    const tex = new THREE.CanvasTexture(canvas);
+    const spriteMat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.position.copy(mesh.position);
+    sprite.position.y += p.radius + 1.5;
+    sprite.scale.set(3, 0.75, 1);
+    scene.add(sprite);
+  }
+}
+
+function createBunnyPlaceholder() {
+  bunnyGroup = new THREE.Group();
+
+  // Body - rounded capsule
+  const bodyGeo = new THREE.CapsuleGeometry(0.35, 0.5, 8, 12);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffeedd, roughness: 0.8 });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  bunnyGroup.add(body);
+
+  // Helmet visor
+  const visorGeo = new THREE.SphereGeometry(0.38, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.5);
+  const visorMat = new THREE.MeshStandardMaterial({
+    color: 0x88bbff, roughness: 0.1, metalness: 0.7, transparent: true, opacity: 0.7
+  });
+  const visor = new THREE.Mesh(visorGeo, visorMat);
+  visor.position.set(0, 0.25, 0.15);
+  visor.rotation.x = -0.3;
+  bunnyGroup.add(visor);
+
+  // Ears
+  const earGeo = new THREE.CapsuleGeometry(0.08, 0.4, 4, 6);
+  const earMat = new THREE.MeshStandardMaterial({ color: 0xffeedd, roughness: 0.8 });
+  const earL = new THREE.Mesh(earGeo, earMat);
+  earL.position.set(-0.15, 0.6, 0);
+  earL.rotation.z = 0.2;
+  bunnyGroup.add(earL);
+  const earR = new THREE.Mesh(earGeo, earMat);
+  earR.position.set(0.15, 0.6, 0);
+  earR.rotation.z = -0.2;
+  bunnyGroup.add(earR);
+
+  // Inner ears (pink)
+  const innerGeo = new THREE.CapsuleGeometry(0.04, 0.25, 4, 6);
+  const innerMat = new THREE.MeshStandardMaterial({ color: 0xffaacc, roughness: 0.9 });
+  const innerL = new THREE.Mesh(innerGeo, innerMat);
+  innerL.position.set(-0.15, 0.6, 0.05);
+  innerL.rotation.z = 0.2;
+  bunnyGroup.add(innerL);
+  const innerR = new THREE.Mesh(innerGeo, innerMat);
+  innerR.position.set(0.15, 0.6, 0.05);
+  innerR.rotation.z = -0.2;
+  bunnyGroup.add(innerR);
+
+  // Backpack / thruster
+  const packGeo = new THREE.BoxGeometry(0.4, 0.35, 0.25);
+  const packMat = new THREE.MeshStandardMaterial({ color: 0x889999, roughness: 0.5, metalness: 0.3 });
+  const pack = new THREE.Mesh(packGeo, packMat);
+  pack.position.set(0, -0.05, -0.35);
+  bunnyGroup.add(pack);
+
+  // Thruster nozzle
+  const nozzleGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.15, 8);
+  const nozzleMat = new THREE.MeshStandardMaterial({ color: 0x445566, metalness: 0.5, roughness: 0.3 });
+  const nozzle = new THREE.Mesh(nozzleGeo, nozzleMat);
+  nozzle.rotation.x = Math.PI / 2;
+  nozzle.position.set(0, -0.05, -0.5);
+  bunnyGroup.add(nozzle);
+
+  // Thruster flame (hidden initially)
+  const flameGeo = new THREE.ConeGeometry(0.12, 0.4, 8);
+  const flameMat = new THREE.MeshBasicMaterial({ color: 0xff8833, transparent: true, opacity: 0.8 });
+  const flame = new THREE.Mesh(flameGeo, flameMat);
+  flame.rotation.x = -Math.PI / 2;
+  flame.position.set(0, -0.05, -0.7);
+  flame.visible = false;
+  flame.name = 'flame';
+  bunnyGroup.add(flame);
+
+  // Feet
+  const footGeo = new THREE.SphereGeometry(0.12, 8, 6);
+  const footMat = new THREE.MeshStandardMaterial({ color: 0xffeedd, roughness: 0.8 });
+  const footL = new THREE.Mesh(footGeo, footMat);
+  footL.position.set(-0.15, -0.45, 0.05);
+  bunnyGroup.add(footL);
+  const footR = new THREE.Mesh(footGeo, footMat);
+  footR.position.set(0.15, -0.45, 0.05);
+  bunnyGroup.add(footR);
+
+  scene.add(bunnyGroup);
+}
+
+function loadBunnyGLB() {
+  const loader = new GLTFLoader();
+  loader.load(
+    'assets/generated/bunny_companion.glb',
+    (gltf) => {
+      if (bunnyGroup) {
+        const idx = scene.children.indexOf(bunnyGroup);
+        if (idx >= 0) scene.remove(bunnyGroup);
+      }
+      bunnyGroup = new THREE.Group();
+      const model = gltf.scene;
+      model.scale.set(1.5, 1.5, 1.5);
+      model.rotation.y = Math.PI;
+      bunnyGroup.add(model);
+      // Re-add flame
+      const flameGeo = new THREE.ConeGeometry(0.12, 0.4, 8);
+      const flameMat = new THREE.MeshBasicMaterial({ color: 0xff8833, transparent: true, opacity: 0.8 });
+      const flame = new THREE.Mesh(flameGeo, flameMat);
+      flame.rotation.x = -Math.PI / 2;
+      flame.position.set(0, -0.1, -0.5);
+      flame.visible = false;
+      flame.name = 'flame';
+      bunnyGroup.add(flame);
+      scene.add(bunnyGroup);
+      console.log('[Bunny Orbit] Foundry GLB model loaded');
+    },
+    undefined,
+    (err) => {
+      console.log('[Bunny Orbit] GLB load failed, using procedural bunny placeholder');
+    }
+  );
+}
+
+function resetBunnyPosition() {
+  const target = planets3D[currentPlanetIndex].pos;
+  position.set(
+    target.x,
+    target.y + planets3D[currentPlanetIndex].spec.radius + 2.5,
+    target.z + 2
+  );
+  velocity.set(ORBIT_SPEED_INIT, 0.2, 0);
+  if (bunnyGroup) bunnyGroup.position.copy(position);
+}
+
+// ─── AUDIO ───
+async function initAudio() {
+  if (audioReady) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const load = async (url) => {
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) return null;
+        const buf = await resp.arrayBuffer();
+        return await audioCtx.decodeAudioData(buf);
+      } catch(e) { return null; }
+    };
+
+    const [musicBuf, thrustBuf, landBuf, chimeBuf] = await Promise.all([
+      load(audioConfig.music), load(audioConfig.thrust),
+      load(audioConfig.land), load(audioConfig.chime)
+    ]);
+
+    audioBuffers.music = musicBuf;
+    audioBuffers.thrust = thrustBuf;
+    audioBuffers.land = landBuf;
+    audioBuffers.chime = chimeBuf;
+
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = 0.25;
+    musicGain.connect(audioCtx.destination);
+
+    thrustGain = audioCtx.createGain();
+    thrustGain.gain.value = 0;
+    thrustGain.connect(audioCtx.destination);
+
+    landGain = audioCtx.createGain();
+    landGain.gain.value = 0.5;
+    landGain.connect(audioCtx.destination);
+
+    chimeGain = audioCtx.createGain();
+    chimeGain.gain.value = 0.4;
+    chimeGain.connect(audioCtx.destination);
+
+    audioReady = true;
+    console.log('[Bunny Orbit] Audio loaded:', {
+      music: !!musicBuf, thrust: !!thrustBuf, land: !!landBuf, chime: !!chimeBuf
+    });
+  } catch(e) {
+    console.warn('[Bunny Orbit] Audio init failed:', e);
+  }
+}
+
+function playMusic() {
+  if (!audioReady || !audioBuffers.music) return;
+  if (musicSource) { try { musicSource.stop(); } catch(e){} }
+  musicSource = audioCtx.createBufferSource();
+  musicSource.buffer = audioBuffers.music;
+  musicSource.loop = true;
+  musicSource.connect(musicGain);
+  musicSource.start(0);
+  musicGain.gain.setValueAtTime(0, audioCtx.currentTime);
+  musicGain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 3);
+}
+
+function playThrust(active) {
+  if (!audioReady || !audioBuffers.thrust) return;
+  if (active) {
+    if (thrustSource) { try { thrustSource.stop(); } catch(e){} }
+    thrustSource = audioCtx.createBufferSource();
+    thrustSource.buffer = audioBuffers.thrust;
+    thrustSource.loop = true;
+    thrustSource.connect(thrustGain);
+    thrustSource.start();
+    thrustGain.gain.linearRampToValueAtTime(0.35, audioCtx.currentTime + 0.3);
+  } else {
+    thrustGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+    if (thrustSource) { try { thrustSource.stop(); thrustSource = null; } catch(e){} }
+  }
+}
+
+function playLand() {
+  if (!audioReady || !audioBuffers.land) return;
+  const src = audioCtx.createBufferSource();
+  src.buffer = audioBuffers.land;
+  src.connect(landGain);
+  src.start();
+}
+
+function playChime() {
+  if (!audioReady || !audioBuffers.chime) return;
+  const src = audioCtx.createBufferSource();
+  src.buffer = audioBuffers.chime;
+  src.connect(chimeGain);
+  src.start();
+}
+
+// ─── INPUT ───
+function setupInput() {
+  document.getElementById('start-btn').addEventListener('click', startGame);
+  document.getElementById('replay-btn').addEventListener('click', restartGame);
+
+  const press = () => { if (gameStarted && !gameWon) isBurning = true; };
+  const release = () => { isBurning = false; };
+
+  window.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); press(); } });
+  window.addEventListener('keyup', (e) => { if (e.code === 'Space') release(); });
+  renderer.domElement.addEventListener('mousedown', press);
+  renderer.domElement.addEventListener('mouseup', release);
+  renderer.domElement.addEventListener('touchstart', (e) => { e.preventDefault(); press(); });
+  renderer.domElement.addEventListener('touchend', release);
+}
+
+function startGame() {
+  document.getElementById('start-screen').style.display = 'none';
+  gameStarted = true;
+  initAudio().then(() => { if (audioReady) playMusic(); });
+  resetBunnyPosition();
+}
+
+function restartGame() {
+  document.getElementById('win-screen').style.display = 'none';
+  gameWon = false;
+  currentPlanetIndex = 0;
+  fuel = FUEL_MAX;
+  initAudio().then(() => { if (audioReady) playMusic(); });
+  resetBunnyPosition();
+}
+
+// ─── PHYSICS ───
+function updatePhysics(dt) {
+  if (!gameStarted || gameWon) return;
+
+  const target = planets3D[currentPlanetIndex].pos;
+  const nextIdx = Math.min(currentPlanetIndex + 1, PLANETS.length - 1);
+  const nextTarget = planets3D[nextIdx].pos;
+
+  const toTarget = new THREE.Vector3().subVectors(target, position);
+  const toNext = new THREE.Vector3().subVectors(nextTarget, position);
+  const distToCurrent = toTarget.length();
+
+  // Gravity toward current planet
+  const gravityStrength = GRAVITY_BASE / Math.max(distToCurrent, 0.5);
+  const gravityDir = toTarget.clone().normalize();
+  velocity.addScaledVector(gravityDir, gravityStrength * dt);
+
+  // Thrust toward next planet
+  if (isBurning && fuel > 0) {
+    const thrustDir = toNext.clone().normalize();
+    velocity.addScaledVector(thrustDir, THRUST_FORCE * dt);
+    fuel = Math.max(0, fuel - FUEL_BURN_RATE * dt);
+
+    const flame = bunnyGroup.getObjectByName('flame');
+    if (flame) flame.visible = true;
+    playThrust(true);
+  } else {
+    fuel = Math.min(FUEL_MAX, fuel + FUEL_REGEN_RATE * dt);
+
+    const flame = bunnyGroup.getObjectByName('flame');
+    if (flame) flame.visible = false;
+    playThrust(false);
+  }
+
+  position.addScaledVector(velocity, dt);
+  velocity.multiplyScalar(0.998);
+
+  if (bunnyGroup) {
+    bunnyGroup.position.copy(position);
+    if (velocity.length() > 0.1) {
+      const lookDir = velocity.clone().normalize();
+      const lookTarget = position.clone().add(lookDir);
+      bunnyGroup.lookAt(lookTarget);
+    }
+  }
+
+  // Landing check
+  if (distToCurrent < LANDING_DIST) {
+    const velMag = velocity.length();
+    if (velMag < LANDING_VELOCITY_MAX) {
+      if (currentPlanetIndex < PLANETS.length - 1) {
+        currentPlanetIndex++;
+        playLand();
+        updateHUD();
+        const newTarget = planets3D[currentPlanetIndex].pos;
+        position.set(
+          newTarget.x,
+          newTarget.y + planets3D[currentPlanetIndex].spec.radius + 2.5,
+          newTarget.z + 2
+        );
+        velocity.set(ORBIT_SPEED_INIT, 0.2, 0);
+      } else {
+        winGame();
+      }
+    } else {
+      velocity.addScaledVector(gravityDir, -velMag * 0.5);
+    }
+  }
+
+  updateHUD();
+}
+
+function updateHUD() {
+  const p = PLANETS[currentPlanetIndex];
+  document.getElementById('planet-name').textContent = `Planet ${currentPlanetIndex + 1}: ${p.name}`;
+  document.getElementById('fuel-fill').style.width = `${(fuel / FUEL_MAX) * 100}%`;
+
+  const burnEl = document.getElementById('burn-indicator');
+  if (isBurning && fuel > 0) {
+    burnEl.classList.add('active');
+  } else {
+    burnEl.classList.remove('active');
+  }
+}
+
+function winGame() {
+  gameWon = true;
+  playChime();
+  playThrust(false);
+  document.getElementById('win-screen').style.display = 'flex';
+  document.getElementById('burn-indicator').classList.remove('active');
+}
+
+// ─── CAMERA ───
+function updateCamera() {
+  if (!bunnyGroup || !gameStarted) return;
+  const offset = new THREE.Vector3(0, 3, 7);
+  const target = bunnyGroup.position.clone().add(offset);
+  camera.position.lerp(target, 0.05);
+  camera.lookAt(bunnyGroup.position);
+}
+
+// ─── ANIMATE ───
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  if (gameStarted && !gameWon) {
+    updatePhysics(dt);
+  }
+
+  planets3D.forEach((p, i) => {
+    p.mesh.rotation.y += dt * 0.2;
+  });
+
+  updateCamera();
+
+  if (bunnyGroup) {
+    const flame = bunnyGroup.getObjectByName('flame');
+    if (flame && flame.visible) {
+      flame.scale.y = 0.8 + Math.sin(Date.now() * 0.01) * 0.3;
+      flame.scale.x = 0.8 + Math.sin(Date.now() * 0.015) * 0.2;
+    }
+  }
+
+  renderer.render(scene, camera);
+}
+
+// ─── RESIZE ───
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// ─── START ───
+init();
+</script>
+</body>
+</html>
